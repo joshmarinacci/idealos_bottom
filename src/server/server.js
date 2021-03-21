@@ -49,7 +49,7 @@ function start_message_server() {
             if(msg.type === 'DRAW_PIXEL') {
                 //send to the screen
                 if(connections['SCREEN']) {
-                    log("sending to screen")
+                    // log("sending to screen")
                     connections['SCREEN'].send(JSON.stringify(msg))
                 } else {
                     // log("no screen connected!")
@@ -114,6 +114,21 @@ async function start_app2() {
 
 await start_message_server()
 await start_web_server()
+
+function screen_connected() {
+    log("waiting for the screen to connect. please refresh the page")
+    return new Promise((res,rej)=>{
+        let id = setInterval(()=>{
+            if(connections['SCREEN']) {
+                log("screen attached")
+                clearInterval(id)
+                res()
+            }
+        },500)
+    })
+}
+
+await screen_connected()
 await start_app1()
 await start_app2()
 log('started everything')
