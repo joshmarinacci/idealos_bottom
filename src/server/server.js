@@ -34,10 +34,16 @@ function start_message_server() {
     server.on("connection", (ws) => {
         ws.on("message", (m) => {
             let msg = JSON.parse(m)
-            log("incoming message", msg)
+            // log("incoming message", msg)
             if(msg.type === 'START') {
                 if(msg.kind === 'SCREEN') {
                     connections['SCREEN'] = ws
+                }
+            }
+            if(msg.type === 'OPEN_WINDOW') {
+                log("app is opening a window",msg)
+                if(!connections['SCREEN']) {
+                    log("can't open a window because there is no screen")
                 }
             }
             if(msg.type === 'DRAW_PIXEL') {
@@ -46,7 +52,7 @@ function start_message_server() {
                     log("sending to screen")
                     connections['SCREEN'].send(JSON.stringify(msg))
                 } else {
-                    log("no screen connected!")
+                    // log("no screen connected!")
                 }
             }
         })

@@ -12,6 +12,8 @@ on button change
 
 import {default as WebSocket} from "ws"
 function log(...args) { console.log(...args) }
+let width = 10
+let height = 5
 
 console.log("starting",process.argv)
 let addr = process.argv[2]
@@ -28,17 +30,15 @@ function fill_rect(ws,w,h,color) {
 
 function draw_button(ws) {
     log("drawing a button")
-    fill_rect(ws,10,5,'green')
+    fill_rect(ws,width,height,'green')
 }
 
 ws.on('open',()=>{
     log("got the connection")
-    draw_button(ws)
+    ws.send(JSON.stringify({type:"OPEN_WINDOW",width:width, height:height}))
+    setTimeout(()=> draw_button(ws),1000)
 })
 ws.on("message",(m)=>{
     log("got a message",JSON.parse(m))
 })
 
-setInterval(()=>{
-    draw_button(ws)
-},5000)
