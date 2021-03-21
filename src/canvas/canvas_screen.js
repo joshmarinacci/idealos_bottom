@@ -22,6 +22,10 @@ function mouseevent_to_pixels(e) {
     return {x:Math.floor((e.clientX-rect.x)/scale),y:Math.floor((e.clientY-rect.y)/scale)}
 }
 
+function send_heartbeat(ws) {
+    ws.send(JSON.stringify({type:'HEARTBEAT'}))
+}
+
 on(window,'load',() =>{
     log("the page is loaded")
     let socket = new WebSocket("ws://localhost:8081")
@@ -31,10 +35,14 @@ on(window,'load',() =>{
         socket.send(JSON.stringify({type:"START",kind:'SCREEN'}))
     })
     on(socket,'error',(e)=> log("error",e))
+    on(socket, 'close',(e)=>{
+        log("closed",e)
+        $("#status").innerText = "disconnected"
+    })
 
     on(socket,'message',(e)=>{
         let msg = JSON.parse(e.data)
-        log("got message",msg)
+        // log("got message",msg)
         if(msg.type === 'DRAW_PIXEL') {
             let c = $('#canvas').getContext('2d')
             c.fillStyle = msg.color
@@ -54,4 +62,6 @@ on(window,'load',() =>{
         let pt = mouseevent_to_pixels(e)
         send({type:'MOUSE_UP',x:pt.x,y:pt.y})
     })
+
+    setInterval(()=>send_heartbeat(socket),1000)
 })

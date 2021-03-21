@@ -24,6 +24,7 @@ function log(...args) { console.log(...args) }
 const sleep = (dur) => new Promise((res,rej) => setTimeout(res,dur))
 
 const connections = {}
+const SCREEN = 'SCREEN'
 
 function start_message_server() {
     const server = new WS.Server({
@@ -34,27 +35,30 @@ function start_message_server() {
     server.on("connection", (ws) => {
         ws.on("message", (m) => {
             let msg = JSON.parse(m)
-            // log("incoming message", msg)
             if(msg.type === 'START') {
-                if(msg.kind === 'SCREEN') {
-                    connections['SCREEN'] = ws
+                if(msg.kind === SCREEN) {
+                    connections[SCREEN] = ws
                 }
+                return
             }
             if(msg.type === 'OPEN_WINDOW') {
                 log("app is opening a window",msg)
-                if(!connections['SCREEN']) {
+                if(!connections[SCREEN]) {
                     log("can't open a window because there is no screen")
                 }
+                return
             }
             if(msg.type === 'DRAW_PIXEL') {
                 //send to the screen
-                if(connections['SCREEN']) {
+                if(connections[SCREEN]) {
                     // log("sending to screen")
-                    connections['SCREEN'].send(JSON.stringify(msg))
+                    connections[SCREEN].send(JSON.stringify(msg))
                 } else {
                     // log("no screen connected!")
                 }
+                return
             }
+            log("incoming message", msg)
         })
         ws.send(JSON.stringify({message: 'CONNECTED'}))
     })
@@ -119,7 +123,7 @@ function screen_connected() {
     log("waiting for the screen to connect. please refresh the page")
     return new Promise((res,rej)=>{
         let id = setInterval(()=>{
-            if(connections['SCREEN']) {
+            if(connections[SCREEN]) {
                 log("screen attached")
                 clearInterval(id)
                 res()
