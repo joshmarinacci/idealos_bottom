@@ -79,21 +79,35 @@ function start_web_server() {
         })
     })
 }
-async function start_app1() {
-    let app = {
-        name:'app1',
-        path: 'src/clients/app1.js',
-        args: [`ws://${hostname}:${websocket_port}`],
-    }
-    await sleep(1000)
+
+function start_app(app) {
     log('starting app',app)
     const child = spawn('node', [app.path].concat(app.args))
     child.stdout.on('data',(data)=>log(`STDOUT ${app.name} ${data}`))
     child.stderr.on('data',(data)=>log(`STDERR ${app.name} ${data}`))
     child.on('exit',(code)=> log(`${app.name} ended with code = ${code}`))
 }
+async function start_app1() {
+    let app = {
+        name:'app1',
+        path: 'src/clients/app1.js',
+        args: [`ws://${hostname}:${websocket_port}`],
+    }
+    await sleep(250)
+    start_app(app)
+}
+async function start_app2() {
+    let app = {
+        name:'app2',
+        path: 'src/clients/app2.js',
+        args: [`ws://${hostname}:${websocket_port}`],
+    }
+    await sleep(250)
+    start_app(app)
+}
 
 await start_message_server()
 await start_web_server()
 await start_app1()
+await start_app2()
 log('started everything')

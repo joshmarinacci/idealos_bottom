@@ -21,7 +21,6 @@ ws.on("message",(m)=>{
 let x = 0
 
 setInterval(()=>{
-    log("drawing")
     ws.send(JSON.stringify({type:'DRAW_PIXEL',x:x,y:0,color:'red'}))
     x += 1
     if(x > 20) x = 0
