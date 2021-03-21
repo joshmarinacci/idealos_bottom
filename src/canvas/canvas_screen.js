@@ -21,16 +21,18 @@ on(window,'load',() =>{
     on(socket,'open',()=>{
         log("connected to the server")
         $("#status").innerText = "connected"
+        socket.send(JSON.stringify({type:"START",kind:'SCREEN'}))
     })
     on(socket,'error',(e)=> log("error",e))
 
     on(socket,'message',(e)=>{
         let msg = JSON.parse(e.data)
         log("got message",msg)
-        if(msg.type === 'SET_PIXEL') {
+        if(msg.type === 'DRAW_PIXEL') {
             let c = $('#canvas').getContext('2d')
+            let scale = 20
             c.fillStyle = msg.color
-            c.fillRect(msg.x,msg.y,1,1)
+            c.fillRect(msg.x*scale,msg.y*scale,1*scale*0.9,1*scale*0.9)
         }
     })
 

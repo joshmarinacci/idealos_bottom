@@ -15,7 +15,7 @@ import WS from "ws"
 import fs from "fs"
 import http from "http"
 import path from "path"
-
+import {spawn} from "child_process"
 const hostname = '127.0.0.1'
 const webserver_port = 3000
 const websocket_port = 8081
@@ -23,6 +23,7 @@ const websocket_port = 8081
 function log(...args) { console.log(...args) }
 const sleep = (dur) => new Promise((res,rej) => setTimeout(res,dur))
 
+const connections = {}
 
 function start_message_server() {
     const server = new WS.Server({
@@ -34,6 +35,20 @@ function start_message_server() {
         ws.on("message", (m) => {
             let msg = JSON.parse(m)
             log("incoming message", msg)
+            if(msg.type === 'START') {
+                if(msg.kind === 'SCREEN') {
+                    connections['SCREEN'] = ws
+                }
+            }
+            if(msg.type === 'DRAW_PIXEL') {
+                //send to the screen
+                if(connections['SCREEN']) {
+                    log("sending to screen")
+                    connections['SCREEN'].send(JSON.stringify(msg))
+                } else {
+                    log("no screen connected!")
+                }
+            }
         })
         ws.send(JSON.stringify({message: 'CONNECTED'}))
     })
@@ -66,11 +81,16 @@ function start_web_server() {
 }
 async function start_app1() {
     let app = {
+        name:'app1',
         path: 'src/clients/app1.js',
         args: [`ws://${hostname}:${websocket_port}`],
     }
     await sleep(1000)
     log('starting app',app)
+    const child = spawn('node', [app.path].concat(app.args))
+    child.stdout.on('data',(data)=>log(`STDOUT ${app.name} ${data}`))
+    child.stderr.on('data',(data)=>log(`STDERR ${app.name} ${data}`))
+    child.on('exit',(code)=> log(`${app.name} ended with code = ${code}`))
 }
 
 await start_message_server()
