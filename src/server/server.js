@@ -27,6 +27,37 @@ const sleep = (dur) => new Promise((res,rej) => setTimeout(res,dur))
 const connections = {}
 const SCREEN = 'SCREEN'
 
+function handle_start_message(ws,msg) {
+    if(msg.kind === SCREEN) {
+        connections[SCREEN] = ws
+    }
+}
+
+function handle_open_window_message(ws,msg) {
+    log("app is opening a window",msg)
+    if(msg.sender && !connections[msg.sender]) {
+        connections[msg.sender] = ws
+    }
+    if(!connections[SCREEN]) {
+        log("can't open a window because there is no screen")
+    }
+    forward_to_screen(msg)
+}
+
+function forward_to_screen(msg) {
+    if(connections[SCREEN]) return connections[SCREEN].send(JSON.stringify(msg))
+    // log("no screen connected!")
+}
+
+function do_nothing(msg) {
+    //do nothing
+}
+
+function forward_to_target(msg) {
+    if(!msg.target) return log("NO TARGET!",msg)
+    return connections[msg.target].send(JSON.stringify(msg))
+}
+
 function start_message_server() {
     const server = new WS.Server({
         port: websocket_port,
@@ -36,47 +67,13 @@ function start_message_server() {
     server.on("connection", (ws) => {
         ws.on("message", (m) => {
             let msg = JSON.parse(m)
-            if(msg.type === 'START') {
-                if(msg.kind === SCREEN) {
-                    connections[SCREEN] = ws
-                }
-                return
-            }
-            if(msg.type === OPEN_WINDOW.NAME) {
-                log("app is opening a window",msg)
-                if(msg.sender && !connections[msg.sender]) {
-                    connections[msg.sender] = ws
-                }
-                if(!connections[SCREEN]) {
-                    log("can't open a window because there is no screen")
-                }
-                connections[SCREEN].send(JSON.stringify(msg))
-                return
-            }
-            if(msg.type === DRAW_PIXEL.NAME) {
-                //send to the screen
-                if(connections[SCREEN]) {
-                    // log("sending to screen")
-                    connections[SCREEN].send(JSON.stringify(msg))
-                } else {
-                    // log("no screen connected!")
-                }
-                return
-            }
-            if(msg.type === OPEN_WINDOW.RESPONSE_NAME) {
-                if(!msg.target) {
-                    log("NO TARGET!",msg)
-                }
-                log("window is opened. sending to target",msg)
-                connections[msg.target].send(JSON.stringify(msg))
-                return
-            }
-            if(msg.type === HEARTBEAT.NAME) {
-                //do nothing
-                return
-            }
-            if(msg.type === MOUSE.UP.NAME)  return connections[msg.target].send(JSON.stringify(msg))
-            if(msg.type === MOUSE.DOWN.NAME)  return connections[msg.target].send(JSON.stringify(msg))
+            if(msg.type === 'START') return handle_start_message(ws,msg)
+            if(msg.type === OPEN_WINDOW.NAME) return handle_open_window_message(ws,msg)
+            if(msg.type === DRAW_PIXEL.NAME) return forward_to_screen(msg)
+            if(msg.type === OPEN_WINDOW.RESPONSE_NAME) return forward_to_target(msg)
+            if(msg.type === HEARTBEAT.NAME) return do_nothing(msg)
+            if(msg.type === MOUSE.UP.NAME)  return forward_to_target(msg)
+            if(msg.type === MOUSE.DOWN.NAME) return forward_to_target(msg)
             log("incoming message", msg)
         })
         ws.send(JSON.stringify({message: 'CONNECTED'}))
