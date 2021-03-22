@@ -1,17 +1,4 @@
-/*
-open window with specific size
-
-wait 1 second
-draw button
-    rect bg using pixels
-wait for input
-    on any input, toggle the button state
-on button change
-    send new pixels to window
-*/
-
-import {default as WebSocket} from "ws"
-import {MOUSE, OPEN_WINDOW} from '../canvas/messages.js'
+import {MOUSE} from '../canvas/messages.js'
 import {CommonApp} from './app_utils.js'
 
 let app = new CommonApp(process.argv,10,5)
@@ -31,7 +18,6 @@ function fill_rect(w,h,color) {
         }
     }
 }
-
 function draw_button() {
     fill_rect(app.width,app.height,'green')
 }
