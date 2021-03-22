@@ -85,7 +85,7 @@ on(window,'load',() =>{
     })
 
     function send(msg) {
-        console.log('sending',msg)
+        //log('sending',msg)
         socket.send(JSON.stringify(msg))
     }
     const can = $("#canvas")
