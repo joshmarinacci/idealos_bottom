@@ -5,6 +5,9 @@ export const OPEN_WINDOW = {
 export const DRAW_PIXEL = {
     NAME:'DRAW_PIXEL'
 }
+export const FILL_RECT = {
+    NAME:'FILL_RECT',
+}
 export const HEARTBEAT = {
     NAME:'HEARTBEAT'
 }

@@ -1,10 +1,3 @@
-/*
-connect to server
-request window with size
-every second, draw a pixel
- */
-
-
 import {CommonApp} from "./app_utils.js"
 
 let app = new CommonApp(process.argv,10,5)

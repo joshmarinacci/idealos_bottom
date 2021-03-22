@@ -6,7 +6,7 @@ show status of connection on screen
 process drawing events by drawing
 process input events by sending to server
  */
-import {DRAW_PIXEL, HEARTBEAT, MOUSE, OPEN_WINDOW} from "./messages.js"
+import {DRAW_PIXEL, FILL_RECT, HEARTBEAT, MOUSE, OPEN_WINDOW} from "./messages.js"
 
 const $ = (sel) => document.querySelector(sel)
 const on = (elm, type, cb) => elm.addEventListener(type,cb)
@@ -40,6 +40,28 @@ function find_window(pt) {
     })
 }
 
+function handle_drawing(msg, windows) {
+    if(!windows[msg.window]) {
+        log("no such window",msg.window)
+        return
+    }
+    let win = windows[msg.window]
+    let c = $('#canvas').getContext('2d')
+    if(msg.type === DRAW_PIXEL.NAME) {
+        c.fillStyle = msg.color
+        c.fillRect(win.x * scale + msg.x * scale, win.y * scale + msg.y * scale, 1 * scale * 0.9, 1 * scale * 0.9)
+    }
+    if(msg.type === FILL_RECT.NAME) {
+        c.fillStyle = msg.color
+        c.fillRect(
+            (win.x + msg.x)* scale,
+            (win.y + msg.y) * scale,
+            (win.width) * scale * 0.9,
+            (win.height)* scale * 0.9
+        )
+    }
+}
+
 on(window,'load',() =>{
     log("the page is loaded")
     let socket = new WebSocket("ws://localhost:8081")
@@ -56,18 +78,8 @@ on(window,'load',() =>{
 
     on(socket,'message',(e)=>{
         let msg = JSON.parse(e.data)
-        if(msg.type === DRAW_PIXEL.NAME) {
-            if(!windows[msg.window]) {
-                log("no such window",msg.window)
-                return
-            }
-            let win = windows[msg.window]
-            // log("drawing pixel to window",win)
-            let c = $('#canvas').getContext('2d')
-            c.fillStyle = msg.color
-            c.fillRect(win.x*scale+msg.x*scale,win.y*scale+msg.y*scale,1*scale*0.9,1*scale*0.9)
-            return
-        }
+        if(msg.type === DRAW_PIXEL.NAME) return handle_drawing(msg,windows);
+        if(msg.type === FILL_RECT.NAME) return handle_drawing(msg,windows);
         if(msg.type === OPEN_WINDOW.NAME) {
             let win_id = "id_"+Math.floor(Math.random()*10000)
             let y = Object.keys(windows).length

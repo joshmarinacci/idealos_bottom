@@ -1,4 +1,4 @@
-import {MOUSE} from '../canvas/messages.js'
+import {FILL_RECT, MOUSE} from '../canvas/messages.js'
 import {CommonApp} from './app_utils.js'
 
 let app = new CommonApp(process.argv,10,5)
@@ -12,11 +12,7 @@ app.on(MOUSE.UP.NAME,()=>{
     draw_button_released()
 })
 function fill_rect(w,h,color) {
-    for(let i=0; i<w; i++) {
-        for(let j=0; j<h; j++) {
-            app.send({type:'DRAW_PIXEL',x:i,y:j,color:color})
-        }
-    }
+    app.send({type:FILL_RECT.NAME, x:0, y:0, width:w, height:h, color:color})
 }
 function draw_button() {
     fill_rect(app.width,app.height,'green')

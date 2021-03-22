@@ -16,7 +16,7 @@ import fs from "fs"
 import http from "http"
 import path from "path"
 import {spawn} from "child_process"
-import {DRAW_PIXEL, HEARTBEAT, MOUSE, OPEN_WINDOW} from '../canvas/messages.js'
+import {DRAW_PIXEL, FILL_RECT, HEARTBEAT, MOUSE, OPEN_WINDOW} from '../canvas/messages.js'
 const hostname = '127.0.0.1'
 const webserver_port = 3000
 const websocket_port = 8081
@@ -70,6 +70,7 @@ function start_message_server() {
             if(msg.type === 'START') return handle_start_message(ws,msg)
             if(msg.type === OPEN_WINDOW.NAME) return handle_open_window_message(ws,msg)
             if(msg.type === DRAW_PIXEL.NAME) return forward_to_screen(msg)
+            if(msg.type === FILL_RECT.NAME) return forward_to_screen(msg)
             if(msg.type === OPEN_WINDOW.RESPONSE_NAME) return forward_to_target(msg)
             if(msg.type === HEARTBEAT.NAME) return do_nothing(msg)
             if(msg.type === MOUSE.UP.NAME)  return forward_to_target(msg)
