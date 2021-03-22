@@ -103,7 +103,7 @@ function start_web_server() {
             })
         })
         webserver.listen(webserver_port, hostname, () => {
-            log(`started webserver at http://${hostname}:${webserver_port}/`)
+            log(`started webserver at http://${hostname}:${webserver_port}/screen.html`)
             res()
         })
     })
