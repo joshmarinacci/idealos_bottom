@@ -3,27 +3,29 @@ import {OPEN_WINDOW} from '../canvas/messages.js'
 
 export class CommonApp {
     constructor(argv,width,height) {
-        this.log("starting",argv)
+        // this.log("starting",argv)
         let addr = argv[2]
         let appid = argv[3]
         this.width = width
         this.height = height
-        this.log("app",appid,"starting")
-        this.log("connecting to",addr)
+        // this.log("app",appid,"starting")
+        // this.log("connecting to",addr)
         this.listeners = {}
         this.ws = new WebSocket(addr);
         this.ws.on('open',()=>{
-            this.log("got the connection")
+            // this.log("got the connection")
             this.ws.send(JSON.stringify({type:OPEN_WINDOW.NAME,width:this.width, height:this.height,sender:appid}))
         })
         this.ws.on("message",(data)=>{
             let msg = JSON.parse(data)
-            this.log("got a message",msg)
             if(msg.type === OPEN_WINDOW.RESPONSE_NAME) {
-                this.log("our window id is",msg.window)
+                // this.log("our window id is",msg.window)
                 this.win_id = msg.window
                 this.fireLater('start',{})
+                return
             }
+            // this.log("sending message to app",msg)
+            this.fireLater(msg.type,msg)
         })
     }
     on(type,cb) {
@@ -38,7 +40,7 @@ export class CommonApp {
                 type:type,
                 payload:payload
             }
-            this.listeners[type].forEach(cb => {
+            if(this.listeners[type])  this.listeners[type].forEach(cb => {
                 cb(evt)
             })
         },1)

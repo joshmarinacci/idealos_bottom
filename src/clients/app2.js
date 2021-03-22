@@ -12,54 +12,32 @@ on button change
 
 import {default as WebSocket} from "ws"
 import {MOUSE, OPEN_WINDOW} from '../canvas/messages.js'
-function log(...args) { console.log(...args) }
-let width = 10
-let height = 5
-let win_id = null
+import {CommonApp} from './app_utils.js'
 
-log("starting",process.argv)
-let addr = process.argv[2]
-let appid = process.argv[3]
-log("app",appid,"starting")
-log("connecting to",addr)
-const ws = new WebSocket(addr);
-
-function fill_rect(ws,w,h,color) {
+let app = new CommonApp(process.argv,10,5)
+app.on('start',()=>{
+    draw_button()
+})
+app.on(MOUSE.DOWN.NAME,()=>{
+    draw_button_pressed()
+})
+app.on(MOUSE.UP.NAME,()=>{
+    draw_button_released()
+})
+function fill_rect(w,h,color) {
     for(let i=0; i<w; i++) {
         for(let j=0; j<h; j++) {
-            ws.send(JSON.stringify({type:'DRAW_PIXEL',x:i,y:j,color:color, window:win_id}))
+            app.send({type:'DRAW_PIXEL',x:i,y:j,color:color})
         }
     }
 }
 
-function draw_button(ws) {
-    fill_rect(ws,width,height,'green')
+function draw_button() {
+    fill_rect(app.width,app.height,'green')
 }
-function draw_button_pressed(ws) {
-    fill_rect(ws,width,height,'aqua')
+function draw_button_pressed() {
+    fill_rect(app.width,app.height,'aqua')
 }
-function draw_button_released(ws) {
-    fill_rect(ws,width,height,'green')
+function draw_button_released() {
+    fill_rect(app.width,app.height,'green')
 }
-
-ws.on('open',()=>{
-    log("got the connection")
-    ws.send(JSON.stringify({type:OPEN_WINDOW.NAME,width:width, height:height, sender:appid}))
-    setTimeout(()=> draw_button(ws),1000)
-})
-ws.on("message",(data)=>{
-    let msg = JSON.parse(data)
-    if(msg.type === OPEN_WINDOW.RESPONSE_NAME) {
-        log("our window id is",msg.window)
-        win_id = msg.window
-    }
-    if(msg.type === MOUSE.DOWN.NAME) {
-        return draw_button_pressed(ws)
-    }
-    if(msg.type === MOUSE.UP.NAME) {
-        return draw_button_released(ws)
-    }
-    log("got a message",msg)
-
-})
-

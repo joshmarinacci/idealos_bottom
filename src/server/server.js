@@ -82,9 +82,9 @@ function start_message_server() {
 function start_web_server() {
     return new Promise((res,rej)=>{
         const webserver = http.createServer((req, res) => {
-            log(`requested ${req.url}`)
             let file = path.resolve(path.join('src/canvas/', req.url))
-            log(`sending: ${file}`)
+            log(`${req.url}`)
+            // log(`sending: ${file}`)
             fs.readFile(file, (err, data) => {
                 if (err) {
                     log("error", err)
