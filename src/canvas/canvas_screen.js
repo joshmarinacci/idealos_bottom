@@ -49,16 +49,23 @@ function handle_drawing(msg, windows) {
     let c = $('#canvas').getContext('2d')
     if(msg.type === DRAW_PIXEL.NAME) {
         c.fillStyle = msg.color
-        c.fillRect(win.x * scale + msg.x * scale, win.y * scale + msg.y * scale, 1 * scale * 0.9, 1 * scale * 0.9)
+        c.fillRect(win.x * scale + msg.x * scale,
+            win.y * scale + msg.y * scale,
+            1 * scale * 0.9,
+            1 * scale * 0.9)
     }
     if(msg.type === FILL_RECT.NAME) {
         c.fillStyle = msg.color
-        c.fillRect(
-            (win.x + msg.x)* scale,
-            (win.y + msg.y) * scale,
-            (win.width) * scale * 0.9,
-            (win.height)* scale * 0.9
-        )
+        for(let i=0; i<msg.width; i++) {
+            for(let j=0; j<msg.height; j++) {
+                c.fillRect(
+                    (win.x + msg.x + i)* scale,
+                    (win.y + msg.y + j) * scale,
+                    (1) * scale * 0.9,
+                    (1)* scale * 0.9
+                )
+            }
+        }
     }
 }
 
