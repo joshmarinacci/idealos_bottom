@@ -1,6 +1,7 @@
 import {default as R} from 'raylib'
 import {default as WebSocket} from "ws"
 import {DRAW_PIXEL, FILL_RECT, HEARTBEAT, MOUSE, OPEN_WINDOW} from '../canvas/messages.js'
+import {WindowTracker} from '../server/windows.js'
 
 function log(...args) { console.log(...args) }
 const on = (elm, type, cb) => elm.addEventListener(type,cb)
@@ -17,7 +18,7 @@ const screenHeight = 480
 const window_title = "Raylib test"
 let scale = 10
 let socket = null
-
+let wids = new WindowTracker()
 function send(msg) {
     // log('sending',msg)
     socket.send(JSON.stringify(msg))
@@ -28,7 +29,7 @@ function shutdown() {
     return
 }
 function draw_windows() {
-    Object.values(windows).forEach(win => {
+    Object.values(wids.windows).forEach(win => {
         win.rects.forEach(r => {
             let color = COLORS[r.color]
             if(color) {
@@ -52,21 +53,11 @@ function raylibevent_to_pixels(e) {
     }
 }
 
-function find_window(pt) {
-    return Object.values(windows).find(win => {
-        if(pt.x < win.x) return false
-        if(pt.x > win.x + win.width) return false
-        if(pt.y < win.y) return false
-        if(pt.y > win.y + win.height) return false
-        return true
-    })
-}
-
 function check_input() {
     if(R.IsMouseButtonPressed(R.MOUSE_LEFT_BUTTON)) {
         let e = R.GetMousePosition()
         let pt = raylibevent_to_pixels(e)
-        let win = find_window(pt)
+        let win = wids.find(pt)
         if(win) {
             send({type:MOUSE.DOWN.NAME, x:pt.x-win.x, y:pt.y-win.y, target:win.owner})
         }
@@ -74,7 +65,7 @@ function check_input() {
     if(R.IsMouseButtonReleased(R.MOUSE_LEFT_BUTTON)) {
         let e = R.GetMousePosition()
         let pt = raylibevent_to_pixels(e)
-        let win = find_window(pt)
+        let win = wids.find(pt)
         if(win) {
             send({type:MOUSE.UP.NAME,   x:pt.x-win.x, y:pt.y-win.y, target:win.owner})
         }
@@ -105,18 +96,13 @@ function send_heartbeat(ws) {
 }
 
 
-function handle_drawing(msg, windows) {
-    if(!windows[msg.window]) {
-        log("no such window",msg.window)
-        return
-    }
-    let win = windows[msg.window]
+function handle_drawing(msg) {
+    if(!wids.has_window_id(msg.window)) return log("no such window",msg.window)
+    let win = wids.window_for_id(msg.window)
     if(msg.type === DRAW_PIXEL.NAME) {
-        // log("drawing pixel",msg)
         win.rects.push({x:msg.x,y:msg.y,width:1,height:1,color:msg.color})
     }
     if(msg.type === FILL_RECT.NAME) {
-        // log("adding a rect to the scene",msg)
         win.rects.push(msg)
     }
 }
@@ -138,12 +124,12 @@ function connect_server() {
 
     on(socket,'message',(e)=>{
         let msg = JSON.parse(e.data)
-        if(msg.type === DRAW_PIXEL.NAME) return handle_drawing(msg,windows);
-        if(msg.type === FILL_RECT.NAME) return handle_drawing(msg,windows);
+        if(msg.type === DRAW_PIXEL.NAME) return handle_drawing(msg);
+        if(msg.type === FILL_RECT.NAME) return handle_drawing(msg);
         if(msg.type === OPEN_WINDOW.NAME) {
             let win_id = "id_"+Math.floor(Math.random()*10000)
-            let y = Object.keys(windows).length
-            windows[win_id] = {
+            let y = wids.length()//Object.keys(windows).length
+            wids.add_window(win_id, {
                 id:win_id,
                 width:msg.width,
                 height:msg.height,
@@ -151,7 +137,7 @@ function connect_server() {
                 y:y*10+2,
                 owner:msg.sender,
                 rects:[]
-            }
+            })
             send({type:OPEN_WINDOW.RESPONSE_NAME, target:msg.sender, window:win_id})
         }
         log("got message",msg)
