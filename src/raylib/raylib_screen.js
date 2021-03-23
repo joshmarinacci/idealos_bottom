@@ -109,7 +109,6 @@ function handle_drawing(msg) {
 
 
 function connect_server() {
-
     socket = new WebSocket("ws://localhost:8081")
     on(socket,'open',()=>{
         log("connected to the server")
@@ -120,26 +119,11 @@ function connect_server() {
     on(socket, 'close',(e)=>{
         log("closed",e.reason)
     })
-
-
     on(socket,'message',(e)=>{
         let msg = JSON.parse(e.data)
         if(msg.type === DRAW_PIXEL.NAME) return handle_drawing(msg);
         if(msg.type === FILL_RECT.NAME) return handle_drawing(msg);
-        if(msg.type === OPEN_WINDOW.NAME) {
-            let win_id = "id_"+Math.floor(Math.random()*10000)
-            let y = wids.length()//Object.keys(windows).length
-            wids.add_window(win_id, {
-                id:win_id,
-                width:msg.width,
-                height:msg.height,
-                x:2,
-                y:y*10+2,
-                owner:msg.sender,
-                rects:[]
-            })
-            send({type:OPEN_WINDOW.RESPONSE_NAME, target:msg.sender, window:win_id})
-        }
+        if(msg.type === OPEN_WINDOW.SCREEN_NAME) return wids.add_window(msg.window.id,msg.window)
         log("got message",msg)
     })
     setInterval(()=>send_heartbeat(socket),1000)

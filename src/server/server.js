@@ -1,22 +1,10 @@
-/*
-
-setup webserver for canvas client
-setup websockets server for message passing
-wait for canvas client to connect with websockets
-launch app 1
-launch app 2
-wait for apps to connect
-route input events from canvas to apps
-route drawing events from apps to canvas
- */
-
-
 import WS from "ws"
 import fs from "fs"
 import http from "http"
 import path from "path"
 import {spawn} from "child_process"
 import {DRAW_PIXEL, FILL_RECT, HEARTBEAT, MOUSE, OPEN_WINDOW} from '../canvas/messages.js'
+import {WindowTracker} from './windows.js'
 const hostname = '127.0.0.1'
 const webserver_port = 3000
 const websocket_port = 8081
@@ -26,6 +14,7 @@ const sleep = (dur) => new Promise((res,rej) => setTimeout(res,dur))
 
 const connections = {}
 const SCREEN = 'SCREEN'
+const wids = new WindowTracker()
 
 function handle_start_message(ws,msg) {
     if(msg.kind === SCREEN) {
@@ -41,7 +30,22 @@ function handle_open_window_message(ws,msg) {
     if(!connections[SCREEN]) {
         log("can't open a window because there is no screen")
     }
-    forward_to_screen(msg)
+    let win_id = "id_"+Math.floor(Math.random()*10000)
+    let y = wids.length()//Object.keys(windows).length
+    wids.add_window(win_id, {
+        id:win_id,
+        width:msg.width,
+        height:msg.height,
+        x:2,
+        y:y*10+2,
+        owner:msg.sender,
+        rects:[]
+    })
+
+    //send response to screen
+    forward_to_screen({ type:OPEN_WINDOW.SCREEN_NAME, target:msg.sender, window:wids.window_for_id(win_id)})
+    //send response back to client
+    forward_to_target({type:OPEN_WINDOW.RESPONSE_NAME, target:msg.sender, window:win_id})
 }
 
 function forward_to_screen(msg) {
