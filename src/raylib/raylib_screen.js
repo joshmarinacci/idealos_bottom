@@ -7,6 +7,11 @@ function log(...args) { console.log(...args) }
 const on = (elm, type, cb) => elm.addEventListener(type,cb)
 
 const windows = {}
+const COLORS = {
+    'black':R.BLACK,
+    'green':R.GREEN,
+    'red':R.RED,
+}
 
 function open_screen() {
 
@@ -45,12 +50,15 @@ function open_screen() {
             Object.values(windows).forEach(win => {
                 win.rects.forEach(r => {
                     // log('drawing',r)
-                    R.DrawRectangleRec({
-                        x: (win.x+r.x) * scale,
-                        y: (win.y+r.y) * scale,
-                        width: r.width * scale,
-                        height: r.height * scale,
-                    }, R.PINK)
+                    let color = COLORS[r.color]
+                    if(color) {
+                        R.DrawRectangleRec({
+                            x: (win.x + r.x) * scale,
+                            y: (win.y + r.y) * scale,
+                            width: r.width * scale,
+                            height: r.height * scale,
+                        }, color)
+                    }
                 })
             })
 
