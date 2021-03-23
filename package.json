@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/server/server.js",
-    "raylib": "node src/canvas/canvas_screen.js"
+    "raylib": "node src/raylib/raylib_screen.js"
   },
   "keywords": [],
   "author": "",

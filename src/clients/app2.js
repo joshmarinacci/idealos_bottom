@@ -54,7 +54,7 @@ function draw_text(x, y, txt,color) {
 }
 
 function draw_button_pressed() {
-    fill_rect(app.width,app.height,'aqua')
+    fill_rect(app.width,app.height,'red')
     draw_text(2,1,"hi",'black')
 }
 function draw_button_released() {

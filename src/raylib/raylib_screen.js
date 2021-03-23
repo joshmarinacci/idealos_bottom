@@ -1,7 +1,6 @@
 import {default as R} from 'raylib'
 import {default as WebSocket} from "ws"
-import {DRAW_PIXEL, FILL_RECT, HEARTBEAT, OPEN_WINDOW} from '../canvas/messages.js'
-
+import {DRAW_PIXEL, FILL_RECT, HEARTBEAT, MOUSE, OPEN_WINDOW} from '../canvas/messages.js'
 
 function log(...args) { console.log(...args) }
 const on = (elm, type, cb) => elm.addEventListener(type,cb)
@@ -11,62 +10,94 @@ const COLORS = {
     'black':R.BLACK,
     'green':R.GREEN,
     'red':R.RED,
+    'aqua':R.AQUA,
+}
+const screenWidth = 640
+const screenHeight = 480
+const window_title = "Raylib test"
+let scale = 10
+let socket = null
+
+function send(msg) {
+    // log('sending',msg)
+    socket.send(JSON.stringify(msg))
+}
+
+function shutdown() {
+    R.CloseWindow()        // Close window and OpenGL context
+    return
+}
+function draw_windows() {
+    Object.values(windows).forEach(win => {
+        win.rects.forEach(r => {
+            let color = COLORS[r.color]
+            if(color) {
+                R.DrawRectangleRec({
+                    x: (win.x + r.x) * scale,
+                    y: (win.y + r.y) * scale,
+                    width: r.width * scale,
+                    height: r.height * scale,
+                }, color)
+            } else {
+                log("missing color",r.color)
+            }
+        })
+    })
+}
+
+function raylibevent_to_pixels(e) {
+    return {
+        x:Math.floor(e.x/scale),
+        y:Math.floor(e.y/scale)
+    }
+}
+
+function find_window(pt) {
+    return Object.values(windows).find(win => {
+        if(pt.x < win.x) return false
+        if(pt.x > win.x + win.width) return false
+        if(pt.y < win.y) return false
+        if(pt.y > win.y + win.height) return false
+        return true
+    })
+}
+
+function check_input() {
+    if(R.IsMouseButtonPressed(R.MOUSE_LEFT_BUTTON)) {
+        let e = R.GetMousePosition()
+        let pt = raylibevent_to_pixels(e)
+        let win = find_window(pt)
+        if(win) {
+            send({type:MOUSE.DOWN.NAME, x:pt.x-win.x, y:pt.y-win.y, target:win.owner})
+        }
+    }
+    if(R.IsMouseButtonReleased(R.MOUSE_LEFT_BUTTON)) {
+        let e = R.GetMousePosition()
+        let pt = raylibevent_to_pixels(e)
+        let win = find_window(pt)
+        if(win) {
+            send({type:MOUSE.UP.NAME,   x:pt.x-win.x, y:pt.y-win.y, target:win.owner})
+        }
+    }
 }
 
 function open_screen() {
-
-
-    const screenWidth = 640
-    const screenHeight = 480
-    R.InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window")
+    R.InitWindow(screenWidth, screenHeight, window_title)
     R.SetTargetFPS(60)
 
-    function do_loop() {
-        if(R.WindowShouldClose()) {
-            R.CloseWindow()        // Close window and OpenGL context
-            return
-        } else {
-            R.BeginDrawing();
-            R.ClearBackground(R.RAYWHITE)
-            // R.DrawText("Congrats! You created your first window!", 190, 200, 20, R.LIGHTGRAY)
-            // const position = {
-            //     x: 100,
-            //     y: 100
-            // }
-            // const size = {
-            //     x: 200,
-            //     y: 150
-            // }
-            // R.DrawRectangleV(position, size, R.DARKBLUE)
+    function render_loop() {
+        //check end
+        if(R.WindowShouldClose()) return shutdown()
+        R.BeginDrawing();
+        R.ClearBackground(R.RAYWHITE)
+        check_input()
+        //draw all windows
+        draw_windows()
 
-            // R.DrawRectangleRec({
-            //     x: 50,
-            //     y: 50,
-            //     width: 50,
-            //     height: 50
-            // }, R.PINK)
-
-            let scale = 10
-            Object.values(windows).forEach(win => {
-                win.rects.forEach(r => {
-                    // log('drawing',r)
-                    let color = COLORS[r.color]
-                    if(color) {
-                        R.DrawRectangleRec({
-                            x: (win.x + r.x) * scale,
-                            y: (win.y + r.y) * scale,
-                            width: r.width * scale,
-                            height: r.height * scale,
-                        }, color)
-                    }
-                })
-            })
-
-            R.EndDrawing()
-        }
-        setTimeout(do_loop,0)
+        R.EndDrawing()
+        setTimeout(render_loop,0)
     }
-    do_loop()
+    render_loop()
 }
 
 function send_heartbeat(ws) {
@@ -81,32 +112,29 @@ function handle_drawing(msg, windows) {
     }
     let win = windows[msg.window]
     if(msg.type === DRAW_PIXEL.NAME) {
-        log("drawing pixel",msg)
+        // log("drawing pixel",msg)
         win.rects.push({x:msg.x,y:msg.y,width:1,height:1,color:msg.color})
     }
     if(msg.type === FILL_RECT.NAME) {
-        log("adding a rect to the scene",msg)
+        // log("adding a rect to the scene",msg)
         win.rects.push(msg)
     }
 }
 
+
 function connect_server() {
 
-    let socket = new WebSocket("ws://localhost:8081")
+    socket = new WebSocket("ws://localhost:8081")
     on(socket,'open',()=>{
         log("connected to the server")
         socket.send(JSON.stringify({type:"START",kind:'SCREEN'}))
         open_screen()
     })
-    on(socket,'error',(e)=> log("error",e))
+    on(socket,'error',(e)=> log("error connecting",e.reason))
     on(socket, 'close',(e)=>{
-        log("closed",e)
+        log("closed",e.reason)
     })
 
-    function send(msg) {
-        log('sending',msg)
-        socket.send(JSON.stringify(msg))
-    }
 
     on(socket,'message',(e)=>{
         let msg = JSON.parse(e.data)
