@@ -1,6 +1,7 @@
 export class WindowTracker {
     constructor() {
         this.windows = {}
+        this.active_window = null
     }
     find(pt) {
         return Object.values(this.windows).find(win => {
@@ -37,5 +38,13 @@ export class WindowTracker {
 
     log(...args) {
         console.log(...args)
+    }
+
+    set_active_window(win) {
+        this.active_window = win
+    }
+
+    is_active_window(win) {
+        return (win === this.active_window)
     }
 }

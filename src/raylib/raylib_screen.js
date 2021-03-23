@@ -18,7 +18,7 @@ const COLORS = {
     'black':R.BLACK,
     'green':R.GREEN,
     'red':R.RED,
-    'aqua':R.AQUA,
+    'skyblue':R.SKYBLUE,
 }
 const screenWidth = 640
 const screenHeight = 480
@@ -38,12 +38,14 @@ function shutdown() {
 function draw_windows() {
     Object.values(wids.windows).forEach(win => {
         //draw the window border
+        let border_color = "black"
+        if(wids.is_active_window(win)) border_color = 'skyblue'
         R.DrawRectangleRec({
             x: (win.x - 1) * scale,
             y: (win.y - 1) * scale,
             width: (win.width+2) * scale,
             height: (win.height+2) * scale,
-        }, COLORS['black'])
+        }, COLORS[border_color])
         //draw the window contents
         win.rects.forEach(r => {
             let color = COLORS[r.color]
@@ -74,6 +76,7 @@ function check_input() {
         let pt = raylibevent_to_pixels(e)
         let win = wids.find(pt)
         if(win) {
+            wids.set_active_window(win)
             send({type:MOUSE.DOWN.NAME, x:pt.x-win.x, y:pt.y-win.y, target:win.owner})
         }
     }
@@ -84,6 +87,19 @@ function check_input() {
         if(win) {
             send({type:MOUSE.UP.NAME,   x:pt.x-win.x, y:pt.y-win.y, target:win.owner})
         }
+    }
+    let act = wids.active_window
+    if(R.IsKeyPressed(R.KEY_RIGHT)) {
+        if(act) act.x = Math.min(act.x + 5, screenWidth/5-act.width-1)
+    }
+    if(R.IsKeyPressed(R.KEY_LEFT)) {
+        if(act) act.x = Math.max(act.x -5,1)
+    }
+    if(R.IsKeyPressed(R.KEY_UP)) {
+        if(act) act.y = Math.max(act.y-5,1)
+    }
+    if(R.IsKeyPressed(R.KEY_DOWN)) {
+        if(act) act.y = Math.min(act.y+5,screenHeight/5-act.height-1)
     }
 }
 

@@ -43,8 +43,8 @@ function handle_open_window_message(ws,msg) {
         id:win_id,
         width:msg.width,
         height:msg.height,
-        x:2,
-        y:y*10+2,
+        x:1,
+        y:y*10+1,
         owner:msg.sender,
         rects:[]
     })
