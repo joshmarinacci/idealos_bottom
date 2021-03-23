@@ -3,6 +3,9 @@ export const OPEN_WINDOW = {
     RESPONSE_NAME: 'WINDOW_OPENED',
     SCREEN_NAME: 'SCREEN_NAME'
 }
+export const DRAWING = {
+    REFRESH_WINDOW:'REFRESH_WINDOW'
+}
 export const DRAW_PIXEL = {
     NAME:'DRAW_PIXEL'
 }
@@ -19,4 +22,10 @@ export const MOUSE = {
     UP: {
         NAME:'MOUSE_UP'
     }
+}
+
+export const SCREEN = {
+    START:'START',
+    SCREEN:'SCREEN',
+    WINDOW_LIST:'WINDOW_LIST',
 }

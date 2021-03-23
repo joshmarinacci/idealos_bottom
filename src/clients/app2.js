@@ -1,4 +1,4 @@
-import {DRAW_PIXEL, FILL_RECT, MOUSE} from '../canvas/messages.js'
+import {DRAW_PIXEL, DRAWING, FILL_RECT, MOUSE} from '../canvas/messages.js'
 import {CommonApp} from './app_utils.js'
 
 let app = new CommonApp(process.argv,10,5)
@@ -9,6 +9,9 @@ app.on(MOUSE.DOWN.NAME,()=>{
     draw_button_pressed()
 })
 app.on(MOUSE.UP.NAME,()=>{
+    draw_button_released()
+})
+app.on(DRAWING.REFRESH_WINDOW, ()=>{
     draw_button_released()
 })
 function fill_rect(w,h,color) {

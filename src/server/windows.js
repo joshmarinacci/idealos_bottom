@@ -25,4 +25,17 @@ export class WindowTracker {
     window_for_id(win_id) {
         return this.windows[win_id]
     }
+
+    sync_windows(windows) {
+        Object.values(windows).forEach(win => {
+            if(!this.has_window_id(win.id)) {
+                // this.log("syncing in window",win)
+                this.add_window(win.id,win)
+            }
+        })
+    }
+
+    log(...args) {
+        console.log(...args)
+    }
 }

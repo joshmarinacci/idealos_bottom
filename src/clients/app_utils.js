@@ -24,7 +24,7 @@ export class CommonApp {
                 this.fireLater('start',{})
                 return
             }
-            // this.log("sending message to app",msg)
+            this.log("sending message to app itself",msg)
             this.fireLater(msg.type,msg)
         })
     }

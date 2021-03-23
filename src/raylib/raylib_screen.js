@@ -1,12 +1,19 @@
 import {default as R} from 'raylib'
 import {default as WebSocket} from "ws"
-import {DRAW_PIXEL, FILL_RECT, HEARTBEAT, MOUSE, OPEN_WINDOW} from '../canvas/messages.js'
+import {
+    DRAW_PIXEL,
+    DRAWING,
+    FILL_RECT,
+    HEARTBEAT,
+    MOUSE,
+    OPEN_WINDOW,
+    SCREEN
+} from '../canvas/messages.js'
 import {WindowTracker} from '../server/windows.js'
 
 function log(...args) { console.log(...args) }
 const on = (elm, type, cb) => elm.addEventListener(type,cb)
 
-const windows = {}
 const COLORS = {
     'black':R.BLACK,
     'green':R.GREEN,
@@ -108,11 +115,18 @@ function handle_drawing(msg) {
 }
 
 
+function refresh_windows() {
+    Object.values(wids.windows).forEach(win => {
+        console.log("refreshing window",win.id)
+        send({type:DRAWING.REFRESH_WINDOW, target:win.owner, window:win.id})
+    })
+}
+
 function connect_server() {
     socket = new WebSocket("ws://localhost:8081")
     on(socket,'open',()=>{
         log("connected to the server")
-        socket.send(JSON.stringify({type:"START",kind:'SCREEN'}))
+        socket.send(JSON.stringify({type:SCREEN.START}))
         open_screen()
     })
     on(socket,'error',(e)=> log("error connecting",e.reason))
@@ -124,6 +138,11 @@ function connect_server() {
         if(msg.type === DRAW_PIXEL.NAME) return handle_drawing(msg);
         if(msg.type === FILL_RECT.NAME) return handle_drawing(msg);
         if(msg.type === OPEN_WINDOW.SCREEN_NAME) return wids.add_window(msg.window.id,msg.window)
+        if(msg.type === SCREEN.WINDOW_LIST) {
+            wids.sync_windows(msg.windows)
+            refresh_windows()
+            return
+        }
         log("got message",msg)
     })
     setInterval(()=>send_heartbeat(socket),1000)

@@ -3,7 +3,15 @@ import fs from "fs"
 import http from "http"
 import path from "path"
 import {spawn} from "child_process"
-import {DRAW_PIXEL, FILL_RECT, HEARTBEAT, MOUSE, OPEN_WINDOW} from '../canvas/messages.js'
+import {
+    DRAW_PIXEL,
+    DRAWING,
+    FILL_RECT,
+    HEARTBEAT,
+    MOUSE,
+    OPEN_WINDOW,
+    SCREEN
+} from '../canvas/messages.js'
 import {WindowTracker} from './windows.js'
 const hostname = '127.0.0.1'
 const webserver_port = 3000
@@ -13,13 +21,12 @@ function log(...args) { console.log(...args) }
 const sleep = (dur) => new Promise((res,rej) => setTimeout(res,dur))
 
 const connections = {}
-const SCREEN = 'SCREEN'
 const wids = new WindowTracker()
 
 function handle_start_message(ws,msg) {
-    if(msg.kind === SCREEN) {
-        connections[SCREEN] = ws
-    }
+    connections[SCREEN.SCREEN] = ws
+    //send the current list of windows
+    forward_to_screen({type:SCREEN.WINDOW_LIST, windows:wids.windows})
 }
 
 function handle_open_window_message(ws,msg) {
@@ -27,7 +34,7 @@ function handle_open_window_message(ws,msg) {
     if(msg.sender && !connections[msg.sender]) {
         connections[msg.sender] = ws
     }
-    if(!connections[SCREEN]) {
+    if(!connections[SCREEN.SCREEN]) {
         log("can't open a window because there is no screen")
     }
     let win_id = "id_"+Math.floor(Math.random()*10000)
@@ -49,8 +56,8 @@ function handle_open_window_message(ws,msg) {
 }
 
 function forward_to_screen(msg) {
-    if(connections[SCREEN]) return connections[SCREEN].send(JSON.stringify(msg))
-    // log("no screen connected!")
+    // log("sending to screen",msg)
+    if(connections[SCREEN.SCREEN]) return connections[SCREEN.SCREEN].send(JSON.stringify(msg))
 }
 
 function do_nothing(msg) {
@@ -71,7 +78,7 @@ function start_message_server() {
     server.on("connection", (ws) => {
         ws.on("message", (m) => {
             let msg = JSON.parse(m)
-            if(msg.type === 'START') return handle_start_message(ws,msg)
+            if(msg.type === SCREEN.START) return handle_start_message(ws,msg)
             if(msg.type === OPEN_WINDOW.NAME) return handle_open_window_message(ws,msg)
             if(msg.type === DRAW_PIXEL.NAME) return forward_to_screen(msg)
             if(msg.type === FILL_RECT.NAME) return forward_to_screen(msg)
@@ -79,6 +86,7 @@ function start_message_server() {
             if(msg.type === HEARTBEAT.NAME) return do_nothing(msg)
             if(msg.type === MOUSE.UP.NAME)  return forward_to_target(msg)
             if(msg.type === MOUSE.DOWN.NAME) return forward_to_target(msg)
+            if(msg.type === DRAWING.REFRESH_WINDOW) return forward_to_target(msg)
             log("incoming message", msg)
         })
         ws.send(JSON.stringify({message: 'CONNECTED'}))
@@ -147,7 +155,7 @@ function screen_connected() {
     log("waiting for the screen to connect. please refresh the page")
     return new Promise((res,rej)=>{
         let id = setInterval(()=>{
-            if(connections[SCREEN]) {
+            if(connections[SCREEN.SCREEN]) {
                 log("screen attached")
                 clearInterval(id)
                 res()
