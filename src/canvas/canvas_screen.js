@@ -67,6 +67,39 @@ function handle_drawing(msg, windows) {
             }
         }
     }
+
+    //draw window border
+    // log('drawing window border',win)
+    for(let x = -1; x<win.width+1; x++) {
+        c.fillStyle = 'yellow'
+        c.fillRect(
+            (win.x + x)* scale,
+            (win.y + -1) * scale,
+            (1) * scale * 0.9,
+            (1)* scale * 0.9
+        )
+        c.fillRect(
+            (win.x + x)* scale,
+            (win.y + win.height) * scale,
+            (1) * scale * 0.9,
+            (1)* scale * 0.9
+        )
+    }
+    for(let y=-1; y<win.height; y++) {
+        c.fillStyle = 'yellow'
+        c.fillRect(
+            (win.x + -1)* scale,
+            (win.y + y) * scale,
+            (1) * scale * 0.9,
+            (1)* scale * 0.9
+        )
+        c.fillRect(
+            (win.x + win.width)* scale,
+            (win.y + y) * scale,
+            (1) * scale * 0.9,
+            (1)* scale * 0.9
+        )
+    }
 }
 
 on(window,'load',() =>{
@@ -94,8 +127,8 @@ on(window,'load',() =>{
                 id:win_id,
                 width:msg.width,
                 height:msg.height,
-                x:0,
-                y:y*10,
+                x:2,
+                y:y*10+2,
                 owner:msg.sender,
             }
             send({type:OPEN_WINDOW.RESPONSE_NAME, target:msg.sender, window:win_id})
