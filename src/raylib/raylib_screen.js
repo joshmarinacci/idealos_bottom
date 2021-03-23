@@ -37,6 +37,14 @@ function shutdown() {
 }
 function draw_windows() {
     Object.values(wids.windows).forEach(win => {
+        //draw the window border
+        R.DrawRectangleRec({
+            x: (win.x - 1) * scale,
+            y: (win.y - 1) * scale,
+            width: (win.width+2) * scale,
+            height: (win.height+2) * scale,
+        }, COLORS['black'])
+        //draw the window contents
         win.rects.forEach(r => {
             let color = COLORS[r.color]
             if(color) {
@@ -102,7 +110,6 @@ function send_heartbeat(ws) {
     ws.send(JSON.stringify({type:HEARTBEAT.NAME}))
 }
 
-
 function handle_drawing(msg) {
     if(!wids.has_window_id(msg.window)) return log("no such window",msg.window)
     let win = wids.window_for_id(msg.window)
@@ -114,10 +121,8 @@ function handle_drawing(msg) {
     }
 }
 
-
 function refresh_windows() {
     Object.values(wids.windows).forEach(win => {
-        console.log("refreshing window",win.id)
         send({type:DRAWING.REFRESH_WINDOW, target:win.owner, window:win.id})
     })
 }
