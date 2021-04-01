@@ -1,14 +1,16 @@
-use std::sync::mpsc::channel;
+use std::sync::mpsc::{channel, Sender};
 use std::thread;
 
 use websocket::ClientBuilder;
 use websocket::{Message, OwnedMessage};
 
-use serde_json::{Result, Value};
+use serde_json::{Result, Value, json};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Debug)]
+
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 struct Window {
     id:String,
     x:i32,
@@ -24,6 +26,16 @@ struct WindowListMessage {
     type_:String,
     windows:HashMap<String,Window>,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+struct RefreshWindowMessage {
+    #[serde(rename(deserialize = "type"))]
+    type_:String,
+    target:String,
+    window:String,
+}
+
+
 
 #[derive(Serialize, Deserialize, Debug)]
 struct DrawPixelMessage {
@@ -65,12 +77,15 @@ struct WindowInfo {
     owner:String,
 }
 
-fn parse_message(txt:String) -> Result<()>{
+
+
+
+fn parse_message(windows:&mut HashMap<String, Window>, sender:&Sender<OwnedMessage>, txt:String) -> Result<()>{
     let v: Value = serde_json::from_str(txt.as_str())?;
     match &v["type"] {
         Value::String(strr) => {
             match &strr[..] {
-                "WINDOW_LIST" => window_list(&serde_json::from_str(txt.as_str())?),
+                "WINDOW_LIST" => window_list(windows, sender, &serde_json::from_str(txt.as_str())?),
                 "SCREEN_NAME" => screen_name(&serde_json::from_str(txt.as_str())?),
                 "DRAW_PIXEL"  => draw_pixel(&serde_json::from_str(txt.as_str())?),
                 "FILL_RECT"   => fill_rect(&serde_json::from_str(txt.as_str())?),
@@ -86,8 +101,24 @@ fn parse_message(txt:String) -> Result<()>{
    Ok(())
 }
 
-fn window_list(msg:&WindowListMessage) {
-    println!("got window list {:?}",msg)
+fn window_list(windows:&mut HashMap<String, Window>, sender:&Sender<OwnedMessage>, msg:&WindowListMessage) {
+    println!("got window list {:?}",msg);
+    for(key,value) in &msg.windows {
+        println!("make window id {} at {},{}", value.id,value.x, value.y);
+        windows.insert(key.clone(), value.clone());
+    }
+    println!("window count is {:?}",windows.len());
+    for(_, win) in windows {
+        println!("sending to window {}", win.id);
+        let msg2 = RefreshWindowMessage {
+            type_:"REFRESH_WINDOW".to_string(),
+            target: win.owner.clone(),
+            window:win.id.clone()
+        };
+        let val = json!(msg2);
+        let txt = OwnedMessage::Text(val.to_string());
+        sender.send(txt);
+    }
 }
 fn screen_name(msg:&OpenWindowScreen) {
     println!("go screen name {:?}",msg)
@@ -100,10 +131,10 @@ fn fill_rect(msg:&FillRectMessage) {
 }
 
 fn main() {
+    let mut windows:HashMap<String,Window> = HashMap::new();
     println!("Hello, world!");
     let name  = "ws://127.0.0.1:8081";
 /*
- connect to the server
  once open, send a screen start message
  wait for incoming messages.
  if incoming is open_window allocate a window
@@ -144,23 +175,11 @@ fn main() {
                     // Got a close message, so send a close message and return
                     let _ = tx_1.send(OwnedMessage::Close(None));
                     return;
-                    // Ok(());
                 }
-                /*
-                OwnedMessage::Ping(data) => {
-                    match tx_1.send(OwnedMessage::Pong(data)) {
-                        // Send a pong in response
-                        Ok(()) => (),
-                        Err(e) => {
-                            println!("Receive Loop: {:?}", e);
-                            return;
-                        }
-                    }
-                }*/
                 // Say what we received
                 OwnedMessage::Text(txt) => {
                     // println!("the text is {:?}",txt);
-                    parse_message(txt);
+                    parse_message(&mut windows, &tx_1, txt);
                 }
                 _ => {
                     println!("Receive Loop: {:?}", message);
