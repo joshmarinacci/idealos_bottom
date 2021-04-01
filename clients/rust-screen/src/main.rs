@@ -6,11 +6,23 @@ use websocket::{Message, OwnedMessage};
 
 use serde_json::{Result, Value};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Window {
+    id:String,
+    x:i32,
+    y:i32,
+    width:i32,
+    height:i32,
+    owner:String,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 struct WindowListMessage {
     #[serde(rename(deserialize = "type"))]
     type_:String,
+    windows:HashMap<String,Window>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -36,7 +48,7 @@ struct FillRectMessage {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct ScreenNameMessage {
+struct OpenWindowScreen {
     #[serde(rename(deserialize = "type"))]
     type_:String,
     target:String,
@@ -77,7 +89,7 @@ fn parse_message(txt:String) -> Result<()>{
 fn window_list(msg:&WindowListMessage) {
     println!("got window list {:?}",msg)
 }
-fn screen_name(msg:&ScreenNameMessage) {
+fn screen_name(msg:&OpenWindowScreen) {
     println!("go screen name {:?}",msg)
 }
 fn draw_pixel(msg:&DrawPixelMessage) {
