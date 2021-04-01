@@ -5,44 +5,86 @@ use websocket::ClientBuilder;
 use websocket::{Message, OwnedMessage};
 
 use serde_json::{Result, Value};
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug)]
+struct WindowListMessage {
+    #[serde(rename(deserialize = "type"))]
+    type_:String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct DrawPixelMessage {
+    #[serde(rename(deserialize = "type"))]
+    type_:String,
+    color:String,
+    window:String,
+    x:i32,
+    y:i32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct FillRectMessage {
+    #[serde(rename(deserialize = "type"))]
+    type_:String,
+    color:String,
+    window:String,
+    x:i32,
+    y:i32,
+    width:i32,
+    height:i32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct ScreenNameMessage {
+    #[serde(rename(deserialize = "type"))]
+    type_:String,
+    target:String,
+    window: WindowInfo,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct WindowInfo {
+    id:String,
+    x:i32,
+    y:i32,
+    width:i32,
+    height:i32,
+    owner:String,
+}
 
 fn parse_message(txt:String) -> Result<()>{
     let v: Value = serde_json::from_str(txt.as_str())?;
-    //println!("message value is {:?}",v);
     match &v["type"] {
         Value::String(strr) => {
-            //println!("got a window list function {:?}",strr);
             match &strr[..] {
-                "WINDOW_LIST" => {
-                    //println!("doing window list")
-                    window_list(v)
-                }
-                "DRAW_PIXEL" => {
-                    //println!("doing draw pixel");
-                    draw_pixel(v)
-                }
+                "WINDOW_LIST" => window_list(&serde_json::from_str(txt.as_str())?),
+                "SCREEN_NAME" => screen_name(&serde_json::from_str(txt.as_str())?),
+                "DRAW_PIXEL"  => draw_pixel(&serde_json::from_str(txt.as_str())?),
+                "FILL_RECT"   => fill_rect(&serde_json::from_str(txt.as_str())?),
                 _ => {
                     println!("some other message type")
                 }
             }
         }
         _ => {
-            println!("data thats not a message!!")
+            println!("data that's not a message!!")
         }
     }
-    Ok(())
+   Ok(())
 }
 
-fn window_list(msg: Value) {
+fn window_list(msg:&WindowListMessage) {
     println!("got window list {:?}",msg)
 }
-
-fn draw_pixel(msg:Value) {
+fn screen_name(msg:&ScreenNameMessage) {
+    println!("go screen name {:?}",msg)
+}
+fn draw_pixel(msg:&DrawPixelMessage) {
     println!("drawing pixel from {:?}",msg);
-    println!("color is {:?}",msg["color"]);
-    println!("window is {:?}",msg["window"]);
-    println!("x is {:?}",msg["x"]);
-    println!("y is {:?}",msg["y"]);
+}
+fn fill_rect(msg:&FillRectMessage) {
+    println!("fill rect {:?}",msg);
 }
 
 fn main() {
