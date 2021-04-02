@@ -1,0 +1,64 @@
+<html>
+<head>
+    <style type="text/css">
+        ul {
+            list-style: none;
+            padding:0;
+            margin: 0;
+        }
+        nav > ul {
+            list-style: none;
+            display: flex;
+            flex-direction: row;
+            border: 1px solid red;
+        }
+        nav > ul > li {
+            display: flex;
+            position: relative;
+            flex-direction: column;
+            border: 1px solid green;
+            padding:0;
+            margin:0;
+        }
+        nav > ul > li > header {
+            background-color: green;
+            padding: 1rem;
+            margin:0;
+        }
+        nav > ul > li > ul {
+            border: 1px solid purple;
+            /*display: none;*/
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            top:3.3rem;
+            left:0;
+            margin:0;
+            padding:0;
+        }
+        nav > ul > li:hover > ul {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <ul>
+        <li>
+            <header>File</header>
+            <ul>
+                <li></li>
+            </ul>
+        </li>
+        <li>
+            <header>Edit</header>
+            <ul>
+                <li>Cut</li>
+                <li>Copy</li>
+                <li>Paste</li>
+            </ul>
+        </li>
+    </ul>
+</nav>
+</body>
+</html>
