@@ -213,6 +213,8 @@ fn main() {
     colors.insert("green".parse().unwrap(), Color::GREEN);
     colors.insert("skyblue".parse().unwrap(), Color::SKYBLUE);
 
+    let mut active_window:Option<String> = Option::None;
+
     let border_color = "black";
 
     println!("Hello, world!");
@@ -273,10 +275,10 @@ fn main() {
         // println!("render");
         process_render_messages(&mut windows, &render_loop_receive, &tx);
         process_keyboard_input(&mut rl);
-        process_mouse_input(&mut rl, &windows, &sender3);
+        process_mouse_input(&mut rl, &windows, &sender3, &mut active_window);
         let mut d = rl.begin_drawing(&thread);
         d.clear_background(Color::WHITE);
-        process_render_drawing(&windows, &mut d, &colors);
+        process_render_drawing(&windows, &mut d, &colors, &active_window);
     }
 
 
@@ -303,7 +305,7 @@ fn process_keyboard_input(rl: &mut RaylibHandle) {
     }
 
 }
-fn process_mouse_input(rl: &mut RaylibHandle, windows:&HashMap<String,Window>, websocket_sender:&Sender<OwnedMessage>) {
+fn process_mouse_input(rl: &mut RaylibHandle, windows:&HashMap<String,Window>, websocket_sender:&Sender<OwnedMessage>, active:&mut Option<String>) {
     // println!("mouse position {:?}",pos);
     let scale = 10.0;
     if rl.is_mouse_button_pressed(MouseButton::MOUSE_LEFT_BUTTON) {
@@ -313,10 +315,10 @@ fn process_mouse_input(rl: &mut RaylibHandle, windows:&HashMap<String,Window>, w
             y:(pos.y/scale) as i32,
         };
 
-        println!("left mouse pressed at {:?}", pt);
         for win in windows.values() {
             if win.contains(&pt) {
                 //win.set_active_window()
+                *active = Some(win.id.clone());
                 let msg = MouseDownMessage {
                     type_:"MOUSE_DOWN".to_string(),
                     x:(pt.x)-win.x,
@@ -335,10 +337,8 @@ fn process_mouse_input(rl: &mut RaylibHandle, windows:&HashMap<String,Window>, w
             y:(pos.y/scale) as i32,
         };
 
-        println!("left mouse pressed at {:?}", pt);
         for win in windows.values() {
             if win.contains(&pt) {
-                //win.set_active_window()
                 let msg = MouseUpMessage {
                     type_:"MOUSE_UP".to_string(),
                     x:(pt.x)-win.x,
@@ -415,18 +415,17 @@ fn process_incoming_server_messages(receiver: &mut Reader<TcpStream>, websocket_
 
 }
 
-fn process_render_drawing(windows: &HashMap<String, Window>, d: &mut RaylibDrawHandle, colors: &HashMap<String,Color>) {
+fn process_render_drawing(windows: &HashMap<String, Window>, d: &mut RaylibDrawHandle, colors: &HashMap<String,Color>, active_window:&Option<String>) {
     // println!("window count is {:?}",windows.len());
     let scale = 10;
 
     for(_, win) in windows {
-        // println!("drawing window rects {}",win.rects.len());
         d.draw_rectangle(
             (win.x-1)*scale,
             (win.y-1)*scale,
             (win.width+2)*scale,
             (win.height+2)*scale,
-            Color::BLACK
+            calc_window_background(win,active_window),
         );
         for rect in &win.rects {
             // println!("drawing rect {:?}",rect);
@@ -439,6 +438,19 @@ fn process_render_drawing(windows: &HashMap<String, Window>, d: &mut RaylibDrawH
             }
 
         }
+    }
+}
+
+fn calc_window_background(win: &Window, active_window: &Option<String>) -> Color {
+    match active_window {
+        Some(id) => {
+            if(id.eq(&win.id)) {
+                Color::SKYBLUE
+            } else {
+                Color::BLACK
+            }
+        },
+        None => Color::BLACK
     }
 }
 
