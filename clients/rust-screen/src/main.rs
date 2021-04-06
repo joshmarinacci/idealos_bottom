@@ -9,6 +9,9 @@ use websocket::{Message, OwnedMessage};
 use serde_json::{Result, Value, json};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use websocket::receiver::Reader;
+use std::net::TcpStream;
+use websocket::sender::Writer;
 
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -20,6 +23,13 @@ struct Rect {
     color:String,
 }
 
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct Point {
+    x:i32,
+    y:i32,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct Window {
     id:String,
@@ -29,6 +39,15 @@ struct Window {
     height:i32,
     owner:String,
     rects:Vec<Rect>,
+}
+impl Window {
+    fn contains(&self, pt:&Point) -> bool {
+        if pt.x < self.x { return false; }
+        if pt.x > (self.x + self.width) { return false; }
+        if pt.y < self.y { return false; }
+        if pt.y > (self.y + self.height) { return false; }
+        return true
+    }
 }
 
 
@@ -56,6 +75,23 @@ struct RefreshWindowMessage {
     window:String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+struct MouseDownMessage {
+    #[serde(rename = "type")]
+    type_:String,
+    target:String,
+    x:i32,
+    y:i32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct MouseUpMessage {
+    #[serde(rename = "type")]
+    type_:String,
+    target:String,
+    x:i32,
+    y:i32,
+}
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -206,68 +242,12 @@ fn main() {
     let (render_loop_send, render_loop_receive) = channel::<RenderMessage>();
 
     //loop for receiving
-    let receive_loop = thread::spawn(move || {
-        // Receive loop
-        for message in receiver.incoming_messages() {
-            let message = match message {
-                Ok(m) => m,
-                Err(e) => {
-                    println!("Receive Loop: {:?}", e);
-                    let _ = websocket_sending_tx.send(OwnedMessage::Close(None));
-                    return;
-                }
-            };
-            match message {
-                OwnedMessage::Close(_) => {
-                    println!("got a close message");
-                    // Got a close message, so send a close message and return
-                    let _ = websocket_sending_tx.send(OwnedMessage::Close(None));
-                    return;
-                }
-                // Say what we received
-                OwnedMessage::Text(txt) => {
-                    // println!("the text is {:?}",txt);
-                    parse_message(&websocket_sending_tx, &render_loop_send, txt);
-                }
-                _ => {
-                    println!("Receive Loop: {:?}", message);
-                },
-            }
-        }
-    });
+    let receive_loop = thread::spawn(move || {  process_incoming_server_messages(&mut receiver, &websocket_sending_tx, &render_loop_send);  });
 
 
     //loop for sending
     let send_loop = thread::spawn(move || {
-        loop {
-            // Send loop
-            let message = match websocket_sending_rx.recv() {
-                Ok(m) => m,
-                Err(e) => {
-                    println!("Send Loop: {:?}", e);
-                    return;
-                }
-            };
-            println!("got a message to send out");
-            match message {
-                OwnedMessage::Close(_) => {
-                    let _ = sender.send_message(&message);
-                    // If it's a close message, just send it and then return.
-                    return;
-                }
-                _ => (),
-            }
-            // Send the message
-            println!("sending out {:?}",message);
-            match sender.send_message(&message) {
-                Ok(()) => (),
-                Err(e) => {
-                    println!("Send Loop: {:?}", e);
-                    let _ = sender.send_message(&Message::close());
-                    return;
-                }
-            }
-        }
+        process_outgoing_server_messages(&websocket_sending_rx,&mut sender);
     });
 
 
@@ -282,25 +262,18 @@ fn main() {
 
 
 
+    // open window
     let (mut rl, thread) = raylib::init()
         .size(640, 480)
         .title(name)
         .build();
-    rl.set_target_fps(5);
+    rl.set_target_fps(10);
+    let sender3 = tx.clone();
     while !rl.window_should_close() {
-        // println!("rendering");
-        //check messages
+        // println!("render");
         process_render_messages(&mut windows, &render_loop_receive, &tx);
-
-        //check input
-        // let pressed_key = rl.get_key_pressed();
-        // if let Some(pressed_key) = pressed_key {
-        // Certain keyboards may have keys raylib does not expect. Uncomment this line if so.
-        // let pressed_key: u32 = unsafe { std::mem::transmute(pressed_key) };
-        //d.draw_text(&format!("{:?}", pressed_key), 100, 12, 10, Color::BLACK);
-        // }
-        //drawing
-
+        process_keyboard_input(&mut rl);
+        process_mouse_input(&mut rl, &windows, &sender3);
         let mut d = rl.begin_drawing(&thread);
         d.clear_background(Color::WHITE);
         process_render_drawing(&windows, &mut d, &colors);
@@ -314,6 +287,131 @@ fn main() {
     // let _ = receive_loop.join();
 
     println!("Exited");
+
+}
+
+fn process_keyboard_input(rl: &mut RaylibHandle) {
+    let pressed_key = rl.get_key_pressed();
+    if let Some(pressed_key) = pressed_key {
+        println!("pressed key {:?}",pressed_key);
+    // Certain keyboards may have keys raylib does not expect. Uncomment this line if so.
+    // let pressed_key: u32 = unsafe { std::mem::transmute(pressed_key) };
+    //d.draw_text(&format!("{:?}", pressed_key), 100, 12, 10, Color::BLACK);
+    }
+    if rl.is_key_down(KeyboardKey::KEY_RIGHT) {
+        // println!("right is down")
+    }
+
+}
+fn process_mouse_input(rl: &mut RaylibHandle, windows:&HashMap<String,Window>, websocket_sender:&Sender<OwnedMessage>) {
+    // println!("mouse position {:?}",pos);
+    let scale = 10.0;
+    if rl.is_mouse_button_pressed(MouseButton::MOUSE_LEFT_BUTTON) {
+        let pos = rl.get_mouse_position();
+        let pt = Point {
+            x:(pos.x/scale) as i32,
+            y:(pos.y/scale) as i32,
+        };
+
+        println!("left mouse pressed at {:?}", pt);
+        for win in windows.values() {
+            if win.contains(&pt) {
+                //win.set_active_window()
+                let msg = MouseDownMessage {
+                    type_:"MOUSE_DOWN".to_string(),
+                    x:(pt.x)-win.x,
+                    y:(pt.y)-win.y,
+                    target:win.owner.clone()
+                };
+                websocket_sender.send(OwnedMessage::Text(json!(msg).to_string()));
+            }
+        }
+    }
+
+    if rl.is_mouse_button_released(MouseButton::MOUSE_LEFT_BUTTON) {
+        let pos = rl.get_mouse_position();
+        let pt = Point {
+            x:(pos.x/scale) as i32,
+            y:(pos.y/scale) as i32,
+        };
+
+        println!("left mouse pressed at {:?}", pt);
+        for win in windows.values() {
+            if win.contains(&pt) {
+                //win.set_active_window()
+                let msg = MouseUpMessage {
+                    type_:"MOUSE_UP".to_string(),
+                    x:(pt.x)-win.x,
+                    y:(pt.y)-win.y,
+                    target:win.owner.clone()
+                };
+                websocket_sender.send(OwnedMessage::Text(json!(msg).to_string()));
+            }
+        }
+    }
+}
+
+fn process_outgoing_server_messages(websocket_sending_rx: &Receiver<OwnedMessage>, sender: &mut Writer<TcpStream>) {
+    loop {
+        // Send loop
+        let message = match websocket_sending_rx.recv() {
+            Ok(m) => m,
+            Err(e) => {
+                println!("Send Loop: {:?}", e);
+                return;
+            }
+        };
+        println!("got a message to send out");
+        match message {
+            OwnedMessage::Close(_) => {
+                let _ = sender.send_message(&message);
+                // If it's a close message, just send it and then return.
+                return;
+            }
+            _ => (),
+        }
+        // Send the message
+        println!("sending out {:?}",message);
+        match sender.send_message(&message) {
+            Ok(()) => (),
+            Err(e) => {
+                println!("Send Loop: {:?}", e);
+                let _ = sender.send_message(&Message::close());
+                return;
+            }
+        }
+    }
+
+}
+
+fn process_incoming_server_messages(receiver: &mut Reader<TcpStream>, websocket_sending_tx: &Sender<OwnedMessage>, render_loop_send: &Sender<RenderMessage>) {
+    // Receive loop
+    for message in receiver.incoming_messages() {
+        let message = match message {
+            Ok(m) => m,
+            Err(e) => {
+                println!("Receive Loop: {:?}", e);
+                let _ = websocket_sending_tx.send(OwnedMessage::Close(None));
+                return;
+            }
+        };
+        match message {
+            OwnedMessage::Close(_) => {
+                println!("got a close message");
+                // Got a close message, so send a close message and return
+                let _ = websocket_sending_tx.send(OwnedMessage::Close(None));
+                return;
+            }
+            // Say what we received
+            OwnedMessage::Text(txt) => {
+                // println!("the text is {:?}",txt);
+                parse_message(websocket_sending_tx, render_loop_send, txt);
+            }
+            _ => {
+                println!("Receive Loop: {:?}", message);
+            },
+        }
+    }
 
 }
 
