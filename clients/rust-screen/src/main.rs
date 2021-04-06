@@ -50,7 +50,7 @@ enum RenderMessage {
 
 #[derive(Serialize, Deserialize, Debug)]
 struct RefreshWindowMessage {
-    #[serde(rename(deserialize = "type"))]
+    #[serde(rename = "type")]
     type_:String,
     target:String,
     window:String,
@@ -258,6 +258,7 @@ fn main() {
                 _ => (),
             }
             // Send the message
+            println!("sending out {:?}",message);
             match sender.send_message(&message) {
                 Ok(()) => (),
                 Err(e) => {
@@ -292,7 +293,7 @@ fn main() {
         match render_loop_receive.try_recv() {
             Ok(msg) => {
                 // println!("the text is {:?}", msg);
-                println!("got render message {:?}",msg);
+                // println!("got render message {:?}",msg);
                 match msg {
                     RenderMessage::OpenWindow(m) => {
                         println!("adding a window");
@@ -313,6 +314,7 @@ fn main() {
                             windows.insert(key.clone(), value.clone());
                         }
                         println!("window count is {:?}",windows.len());
+                        send_refresh_all_windows_request(&windows, &tx);
                     },
                     RenderMessage::DrawPixel(m) =>{
                         //        win.rects.push({x:msg.x,y:msg.y,width:1,height:1,color:msg.color})
@@ -321,7 +323,7 @@ fn main() {
                                 println!("no window found for {}",m.window.as_str())
                             }
                             Some(win) => {
-                                println!("adding a rect {:?}",m);
+                                // println!("adding a rect {:?}",m);
                                 win.rects.push(Rect{
                                     x: m.x,
                                     y: m.y,
@@ -364,7 +366,7 @@ fn main() {
         let scale = 10;
 
         for(_, win) in &windows {
-            println!("drawing window rects {}",win.rects.len());
+            // println!("drawing window rects {}",win.rects.len());
             d.draw_rectangle(
                 (win.x-1)*scale,
                     (win.y-1)*scale,
@@ -373,7 +375,7 @@ fn main() {
                 Color::BLACK
             );
             for rect in &win.rects {
-                println!("drawing rect {:?}",rect);
+                // println!("drawing rect {:?}",rect);
                 if let Some(color) = colors.get(rect.color.as_str()) {
                     d.draw_rectangle((win.x+rect.x)*scale,
                                      (win.y+rect.y)*scale,
@@ -395,4 +397,19 @@ fn main() {
 
     println!("Exited");
 
+}
+
+fn send_refresh_all_windows_request(windows: &HashMap<String, Window>, sender:&Sender<OwnedMessage>) {
+    println!("sending out full refresh request");
+    for(_, win) in windows {
+        println!("sending to window {}", win.id);
+        let msg2 = RefreshWindowMessage {
+            type_:"REFRESH_WINDOW".to_string(),
+            target: win.owner.clone(),
+            window:win.id.clone()
+        };
+        let val = json!(msg2);
+        let txt = OwnedMessage::Text(val.to_string());
+        sender.send(txt);
+    }
 }

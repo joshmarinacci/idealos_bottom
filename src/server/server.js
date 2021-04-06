@@ -103,7 +103,7 @@ function start_web_server() {
                     log("error", err)
                     res.statusCode = 404
                     res.setHeader('Content-Type','text/plain')
-                    res.send("Error: " + err.toString())
+                    res.write("Error: " + err.toString())
                     return
                 }
                 res.statusCode = 200
