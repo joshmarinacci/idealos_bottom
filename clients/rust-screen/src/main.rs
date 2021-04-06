@@ -174,6 +174,11 @@ fn main() {
     let mut colors:HashMap<String,Color> = HashMap::new();
     colors.insert("black".parse().unwrap(), Color::BLACK);
     colors.insert("red".parse().unwrap(), Color::RED);
+    colors.insert("green".parse().unwrap(), Color::GREEN);
+    colors.insert("skyblue".parse().unwrap(), Color::SKYBLUE);
+
+    let border_color = "black";
+
     println!("Hello, world!");
     let name  = "ws://127.0.0.1:8081";
 /*
@@ -356,16 +361,24 @@ fn main() {
         let mut d = rl.begin_drawing(&thread);
         d.clear_background(Color::WHITE);
         // println!("window count is {:?}",windows.len());
+        let scale = 10;
+
         for(_, win) in &windows {
             println!("drawing window rects {}",win.rects.len());
+            d.draw_rectangle(
+                (win.x-1)*scale,
+                    (win.y-1)*scale,
+                (win.width+2)*scale,
+                (win.height+2)*scale,
+                Color::BLACK
+            );
             for rect in &win.rects {
                 println!("drawing rect {:?}",rect);
-                let scale = 10;
                 if let Some(color) = colors.get(rect.color.as_str()) {
                     d.draw_rectangle((win.x+rect.x)*scale,
                                      (win.y+rect.y)*scale,
-                                     (scale-1),
-                                     (scale-1),
+                                     (rect.width*(scale-1)),
+                                     (rect.height*(scale-1)),
                                      color)
                 }
 
