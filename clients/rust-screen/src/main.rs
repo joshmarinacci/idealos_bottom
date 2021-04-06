@@ -455,67 +455,70 @@ fn calc_window_background(win: &Window, active_window: &Option<String>) -> Color
 }
 
 fn process_render_messages(windows:&mut HashMap<String,Window>, render_loop_receive:&Receiver<RenderMessage>, tx:&Sender<OwnedMessage>) {
-    match render_loop_receive.try_recv() {
-        Ok(msg) => {
-            // println!("the text is {:?}", msg);
-            // println!("got render message {:?}",msg);
-            match msg {
-                RenderMessage::OpenWindow(m) => {
-                    println!("adding a window");
-                    let win = m.window;
-                    windows.insert(win.id.clone(),Window{
-                        owner:win.owner,
-                        id:win.id,
-                        x:win.x,
-                        y:win.y,
-                        width:win.width,
-                        height:win.height,
-                        rects: vec![]
-                    });
-                }
-                RenderMessage::WindowList(m) => {
-                    for(key,value) in &m.windows {
-                        println!("make window id {} at {},{}", value.id,value.x, value.y);
-                        windows.insert(key.clone(), value.clone());
+    loop {
+        match render_loop_receive.try_recv() {
+            Ok(msg) => {
+                // println!("the text is {:?}", msg);
+                // println!("got render message {:?}",msg);
+                match msg {
+                    RenderMessage::OpenWindow(m) => {
+                        println!("adding a window");
+                        let win = m.window;
+                        windows.insert(win.id.clone(), Window {
+                            owner: win.owner,
+                            id: win.id,
+                            x: win.x,
+                            y: win.y,
+                            width: win.width,
+                            height: win.height,
+                            rects: vec![]
+                        });
                     }
-                    println!("window count is {:?}",windows.len());
-                    send_refresh_all_windows_request(&windows, &tx);
-                },
-                RenderMessage::DrawPixel(m) =>{
-                    //        win.rects.push({x:msg.x,y:msg.y,width:1,height:1,color:msg.color})
-                    match windows.get_mut(m.window.as_str()) {
-                        None => {
-                            println!("no window found for {}",m.window.as_str())
+                    RenderMessage::WindowList(m) => {
+                        for (key, value) in &m.windows {
+                            println!("make window id {} at {},{}", value.id, value.x, value.y);
+                            windows.insert(key.clone(), value.clone());
                         }
-                        Some(win) => {
-                            // println!("adding a rect {:?}",m);
-                            win.rects.push(Rect{
+                        println!("window count is {:?}", windows.len());
+                        send_refresh_all_windows_request(&windows, &tx);
+                    },
+                    RenderMessage::DrawPixel(m) => {
+                        //        win.rects.push({x:msg.x,y:msg.y,width:1,height:1,color:msg.color})
+                        match windows.get_mut(m.window.as_str()) {
+                            None => {
+                                println!("no window found for {}", m.window.as_str())
+                            }
+                            Some(win) => {
+                                // println!("adding a rect {:?}",m);
+                                win.rects.push(Rect {
+                                    x: m.x,
+                                    y: m.y,
+                                    width: 1,
+                                    height: 1,
+                                    color: m.color,
+                                });
+                            }
+                        }
+                    },
+                    RenderMessage::FillRect(m) => {
+                        if let Some(win) = windows.get_mut(m.window.as_str()) {
+                            win.rects.push(Rect {
                                 x: m.x,
                                 y: m.y,
-                                width: 1,
-                                height: 1,
-                                color:m.color,
-                            });
+                                width: m.width,
+                                height: m.height,
+                                color: m.color,
+                            })
                         }
                     }
-                },
-                RenderMessage::FillRect(m) => {
-                    if let Some(win) = windows.get_mut(m.window.as_str()) {
-                        win.rects.push(Rect{
-                            x: m.x,
-                            y: m.y,
-                            width: m.width,
-                            height: m.height,
-                            color: m.color,
-                        })
-                    }
                 }
+            },
+            Err(e) => {
+                // println!("nothing ready");
+                break;
             }
-        },
-        Err(e) => {
-            // println!("nothing ready");
         }
-    };
+    }
 
 }
 
