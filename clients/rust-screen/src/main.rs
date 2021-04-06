@@ -43,7 +43,8 @@ struct WindowListMessage  {
 enum RenderMessage {
     WindowList(WindowListMessage),
     OpenWindow(OpenWindowScreen),
-    DrawPixel(DrawPixelMessage)
+    DrawPixel(DrawPixelMessage),
+    FillRect(FillRectMessage),
 }
 
 
@@ -122,7 +123,11 @@ fn parse_message(sender:&Sender<OwnedMessage>,  renderloop_send:&Sender<RenderMe
                     ()
                     // draw_pixel(&serde_json::from_str(txt.as_str())?)
                 },
-                "FILL_RECT"   => fill_rect(&serde_json::from_str(txt.as_str())?),
+                "FILL_RECT"   => {
+                    let msg:FillRectMessage = serde_json::from_str(txt.as_str())?;
+                    renderloop_send.send(RenderMessage::FillRect(msg));
+                    ()
+                },
                 _ => {
                     println!("some other message type")
                 }
@@ -320,6 +325,17 @@ fn main() {
                                     color:m.color,
                                 });
                             }
+                        }
+                    },
+                    RenderMessage::FillRect(m) => {
+                        if let Some(win) = windows.get_mut(m.window.as_str()) {
+                            win.rects.push(Rect{
+                                x: m.x,
+                                y: m.y,
+                                width: m.width,
+                                height: m.height,
+                                color: m.color,
+                            })
                         }
                     }
                 }
