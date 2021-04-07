@@ -64,6 +64,7 @@ struct WindowListMessage  {
 enum RenderMessage {
     WindowList(WindowListMessage),
     OpenWindow(OpenWindowScreen),
+    CloseWindow(CloseWindowScreen),
     DrawPixel(DrawPixelMessage),
     FillRect(FillRectMessage),
 }
@@ -127,6 +128,14 @@ struct OpenWindowScreen {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+struct CloseWindowScreen {
+    #[serde(rename = "type")]
+    type_:String,
+    target:String,
+    window: WindowInfo,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 struct WindowInfo {
     id:String,
     x:i32,
@@ -144,28 +153,30 @@ fn parse_message(sender:&Sender<OwnedMessage>,  renderloop_send:&Sender<RenderMe
         Value::String(strr) => {
             match &strr[..] {
                 "WINDOW_LIST" => {
-                    println!("got window message");
                     let msg:WindowListMessage = serde_json::from_str(txt.as_str())?;
                     renderloop_send.send(RenderMessage::WindowList(msg));
                     ()
-                },// window_list(sender, renderloop_send, &serde_json::from_str(txt.as_str())?),
+                },
                 "SCREEN_NAME" => {
                     let msg:OpenWindowScreen = serde_json::from_str(txt.as_str())?;
                     renderloop_send.send(RenderMessage::OpenWindow(msg));
                     ()
-                    // screen_name(&serde_json::from_str(txt.as_str())?)
                 },
                 "DRAW_PIXEL"  => {
                     let msg:DrawPixelMessage = serde_json::from_str(txt.as_str())?;
                     renderloop_send.send(RenderMessage::DrawPixel(msg));
                     ()
-                    // draw_pixel(&serde_json::from_str(txt.as_str())?)
                 },
                 "FILL_RECT"   => {
                     let msg:FillRectMessage = serde_json::from_str(txt.as_str())?;
                     renderloop_send.send(RenderMessage::FillRect(msg));
                     ()
                 },
+                "WINDOW_CLOSED" => {
+                    let msg:CloseWindowScreen = serde_json::from_str(txt.as_str())?;
+                    renderloop_send.send(RenderMessage::CloseWindow(msg));
+                    ()
+                }
                 _ => {
                     println!("some other message type")
                 }
@@ -467,7 +478,7 @@ fn process_render_messages(windows:&mut HashMap<String,Window>, render_loop_rece
                 // println!("got render message {:?}",msg);
                 match msg {
                     RenderMessage::OpenWindow(m) => {
-                        println!("adding a window");
+                        println!("opening a window");
                         let win = m.window;
                         windows.insert(win.id.clone(), Window {
                             owner: win.owner,
@@ -478,6 +489,14 @@ fn process_render_messages(windows:&mut HashMap<String,Window>, render_loop_rece
                             height: win.height,
                             rects: vec![]
                         });
+                        println!("window count is {}", windows.len());
+                    }
+                    RenderMessage::CloseWindow(m) => {
+                        println!("closing a window");
+                        let win = m.window;
+                        windows.remove(win.id.as_str());
+                        println!("window count is {}", windows.len());
+                        ()
                     }
                     RenderMessage::WindowList(m) => {
                         for (key, value) in &m.windows {

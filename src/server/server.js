@@ -34,7 +34,6 @@ function handle_start_message(ws,msg) {
     //send the current list of windows
     forward_to_screen({type:SCREEN.WINDOW_LIST, windows:wids.windows})
 }
-
 function handle_open_window_message(ws,msg) {
     log("app is opening a window",msg)
     if(msg.sender && !connections[msg.sender]) {
@@ -60,25 +59,17 @@ function handle_open_window_message(ws,msg) {
     //send response back to client
     forward_to_target({type:OPEN_WINDOW.RESPONSE_NAME, target:msg.sender, window:win_id})
 }
-
 function forward_to_screen(msg) {
-    // log("sending to screen",msg)
     if(connections[SCREEN.SCREEN]) return connections[SCREEN.SCREEN].send(JSON.stringify(msg))
 }
-
 function forward_to_debug(msg) {
     if(connections[DEBUG.CLIENT]) return connections[DEBUG.CLIENT].send(JSON.stringify(msg))
 }
-
-function do_nothing(msg) {
-    //do nothing
-}
-
+function do_nothing(msg) {}
 function forward_to_target(msg) {
     if(!msg.target) return log("NO TARGET!",msg)
     return connections[msg.target].send(JSON.stringify(msg))
 }
-
 function list_apps(ws,msg) {
     log("listing apps for debug message",msg)
     connections[DEBUG.CLIENT] = ws
@@ -91,11 +82,22 @@ function list_apps(ws,msg) {
 }
 
 function restart_app(msg) {
-    if(spawn_map[msg.target]) {
-        let child = spawn_map[msg.target]
+    let appid = msg.target
+    if(spawn_map[appid]) {
+        let child = spawn_map[appid]
         child.kill('SIGTERM')
-        spawn_map[msg.target] = undefined
-        let app = apps.find(ap => ap.id === msg.target)
+        spawn_map[appid] = undefined
+        let win = wids.windows_for_appid(appid)[0]
+        forward_to_screen({type:OPEN_WINDOW.CLOSED, target:appid, window:{
+                id:win.id,
+                width:win.width,
+                height:win.height,
+                x:win.x,
+                y:win.y,
+                owner:win.owner,
+            }})
+        wids.remove_windows_for_appid(appid)
+        let app = apps.find(ap => ap.id === appid)
         start_app(app)
     }
 }

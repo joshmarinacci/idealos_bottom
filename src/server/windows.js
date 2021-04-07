@@ -26,6 +26,16 @@ export class WindowTracker {
     window_for_id(win_id) {
         return this.windows[win_id]
     }
+    windows_for_appid(appid) {
+        return Object.values(this.windows).filter(win => win && win.owner === appid)
+    }
+    remove_windows_for_appid(appid) {
+        Object.keys(this.windows).forEach(id => {
+            if(this.windows[id] && this.windows[id].owner === appid) {
+                this.windows[id] = undefined
+            }
+        })
+    }
 
     sync_windows(windows) {
         Object.values(windows).forEach(win => {
