@@ -29,6 +29,14 @@ export class CommonApp {
             this.log("sending message to app itself",msg)
             this.fireLater(msg.type,msg)
         })
+
+
+        process.on('SIGTERM', () => {
+            console.log(`Received SIGTERM in app ${appid} `);
+            this.ws.close()
+            process.exit(0)
+        });
+
     }
     on(type,cb) {
         if(!this.listeners[type]) this.listeners[type] = []

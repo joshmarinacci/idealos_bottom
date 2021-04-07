@@ -18,12 +18,16 @@ const hostname = '127.0.0.1'
 const webserver_port = 3000
 const websocket_port = 8081
 
-function log(...args) { console.log(...args) }
+function log(...args) {
+    console.log(...args)
+    forward_to_debug({type:DEBUG.LOG, data:args})
+}
 const sleep = (dur) => new Promise((res,rej) => setTimeout(res,dur))
 
 const connections = {}
 const wids = new WindowTracker()
 const apps = []
+let spawn_map = {}
 
 function handle_start_message(ws,msg) {
     connections[SCREEN.SCREEN] = ws
@@ -86,6 +90,16 @@ function list_apps(ws,msg) {
     if(connections[msg.sender]) return connections[msg.sender].send(JSON.stringify(response))
 }
 
+function restart_app(msg) {
+    if(spawn_map[msg.target]) {
+        let child = spawn_map[msg.target]
+        child.kill('SIGTERM')
+        spawn_map[msg.target] = undefined
+        let app = apps.find(ap => ap.id === msg.target)
+        start_app(app)
+    }
+}
+
 function start_message_server() {
     const server = new WS.Server({
         port: websocket_port,
@@ -106,6 +120,7 @@ function start_message_server() {
             if(msg.type === MOUSE.DOWN.NAME) return forward_to_target(msg)
             if(msg.type === DRAWING.REFRESH_WINDOW) return forward_to_target(msg)
             if(msg.type === DEBUG.LIST) return list_apps(ws,msg)
+            if(msg.type === DEBUG.RESTART_APP_REQUEST) return restart_app(msg)
             log("incoming message", msg)
         })
         ws.send(JSON.stringify({message: 'CONNECTED'}))
@@ -139,13 +154,14 @@ function start_web_server() {
     })
 }
 
+
 function start_app(app) {
     log('starting app',app)
-    apps.push(app)
     const child = spawn('node', [app.path,`ws://${hostname}:${websocket_port}`,app.id].concat(app.args))
     child.stdout.on('data',(data)=>log(`STDOUT ${app.name} ${data}`))
     child.stderr.on('data',(data)=>log(`STDERR ${app.name} ${data}`))
     child.on('exit',(code)=> log(`${app.name} ended with code = ${code}`))
+    spawn_map[app.id] = child
 }
 async function start_app1() {
     let app = {
@@ -155,6 +171,7 @@ async function start_app1() {
         id:"app_"+(Math.floor(Math.random()*100000))
     }
     await sleep(250)
+    apps.push(app)
     start_app(app)
 }
 async function start_app2() {
@@ -165,6 +182,7 @@ async function start_app2() {
         id:"app_"+(Math.floor(Math.random()*100000))
     }
     await sleep(250)
+    apps.push(app)
     start_app(app)
 }
 async function start_app3() {
@@ -175,6 +193,7 @@ async function start_app3() {
         id:"app_"+(Math.floor(Math.random()*100000))
     }
     await sleep(250)
+    apps.push(app)
     start_app(app)
 }
 
