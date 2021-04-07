@@ -62,6 +62,10 @@ function forward_to_screen(msg) {
     if(connections[SCREEN.SCREEN]) return connections[SCREEN.SCREEN].send(JSON.stringify(msg))
 }
 
+function forward_to_debug(msg) {
+    if(connections[DEBUG.CLIENT]) return connections[DEBUG.CLIENT].send(JSON.stringify(msg))
+}
+
 function do_nothing(msg) {
     //do nothing
 }
@@ -91,6 +95,7 @@ function start_message_server() {
     server.on("connection", (ws) => {
         ws.on("message", (m) => {
             let msg = JSON.parse(m)
+            forward_to_debug(msg)
             if(msg.type === SCREEN.START) return handle_start_message(ws,msg)
             if(msg.type === OPEN_WINDOW.NAME) return handle_open_window_message(ws,msg)
             if(msg.type === DRAW_PIXEL.NAME) return forward_to_screen(msg)
