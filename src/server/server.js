@@ -147,6 +147,16 @@ async function start_app2() {
     await sleep(250)
     start_app(app)
 }
+async function start_app3() {
+    let app = {
+        name:'app3',
+        path: 'src/clients/app3.js',
+        args: [],
+        id:"app_"+(Math.floor(Math.random()*100000))
+    }
+    await sleep(250)
+    start_app(app)
+}
 
 await start_message_server()
 await start_web_server()
@@ -167,4 +177,5 @@ function screen_connected() {
 await screen_connected()
 await start_app1()
 await start_app2()
+await start_app3()
 log('started everything')
