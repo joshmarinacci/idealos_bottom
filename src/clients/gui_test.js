@@ -1,7 +1,9 @@
 import {DRAW_PIXEL, DRAWING, FILL_RECT, MOUSE} from '../canvas/messages.js'
-import {CommonApp} from './app_utils.js'
+import {CommonApp, PixelFont} from './app_utils.js'
 
-let app = new CommonApp(process.argv,20,10)
+let width = 40
+let height = 30
+let app = new CommonApp(process.argv,width,height)
 let mouse = {
     x:-1,
     y:-1,
@@ -14,9 +16,26 @@ let mouse = {
         return true
     }
 }
-app.on('start',()=>{
-    redraw()
-})
+let font = null
+
+async function init() {
+    try {
+        font = await PixelFont.load("src/clients/fonts/font.png", "src/clients/fonts/font.metrics.json")
+        redraw()
+    } catch (e) {
+        app.log(e)
+    }
+}
+function redraw() {
+    app.log("redrawing gui test")
+    //bg panel
+    draw_rect(0,0,width,height,'white')
+    label(1,1,"GUI Test","black")
+    button(1,height/2,10,10, "ab")
+}
+
+
+
 app.on(MOUSE.DOWN.NAME,(e)=>{
     console.log("mouse down",e)
     mouse.x = e.payload.x
@@ -32,27 +51,20 @@ app.on(DRAWING.REFRESH_WINDOW, ()=>{
     redraw()
 })
 
-const rect = (x,y,width,height,color) => {
-    app.send({type:FILL_RECT.NAME, x, y, width, height, color})
-}
-const text = (x,y,text,color) => {
-    draw_text(x,y,text,color)
-}
+const draw_rect = (x,y,width,height,color) => app.send({type:FILL_RECT.NAME, x, y, width, height, color})
+const label = (x,y,text,color) => draw_text(x,y,text,color)
 const button = (x,y,width,height,text) => {
     let bg = 'blue'
-    if(mouse.inside(x,y,width,height) && mouse.down) {
-        bg = 'red'
-    }
-    rect(x,y,width,height,bg)
+    if(mouse.inside(x,y,width,height) && mouse.down) bg = 'red'
+    draw_rect(x,y,width,height,bg)
     draw_text(x+1,y+1,text,'black')
 }
 
-function redraw() {
-    rect(0,0,20,10,'green')
-    text(3,1,"hi","black")
-    button(13,1,10,10, "ab")
+const draw_text = (x,y,text,color) => {
+    font.draw_text(app,x,y,text,color);
 }
 
+/*
 const font = {
     'a':[
         [0,0,0],
@@ -99,3 +111,7 @@ function draw_text(x, y, txt,color) {
         x = draw_char(x,y,ch,color)
     }
 }
+*/
+
+app.on('start',()=>init())
+

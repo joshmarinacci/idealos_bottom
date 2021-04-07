@@ -1,5 +1,6 @@
 import {default as WebSocket} from "ws"
-import {OPEN_WINDOW} from '../canvas/messages.js'
+import {DRAW_PIXEL, OPEN_WINDOW} from '../canvas/messages.js'
+import fs from "fs"
 
 export class CommonApp {
     constructor(argv,width,height) {
@@ -49,5 +50,28 @@ export class CommonApp {
     send(msg) {
         msg.window = this.win_id
         this.ws.send(JSON.stringify(msg))
+    }
+}
+
+class PixelFontImpl {
+    constructor(img, metrics) {
+        this.bitmap = img
+        this.metrics = metrics
+    }
+
+    draw_text(app, x, y, text, color) {
+        app.log('drawing text ',text,'at',x,y)
+        app.send({type:DRAW_PIXEL.NAME, x:x, y:y, color:color})
+
+    }
+}
+
+export const PixelFont = {
+    load: async function (image_source,metrics_source) {
+        console.log("loading font",image_source,metrics_source)
+        let img_buffer = await fs.promises.readFile(image_source)
+        let metrics_buffer = await fs.promises.readFile(metrics_source)
+        let metrics = JSON.parse(metrics_buffer.toString())
+        return new PixelFontImpl(null,metrics)
     }
 }

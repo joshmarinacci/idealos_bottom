@@ -13,6 +13,8 @@ use websocket::receiver::Reader;
 use std::net::TcpStream;
 use websocket::sender::Writer;
 
+const scale: f32 = 5.0;
+
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct Rect {
@@ -209,6 +211,7 @@ fn main() {
     let mut windows:HashMap<String,Window> = HashMap::new();
     let mut colors:HashMap<String,Color> = HashMap::new();
     colors.insert("black".parse().unwrap(), Color::BLACK);
+    colors.insert("white".parse().unwrap(), Color::WHITE);
     colors.insert("red".parse().unwrap(), Color::RED);
     colors.insert("green".parse().unwrap(), Color::GREEN);
     colors.insert("skyblue".parse().unwrap(), Color::SKYBLUE);
@@ -308,7 +311,6 @@ fn process_keyboard_input(rl: &mut RaylibHandle) {
 }
 fn process_mouse_input(rl: &mut RaylibHandle, windows:&HashMap<String,Window>, websocket_sender:&Sender<OwnedMessage>, active:&mut Option<String>) {
     // println!("mouse position {:?}",pos);
-    let scale = 10.0;
     if rl.is_mouse_button_pressed(MouseButton::MOUSE_LEFT_BUTTON) {
         let pos = rl.get_mouse_position();
         let pt = Point {
@@ -418,23 +420,22 @@ fn process_incoming_server_messages(receiver: &mut Reader<TcpStream>, websocket_
 
 fn process_render_drawing(windows: &HashMap<String, Window>, d: &mut RaylibDrawHandle, colors: &HashMap<String,Color>, active_window:&Option<String>) {
     // println!("window count is {:?}",windows.len());
-    let scale = 10;
 
     for(_, win) in windows {
         d.draw_rectangle(
-            (win.x-1)*scale,
-            (win.y-1)*scale,
-            (win.width+2)*scale,
-            (win.height+2)*scale,
+            (win.x-1)*(scale as i32),
+            (win.y-1)*(scale as i32),
+            (win.width+2)*(scale as i32),
+            (win.height+2)*(scale as i32),
             calc_window_background(win,active_window),
         );
         for rect in &win.rects {
             // println!("drawing rect {:?}",rect);
             if let Some(color) = colors.get(rect.color.as_str()) {
-                d.draw_rectangle((win.x+rect.x)*scale,
-                                 (win.y+rect.y)*scale,
-                                 (rect.width*(scale-1)),
-                                 (rect.height*(scale-1)),
+                d.draw_rectangle((win.x+rect.x)*(scale as i32),
+                                 (win.y+rect.y)*(scale as i32),
+                                 (rect.width*((scale-1.0) as i32)),
+                                 (rect.height*((scale-1.0) as i32)),
                                  color)
             }
             if let None = colors.get(rect.color.as_str()) {

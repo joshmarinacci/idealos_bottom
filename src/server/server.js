@@ -150,7 +150,7 @@ async function start_app2() {
 async function start_app3() {
     let app = {
         name:'app3',
-        path: 'src/clients/app3.js',
+        path: 'src/clients/gui_test.js',
         args: [],
         id:"app_"+(Math.floor(Math.random()*100000))
     }
