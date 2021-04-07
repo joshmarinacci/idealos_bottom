@@ -29,3 +29,9 @@ export const SCREEN = {
     SCREEN:'SCREEN',
     WINDOW_LIST:'WINDOW_LIST',
 }
+
+export const DEBUG = {
+    LIST:'DEBUG_LIST',
+    CLIENT:'DEBUG_CLIENT',
+    LISTS_RESPONSE:'DEBUG_LIST_RESPONSE'
+}

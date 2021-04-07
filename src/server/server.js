@@ -4,6 +4,7 @@ import http from "http"
 import path from "path"
 import {spawn} from "child_process"
 import {
+    DEBUG,
     DRAW_PIXEL,
     DRAWING,
     FILL_RECT,
@@ -22,6 +23,7 @@ const sleep = (dur) => new Promise((res,rej) => setTimeout(res,dur))
 
 const connections = {}
 const wids = new WindowTracker()
+const apps = []
 
 function handle_start_message(ws,msg) {
     connections[SCREEN.SCREEN] = ws
@@ -69,6 +71,17 @@ function forward_to_target(msg) {
     return connections[msg.target].send(JSON.stringify(msg))
 }
 
+function list_apps(ws,msg) {
+    log("listing apps for debug message",msg)
+    connections[DEBUG.CLIENT] = ws
+    let response = {
+        type:DEBUG.LISTS_RESPONSE,
+        connection_count:Object.keys(connections).length,
+        apps:apps,
+    }
+    if(connections[msg.sender]) return connections[msg.sender].send(JSON.stringify(response))
+}
+
 function start_message_server() {
     const server = new WS.Server({
         port: websocket_port,
@@ -87,6 +100,7 @@ function start_message_server() {
             if(msg.type === MOUSE.UP.NAME)  return forward_to_target(msg)
             if(msg.type === MOUSE.DOWN.NAME) return forward_to_target(msg)
             if(msg.type === DRAWING.REFRESH_WINDOW) return forward_to_target(msg)
+            if(msg.type === DEBUG.LIST) return list_apps(ws,msg)
             log("incoming message", msg)
         })
         ws.send(JSON.stringify({message: 'CONNECTED'}))
@@ -122,6 +136,7 @@ function start_web_server() {
 
 function start_app(app) {
     log('starting app',app)
+    apps.push(app)
     const child = spawn('node', [app.path,`ws://${hostname}:${websocket_port}`,app.id].concat(app.args))
     child.stdout.on('data',(data)=>log(`STDOUT ${app.name} ${data}`))
     child.stderr.on('data',(data)=>log(`STDERR ${app.name} ${data}`))
