@@ -30,8 +30,8 @@ function redraw() {
     app.log("redrawing gui test")
     //bg panel
     draw_rect(0,0,width,height,'white')
-    label(1,1,"GUI Test","black")
-    button(1,height/2,10,10, "ab")
+    label(1,1,"G","black")
+    button(1,height/2,10,10, "a")
 }
 
 

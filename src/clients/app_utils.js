@@ -1,4 +1,5 @@
 import {default as WebSocket} from "ws"
+import * as PI from "pureimage"
 import {DRAW_PIXEL, OPEN_WINDOW} from '../canvas/messages.js'
 import fs from "fs"
 
@@ -56,22 +57,44 @@ export class CommonApp {
 class PixelFontImpl {
     constructor(img, metrics) {
         this.bitmap = img
-        this.metrics = metrics
+        this.info = metrics
     }
 
     draw_text(app, x, y, text, color) {
         app.log('drawing text ',text,'at',x,y)
-        app.send({type:DRAW_PIXEL.NAME, x:x, y:y, color:color})
-
+        // app.log("image is",this.bitmap)
+        // app.log("metrics is",this.info.metrics)
+        let dy = y
+        let dx = x
+        text.split("\n").forEach(line => {
+            app.log("line",line)
+            for(let n=0; n<line.length; n++) {
+                let ch = line.charCodeAt(n)
+                let met = this.info.metrics[ch]
+                // app.log("drawing char",ch,met)
+                if(met && met.w > 0) {
+                    for(let i=0; i<met.w; i++) {
+                        for(let j=0; j<met.h; j++) {
+                            let color = this.bitmap.getPixelRGBA(i+met.x,j+met.y)
+                            if(color > 0) {
+                                app.send({type:DRAW_PIXEL.NAME, x:dx+i, y:dy+j, color:'black'})
+                            }
+                        }
+                    }
+                }
+            }
+            dy += 10
+        })
+        // app.send({type:DRAW_PIXEL.NAME, x:x, y:y, color:color})
     }
 }
 
 export const PixelFont = {
     load: async function (image_source,metrics_source) {
         console.log("loading font",image_source,metrics_source)
-        let img_buffer = await fs.promises.readFile(image_source)
+        let img = await PI.decodePNGFromStream(fs.createReadStream(image_source))
         let metrics_buffer = await fs.promises.readFile(metrics_source)
         let metrics = JSON.parse(metrics_buffer.toString())
-        return new PixelFontImpl(null,metrics)
+        return new PixelFontImpl(img,metrics)
     }
 }

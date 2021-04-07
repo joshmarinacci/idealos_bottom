@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "pureimage": "^0.3.2",
     "raylib": "^0.7.0",
     "ws": "^7.4.4"
   }
