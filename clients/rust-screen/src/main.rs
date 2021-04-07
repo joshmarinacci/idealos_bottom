@@ -212,6 +212,7 @@ fn main() {
     colors.insert("red".parse().unwrap(), Color::RED);
     colors.insert("green".parse().unwrap(), Color::GREEN);
     colors.insert("skyblue".parse().unwrap(), Color::SKYBLUE);
+    colors.insert("blue".parse().unwrap(), Color::BLUE);
 
     let mut active_window:Option<String> = Option::None;
 
@@ -435,6 +436,9 @@ fn process_render_drawing(windows: &HashMap<String, Window>, d: &mut RaylibDrawH
                                  (rect.width*(scale-1)),
                                  (rect.height*(scale-1)),
                                  color)
+            }
+            if let None = colors.get(rect.color.as_str()) {
+                println!("invalid color {}",rect.color);
             }
 
         }
