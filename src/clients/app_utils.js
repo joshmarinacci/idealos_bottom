@@ -1,6 +1,6 @@
 import {default as WebSocket} from "ws"
 import * as PI from "pureimage"
-import {DRAW_PIXEL, OPEN_WINDOW} from '../canvas/messages.js'
+import {DRAW_PIXEL, make_message, OPEN_WINDOW, SCHEMAS} from '../canvas/messages.js'
 import fs from "fs"
 
 export class CommonApp {
@@ -8,6 +8,7 @@ export class CommonApp {
         // this.log("starting",argv)
         let addr = argv[2]
         let appid = argv[3]
+        this.appid = appid
         this.width = width
         this.height = height
         // this.log("app",appid,"starting")
@@ -58,6 +59,8 @@ export class CommonApp {
 
     send(msg) {
         msg.window = this.win_id
+        msg.app = this.appid
+        this.log("sending",msg)
         this.ws.send(JSON.stringify(msg))
     }
 }
@@ -86,7 +89,7 @@ class PixelFontImpl {
                         for(let j=0; j<met.h; j++) {
                             let color = this.bitmap.getPixelRGBA(i+met.x,j+met.y)
                             if(color > 0) {
-                                app.send({type:DRAW_PIXEL.NAME, x:dx+i, y:dy+j-met.h - 3, color:'black'})
+                                app.send(make_message(SCHEMAS.DRAW.PIXEL, {x:dx+i, y:dy+j-met.h - 3, color:'black'}))
                             }
                         }
                     }

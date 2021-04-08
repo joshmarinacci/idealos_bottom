@@ -1,4 +1,4 @@
-import {DRAW_PIXEL, DRAWING, FILL_RECT, MOUSE} from '../canvas/messages.js'
+import {DRAWING, make_message, MOUSE, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp} from './app_utils.js'
 
 let app = new CommonApp(process.argv,10,5)
@@ -15,7 +15,7 @@ app.on(DRAWING.REFRESH_WINDOW, ()=>{
     draw_button_released()
 })
 function fill_rect(w,h,color) {
-    app.send({type:FILL_RECT.NAME, x:0, y:0, width:w, height:h, color:color})
+    app.send(make_message(SCHEMAS.DRAW.RECT,{x:0,y:0,width:w,height:h,color:color}))
 }
 function draw_button() {
     fill_rect(app.width,app.height,'green')
@@ -35,13 +35,12 @@ const font = {
     ]
 }
 function draw_char(x, y, ch,color) {
-    app.log("sending",x,ch)
     if(font[ch]) {
         let img = font[ch]
         for(let j=0; j<img.length; j++) {
             for (let i = 0; i < img[0].length; i++) {
                 let px = img[j][i]
-                if(px === 1) app.send({type:DRAW_PIXEL.NAME, x:x+i, y:y+j, color:color})
+                if(px === 1) app.send(make_message(SCHEMAS.DRAW.PIXEL,{x:x+i, y:y+j, color}))
             }
         }
         x += img[0].length + 2

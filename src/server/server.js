@@ -5,12 +5,10 @@ import path from "path"
 import {spawn} from "child_process"
 import {
     DEBUG,
-    DRAW_PIXEL,
     DRAWING,
-    FILL_RECT,
-    HEARTBEAT,
+    HEARTBEAT, message_match,
     MOUSE,
-    OPEN_WINDOW,
+    OPEN_WINDOW, SCHEMAS,
     SCREEN
 } from '../canvas/messages.js'
 import {WindowTracker} from './windows.js'
@@ -102,6 +100,7 @@ function restart_app(msg) {
     }
 }
 
+
 function start_message_server() {
     const server = new WS.Server({
         port: websocket_port,
@@ -114,8 +113,8 @@ function start_message_server() {
             forward_to_debug(msg)
             if(msg.type === SCREEN.START) return handle_start_message(ws,msg)
             if(msg.type === OPEN_WINDOW.NAME) return handle_open_window_message(ws,msg)
-            if(msg.type === DRAW_PIXEL.NAME) return forward_to_screen(msg)
-            if(msg.type === FILL_RECT.NAME) return forward_to_screen(msg)
+            if(message_match(SCHEMAS.DRAW.PIXEL,msg)) return forward_to_screen(msg)
+            if(message_match(SCHEMAS.DRAW.RECT,msg)) return forward_to_screen(msg)
             if(msg.type === OPEN_WINDOW.RESPONSE_NAME) return forward_to_target(msg)
             if(msg.type === HEARTBEAT.NAME) return do_nothing(msg)
             if(msg.type === MOUSE.UP.NAME)  return forward_to_target(msg)

@@ -167,7 +167,7 @@ fn parse_message(sender:&Sender<OwnedMessage>,  renderloop_send:&Sender<RenderMe
                     renderloop_send.send(RenderMessage::DrawPixel(msg));
                     ()
                 },
-                "FILL_RECT"   => {
+                "DRAW_RECT"   => {
                     let msg:FillRectMessage = serde_json::from_str(txt.as_str())?;
                     renderloop_send.send(RenderMessage::FillRect(msg));
                     ()

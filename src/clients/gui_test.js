@@ -1,4 +1,4 @@
-import {DRAW_PIXEL, DRAWING, FILL_RECT, MOUSE} from '../canvas/messages.js'
+import {DRAWING, make_message, MOUSE, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp, PixelFont} from './app_utils.js'
 
 let width = 40
@@ -50,7 +50,7 @@ app.on(DRAWING.REFRESH_WINDOW, ()=>{
     redraw()
 })
 
-const draw_rect = (x,y,width,height,color) => app.send({type:FILL_RECT.NAME, x, y, width, height, color})
+const draw_rect = (x,y,width,height,color) => app.send(make_message(SCHEMAS.DRAW.RECT, {x, y, width, height, color}))
 const label = (x,y,text,color) => draw_text(x,y,text,color)
 const button = (x,y,width,height,text) => {
     let bg = 'blue'
