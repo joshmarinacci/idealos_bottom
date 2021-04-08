@@ -72,10 +72,11 @@ class PixelFontImpl {
         app.log('drawing text ',text,'at',x,y)
         // app.log("image is",this.bitmap)
         // app.log("metrics is",this.info.metrics)
-        let dy = y
         let dx = x
+        let dy = y
         text.split("\n").forEach(line => {
-            app.log("line",line)
+            // app.log("line",line)
+            app.log("dy",dy)
             for(let n=0; n<line.length; n++) {
                 let ch = line.charCodeAt(n)
                 let met = this.info.metrics[ch]
@@ -85,15 +86,16 @@ class PixelFontImpl {
                         for(let j=0; j<met.h; j++) {
                             let color = this.bitmap.getPixelRGBA(i+met.x,j+met.y)
                             if(color > 0) {
-                                app.send({type:DRAW_PIXEL.NAME, x:dx+i, y:dy+j, color:'black'})
+                                app.send({type:DRAW_PIXEL.NAME, x:dx+i, y:dy+j-met.h - 3, color:'black'})
                             }
                         }
                     }
+                    dx += met.w
+                    dx += 1
                 }
             }
             dy += 10
         })
-        // app.send({type:DRAW_PIXEL.NAME, x:x, y:y, color:color})
     }
 }
 

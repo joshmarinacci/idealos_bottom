@@ -375,7 +375,6 @@ fn process_outgoing_server_messages(websocket_sending_rx: &Receiver<OwnedMessage
                 return;
             }
         };
-        println!("got a message to send out");
         match message {
             OwnedMessage::Close(_) => {
                 let _ = sender.send_message(&message);
@@ -418,7 +417,7 @@ fn process_incoming_server_messages(receiver: &mut Reader<TcpStream>, websocket_
             }
             // Say what we received
             OwnedMessage::Text(txt) => {
-                // println!("the text is {:?}",txt);
+                println!("received message {:?}", txt);
                 parse_message(websocket_sending_tx, render_loop_send, txt);
             }
             _ => {
@@ -426,7 +425,6 @@ fn process_incoming_server_messages(receiver: &mut Reader<TcpStream>, websocket_
             },
         }
     }
-
 }
 
 fn process_render_drawing(windows: &HashMap<String, Window>, d: &mut RaylibDrawHandle, colors: &HashMap<String,Color>, active_window:&Option<String>) {
