@@ -79,21 +79,22 @@ function restart_app(msg) {
     let appid = msg.target
     if(at.has_app(appid)) {
         at.stop(appid)
-        let win = wids.windows_for_appid(appid)[0]
-        forward_to_screen(make_message(SCHEMAS.WINDOW.CLOSE,{
-                target:appid, window:{
-                id:win.id,
-                width:win.width,
-                height:win.height,
-                x:win.x,
-                y:win.y,
-                owner:win.owner,
-            }}))
+        wids.windows_for_appid(appid).forEach(win => {
+            forward_to_screen(make_message(SCHEMAS.WINDOW.CLOSE, {
+                target: appid, window: {
+                    id: win.id,
+                    width: win.width,
+                    height: win.height,
+                    x: win.x,
+                    y: win.y,
+                    owner: win.owner,
+                }
+            }))
+        })
         wids.remove_windows_for_appid(appid)
         at.start(appid)
     }
 }
-
 
 function start_message_server() {
     const server = new WS.Server({
@@ -166,7 +167,7 @@ async function start_app3() {
 }
 
 await start_message_server()
-await start_web_server()
+// await start_web_server()
 
 function screen_connected() {
     log("waiting for the screen to connect. please refresh the page")

@@ -45,4 +45,10 @@ export class AppTracker {
         app.subprocess.kill('SIGTERM')
         app.subprocess = undefined
     }
+
+    list_apps() {
+        return this.apps.slice().map(app => ({
+            id:app.id,name:app.name,path:app.path,args:app.args,
+        }))
+    }
 }
