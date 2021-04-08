@@ -1,17 +1,17 @@
-import {DRAWING, make_message, MOUSE, SCHEMAS} from '../canvas/messages.js'
+import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp} from './app_utils.js'
 
 let app = new CommonApp(process.argv,10,5)
 app.on('start',()=>{
     draw_button()
 })
-app.on(MOUSE.DOWN.NAME,()=>{
+app.on(SCHEMAS.MOUSE.DOWN.NAME,()=>{
     draw_button_pressed()
 })
-app.on(MOUSE.UP.NAME,()=>{
+app.on(SCHEMAS.MOUSE.UP.NAME,()=>{
     draw_button_released()
 })
-app.on(DRAWING.REFRESH_WINDOW, ()=>{
+app.on(SCHEMAS.WINDOW.REFRESH.NAME, ()=>{
     draw_button_released()
 })
 function fill_rect(w,h,color) {

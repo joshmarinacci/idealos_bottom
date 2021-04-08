@@ -1,5 +1,5 @@
 import {CommonApp} from "./app_utils.js"
-import {DRAWING, make_message, SCHEMAS} from '../canvas/messages.js'
+import {make_message, SCHEMAS} from '../canvas/messages.js'
 
 let app = new CommonApp(process.argv,10,5)
 
@@ -14,7 +14,7 @@ app.on('start',()=>{
     },5000)
 })
 
-app.on(DRAWING.REFRESH_WINDOW, ()=>{
+app.on(SCHEMAS.WINDOW.REFRESH.NAME, ()=>{
     for (let i = 0; i < x; i++) {
         app.send(make_message(SCHEMAS.DRAW.PIXEL,{x:i,y:0,color:'red'}))
     }

@@ -1,33 +1,27 @@
 import {default as WebSocket} from "ws"
 import * as PI from "pureimage"
-import {DRAW_PIXEL, make_message, OPEN_WINDOW, SCHEMAS} from '../canvas/messages.js'
+import {make_message, message_match, SCHEMAS} from '../canvas/messages.js'
 import fs from "fs"
 
 export class CommonApp {
     constructor(argv,width,height) {
-        // this.log("starting",argv)
         let addr = argv[2]
         let appid = argv[3]
         this.appid = appid
         this.width = width
         this.height = height
-        // this.log("app",appid,"starting")
-        // this.log("connecting to",addr)
         this.listeners = {}
         this.ws = new WebSocket(addr);
         this.ws.on('open',()=>{
-            // this.log("got the connection")
-            this.ws.send(JSON.stringify({type:OPEN_WINDOW.NAME,width:this.width, height:this.height,sender:appid}))
+            this.ws.send(JSON.stringify(make_message(SCHEMAS.WINDOW.OPEN,{width:this.width,height:this.height,sender:appid})))
         })
         this.ws.on("message",(data)=>{
             let msg = JSON.parse(data)
-            if(msg.type === OPEN_WINDOW.RESPONSE_NAME) {
-                // this.log("our window id is",msg.window)
+            if(message_match(SCHEMAS.WINDOW.OPEN_RESPONSE,msg)) {
                 this.win_id = msg.window
                 this.fireLater('start',{})
                 return
             }
-            this.log("sending message to app itself",msg)
             this.fireLater(msg.type,msg)
         })
 
@@ -60,7 +54,7 @@ export class CommonApp {
     send(msg) {
         msg.window = this.win_id
         msg.app = this.appid
-        this.log("sending",msg)
+        // this.log("sending",msg)
         this.ws.send(JSON.stringify(msg))
     }
 }

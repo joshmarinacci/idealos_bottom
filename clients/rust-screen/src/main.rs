@@ -152,12 +152,12 @@ fn parse_message(sender:&Sender<OwnedMessage>,  renderloop_send:&Sender<RenderMe
     match &v["type"] {
         Value::String(strr) => {
             match &strr[..] {
-                "WINDOW_LIST" => {
+                "SCREEN_WINDOW_LIST" => {
                     let msg:WindowListMessage = serde_json::from_str(txt.as_str())?;
                     renderloop_send.send(RenderMessage::WindowList(msg));
                     ()
                 },
-                "SCREEN_NAME" => {
+                "WINDOW_OPEN" => {
                     let msg:OpenWindowScreen = serde_json::from_str(txt.as_str())?;
                     renderloop_send.send(RenderMessage::OpenWindow(msg));
                     ()
@@ -178,7 +178,7 @@ fn parse_message(sender:&Sender<OwnedMessage>,  renderloop_send:&Sender<RenderMe
                     ()
                 }
                 _ => {
-                    println!("some other message type")
+                    println!("some other message type {}",txt)
                 }
             }
         }
@@ -199,7 +199,7 @@ fn window_list(windows:&mut HashMap<String, Window>, sender:&Sender<OwnedMessage
     for(_, win) in windows {
         println!("sending to window {}", win.id);
         let msg2 = RefreshWindowMessage {
-            type_:"REFRESH_WINDOW".to_string(),
+            type_:"WINDOW_REFRESH".to_string(),
             target: win.owner.clone(),
             window:win.id.clone()
         };
@@ -269,7 +269,7 @@ fn main() {
 
 
     //send the initial connection message
-    let message = OwnedMessage::Text("{\"type\":\"START\"}".to_string());
+    let message = OwnedMessage::Text("{\"type\":\"SCREEN_START\"}".to_string());
     match tx.send(message) {
         Ok(()) => (),
         Err(e) => {
@@ -310,7 +310,7 @@ fn main() {
 fn process_keyboard_input(rl: &mut RaylibHandle) {
     let pressed_key = rl.get_key_pressed();
     if let Some(pressed_key) = pressed_key {
-        println!("pressed key {:?}",pressed_key);
+        // println!("pressed key {:?}",pressed_key);
     // Certain keyboards may have keys raylib does not expect. Uncomment this line if so.
     // let pressed_key: u32 = unsafe { std::mem::transmute(pressed_key) };
     //d.draw_text(&format!("{:?}", pressed_key), 100, 12, 10, Color::BLACK);
@@ -321,7 +321,8 @@ fn process_keyboard_input(rl: &mut RaylibHandle) {
 
 }
 fn process_mouse_input(rl: &mut RaylibHandle, windows:&HashMap<String,Window>, websocket_sender:&Sender<OwnedMessage>, active:&mut Option<String>) {
-    // println!("mouse position {:?}",pos);
+    // println!("mouse position {:?}",rl.get_mouse_position());
+    // println!("button pressed {:?}",rl.is_mouse_button_pressed(MouseButton::MOUSE_LEFT_BUTTON));
     if rl.is_mouse_button_pressed(MouseButton::MOUSE_LEFT_BUTTON) {
         let pos = rl.get_mouse_position();
         let pt = Point {
@@ -339,6 +340,7 @@ fn process_mouse_input(rl: &mut RaylibHandle, windows:&HashMap<String,Window>, w
                     y:(pt.y)-win.y,
                     target:win.owner.clone()
                 };
+                // println!("sending mouse down {:?}",msg);
                 websocket_sender.send(OwnedMessage::Text(json!(msg).to_string()));
             }
         }
@@ -384,7 +386,7 @@ fn process_outgoing_server_messages(websocket_sending_rx: &Receiver<OwnedMessage
             _ => (),
         }
         // Send the message
-        println!("sending out {:?}",message);
+        // println!("sending out {:?}",message);
         match sender.send_message(&message) {
             Ok(()) => (),
             Err(e) => {
@@ -417,7 +419,7 @@ fn process_incoming_server_messages(receiver: &mut Reader<TcpStream>, websocket_
             }
             // Say what we received
             OwnedMessage::Text(txt) => {
-                println!("received message {:?}", txt);
+                // println!("received message {:?}", txt);
                 parse_message(websocket_sending_tx, render_loop_send, txt);
             }
             _ => {
@@ -549,7 +551,7 @@ fn send_refresh_all_windows_request(windows: &HashMap<String, Window>, sender:&S
     for(_, win) in windows {
         println!("sending to window {}", win.id);
         let msg2 = RefreshWindowMessage {
-            type_:"REFRESH_WINDOW".to_string(),
+            type_:"WINDOW_REFRESH".to_string(),
             target: win.owner.clone(),
             window:win.id.clone()
         };

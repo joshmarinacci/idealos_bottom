@@ -1,4 +1,4 @@
-export const OPEN_WINDOW = {
+/*export const OPEN_WINDOW = {
     NAME:'OPEN_WINDOW',
     RESPONSE_NAME: 'WINDOW_OPENED',
     SCREEN_NAME: 'SCREEN_NAME',
@@ -9,10 +9,11 @@ export const DRAWING = {
 }
 export const DRAW_PIXEL = {
     NAME:'DRAW_PIXEL'
-}
+}*/
 // export const FILL_RECT = {
 //     NAME:'FILL_RECT',
 // }
+/*
 export const HEARTBEAT = {
     NAME:'HEARTBEAT'
 }
@@ -24,18 +25,47 @@ export const MOUSE = {
         NAME:'MOUSE_UP'
     }
 }
-
+*/
+/*
 export const SCREEN = {
     START:'START',
     SCREEN:'SCREEN',
     WINDOW_LIST:'WINDOW_LIST',
 }
-
+*/
 
 let schemas = {
+    GENERAL:{
+        CONNECTED:[],
+        HEARTBEAT:[],
+    },
+    SCREEN:{
+        START:[],
+        WINDOW_LIST:[]
+    },
+    WINDOW:{
+        OPEN:[],
+        OPEN_RESPONSE:[],
+        CLOSE:[],
+        REFRESH:[],
+    },
     DRAW:{
         PIXEL:['color','x','y'],
         RECT:['color','x','y','width','height']
+    },
+    MOUSE:{
+        UP:[],
+        DOWN:[],
+    },
+    KEYBOARD: {
+
+    },
+    DEBUG:{
+        LIST:[],
+        LIST_RESPONSE:[],
+        CLIENT:[],
+        LOG:[],
+        RESTART_APP:[],
     }
 }
 
@@ -45,7 +75,6 @@ function process_schema(sch) {
         let sub = sch[key]
         let sobj = {}
         Object.entries(sub).map(([sk,v])=>{
-            console.log("sk",sk,v)
             sobj[sk] = {
                 NAME:`${key}_${sk}`,
                 props:v,
@@ -64,7 +93,6 @@ export function message_match(sch,msg) {
 }
 
 export function make_message(sch,opts) {
-    console.log("making message for schema",sch)
     let msg = {
         type:sch.NAME
     }
@@ -75,13 +103,15 @@ export function make_message(sch,opts) {
         msg[key] = value
     })
 
+    // console.log("made message",msg)
     return msg
 }
-
+/*
 export const DEBUG = {
-    LIST:'DEBUG_LIST',
+    // LIST:'DEBUG_LIST',
     CLIENT:'DEBUG_CLIENT',
-    LISTS_RESPONSE:'DEBUG_LIST_RESPONSE',
+    // LISTS_RESPONSE:'DEBUG_LIST_RESPONSE',
     RESTART_APP_REQUEST:'RESTART_APP_REQUEST',
-    LOG:'DEBUG_LOG',
+    // LOG:'DEBUG_LOG',
 }
+ */

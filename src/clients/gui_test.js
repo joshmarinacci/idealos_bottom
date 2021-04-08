@@ -1,4 +1,4 @@
-import {DRAWING, make_message, MOUSE, SCHEMAS} from '../canvas/messages.js'
+import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp, PixelFont} from './app_utils.js'
 
 let width = 40
@@ -35,18 +35,17 @@ function redraw() {
 
 
 
-app.on(MOUSE.DOWN.NAME,(e)=>{
-    console.log("mouse down",e)
+app.on(SCHEMAS.MOUSE.DOWN.NAME,(e)=>{
     mouse.x = e.payload.x
     mouse.y = e.payload.y
     mouse.down = true
     redraw()
 })
-app.on(MOUSE.UP.NAME,()=>{
+app.on(SCHEMAS.MOUSE.UP.NAME,()=>{
     mouse.down = false
     redraw()
 })
-app.on(DRAWING.REFRESH_WINDOW, ()=>{
+app.on(SCHEMAS.WINDOW.REFRESH.NAME, ()=>{
     redraw()
 })
 
