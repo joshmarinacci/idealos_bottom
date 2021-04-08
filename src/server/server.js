@@ -2,12 +2,12 @@ import WS from "ws"
 import fs from "fs"
 import http from "http"
 import path from "path"
-import {spawn} from "child_process"
 import {
     make_message, message_match,
     SCHEMAS,
 } from '../canvas/messages.js'
 import {WindowTracker} from './windows.js'
+import {AppTracker} from './apps.js'
 const hostname = '127.0.0.1'
 const webserver_port = 3000
 const websocket_port = 8081
@@ -20,8 +20,7 @@ const sleep = (dur) => new Promise((res,rej) => setTimeout(res,dur))
 
 const connections = {}
 const wids = new WindowTracker()
-const apps = []
-let spawn_map = {}
+const at = new AppTracker(hostname,websocket_port)
 
 const CLIENT_TYPES = {
     SCREEN:'SCREEN',
@@ -68,20 +67,18 @@ function forward_to_target(msg) {
 }
 function list_apps(ws,msg) {
     log("listing apps for debug message",msg)
-    connections[DEBUG.CLIENT] = ws
+    connections[CLIENT_TYPES.DEBUG] = ws
     let response = make_message(SCHEMAS.DEBUG.LIST_RESPONSE,{
         connection_count:Object.keys(connections).length,
-        apps:apps,
+        apps:at.list_apps(),
     })
     if(connections[msg.sender]) return connections[msg.sender].send(JSON.stringify(response))
 }
 
 function restart_app(msg) {
     let appid = msg.target
-    if(spawn_map[appid]) {
-        let child = spawn_map[appid]
-        child.kill('SIGTERM')
-        spawn_map[appid] = undefined
+    if(at.has_app(appid)) {
+        at.stop(appid)
         let win = wids.windows_for_appid(appid)[0]
         forward_to_screen(make_message(SCHEMAS.WINDOW.CLOSE,{
                 target:appid, window:{
@@ -93,8 +90,7 @@ function restart_app(msg) {
                 owner:win.owner,
             }}))
         wids.remove_windows_for_appid(appid)
-        let app = apps.find(ap => ap.id === appid)
-        start_app(app)
+        at.start(appid)
     }
 }
 
@@ -118,9 +114,9 @@ function start_message_server() {
             if(message_match(SCHEMAS.MOUSE.DOWN,msg)) return forward_to_target(msg)
             if(message_match(SCHEMAS.MOUSE.UP,msg)) return forward_to_target(msg)
             if(message_match(SCHEMAS.WINDOW.REFRESH,msg)) return forward_to_target(msg)
-            // if(msg.type === DEBUG.LIST) return list_apps(ws,msg)
-            // if(msg.type === DEBUG.RESTART_APP_REQUEST) return restart_app(msg)
-            log("incoming message", msg)
+            if(message_match(SCHEMAS.DEBUG.LIST,msg)) return list_apps(ws,msg)
+            if(message_match(SCHEMAS.DEBUG.RESTART_APP,msg)) return restart_app(msg)
+            log("unknown incoming message", msg)
         })
         ws.send(JSON.stringify(make_message(SCHEMAS.GENERAL.CONNECTED,{})))
     })
@@ -153,47 +149,20 @@ function start_web_server() {
     })
 }
 
-
-function start_app(app) {
-    log('starting app',app)
-    const child = spawn('node', [app.path,`ws://${hostname}:${websocket_port}`,app.id].concat(app.args))
-    child.stdout.on('data',(data)=>log(`STDOUT ${app.name} ${data}`))
-    child.stderr.on('data',(data)=>log(`STDERR ${app.name} ${data}`))
-    child.on('exit',(code)=> log(`${app.name} ended with code = ${code}`))
-    spawn_map[app.id] = child
-}
 async function start_app1() {
-    let app = {
-        name:'app1',
-        path: 'src/clients/app1.js',
-        args: [],
-        id:"app_"+(Math.floor(Math.random()*100000))
-    }
+    let app = at.create_app({name:'app1',path:'src/clients/app1.js',args: []})
     await sleep(250)
-    apps.push(app)
-    start_app(app)
+    at.start(app.id)
 }
 async function start_app2() {
-    let app = {
-        name:'app2',
-        path: 'src/clients/app2.js',
-        args: [],
-        id:"app_"+(Math.floor(Math.random()*100000))
-    }
+    let app = at.create_app({name:'app2',path:'src/clients/app2.js',args: []})
     await sleep(250)
-    apps.push(app)
-    start_app(app)
+    at.start(app.id)
 }
 async function start_app3() {
-    let app = {
-        name:'app3',
-        path: 'src/clients/gui_test.js',
-        args: [],
-        id:"app_"+(Math.floor(Math.random()*100000))
-    }
+    let app = at.create_app({name:'guitest',path:'src/clients/gui_test.js',args: []})
     await sleep(250)
-    apps.push(app)
-    start_app(app)
+    at.start(app.id)
 }
 
 await start_message_server()
