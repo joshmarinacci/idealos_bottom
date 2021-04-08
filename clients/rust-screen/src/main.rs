@@ -157,7 +157,7 @@ fn parse_message(sender:&Sender<OwnedMessage>,  renderloop_send:&Sender<RenderMe
                     renderloop_send.send(RenderMessage::WindowList(msg));
                     ()
                 },
-                "WINDOW_OPEN" => {
+                "WINDOW_OPEN_SCREEN" => {
                     let msg:OpenWindowScreen = serde_json::from_str(txt.as_str())?;
                     renderloop_send.send(RenderMessage::OpenWindow(msg));
                     ()

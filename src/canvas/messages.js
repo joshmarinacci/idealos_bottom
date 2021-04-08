@@ -41,11 +41,12 @@ let schemas = {
     },
     SCREEN:{
         START:[],
-        WINDOW_LIST:[]
+        WINDOW_LIST:['windows']
     },
     WINDOW:{
-        OPEN:[],
-        OPEN_RESPONSE:[],
+        OPEN:['width','height','sender'],
+        OPEN_SCREEN:['target','window'],
+        OPEN_RESPONSE:['target','window'],
         CLOSE:[],
         REFRESH:[],
     },
@@ -64,7 +65,7 @@ let schemas = {
         LIST:[],
         LIST_RESPONSE:[],
         CLIENT:[],
-        LOG:[],
+        LOG:['data'],
         RESTART_APP:[],
     }
 }
@@ -98,6 +99,9 @@ export function make_message(sch,opts) {
     }
     sch.props.forEach(key => {
         if(!opts.hasOwnProperty(key)) throw new Error(`message missing option ${key}`)
+    })
+    Object.keys(opts).forEach(key => {
+        if(sch.props.indexOf(key) < 0) throw new Error(`message has extra key '${key}' compared to ${sch.props.toString()}`)
     })
     Object.entries(opts).forEach(([key,value])=>{
         msg[key] = value

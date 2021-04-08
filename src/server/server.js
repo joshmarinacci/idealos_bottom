@@ -51,7 +51,7 @@ function handle_open_window_message(ws,msg) {
     })
 
     //send response to screen
-    forward_to_screen(make_message(SCHEMAS.WINDOW.OPEN, {target:msg.sender, window:wids.window_for_id(win_id)}))
+    forward_to_screen(make_message(SCHEMAS.WINDOW.OPEN_SCREEN, {target:msg.sender, window:wids.window_for_id(win_id)}))
     //send response back to client
     forward_to_target(make_message(SCHEMAS.WINDOW.OPEN_RESPONSE, {target:msg.sender, window:win_id}))
 }
