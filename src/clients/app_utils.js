@@ -59,6 +59,28 @@ export class CommonApp {
     }
 }
 
+class BufferImage {
+    constructor(width, height) {
+        this.width = width;
+        this.height = height;
+        this.pixels = new Array(width*height)
+        this.pixels.fill(0x00000000)
+    }
+    to_array() {
+        return this.pixels
+    }
+
+    set(x, y, val) {
+        // console.log('setting at',x,y,val)
+        if(x<0) return;
+        if(y<0) return;
+        let n = y*this.width+x;
+        if(n>=this.width*this.height) return;
+        this.pixels[n] = val
+        // console.log("setting value",val)
+    }
+}
+
 class PixelFontImpl {
     constructor(img, metrics) {
         this.bitmap = img
@@ -69,11 +91,14 @@ class PixelFontImpl {
         app.log('drawing text ',text,'at',x,y)
         // app.log("image is",this.bitmap)
         // app.log("metrics is",this.info.metrics)
-        let dx = x
-        let dy = y
+        let dx = 0
+        let dy = 0
+        let w = 40
+        let h = 20
+        let img = new BufferImage(w,h)
         text.split("\n").forEach(line => {
             // app.log("line",line)
-            app.log("dy",dy)
+            // app.log("dy",dy)
             for(let n=0; n<line.length; n++) {
                 let ch = line.charCodeAt(n)
                 let met = this.info.metrics[ch]
@@ -83,7 +108,7 @@ class PixelFontImpl {
                         for(let j=0; j<met.h; j++) {
                             let color = this.bitmap.getPixelRGBA(i+met.x,j+met.y)
                             if(color > 0) {
-                                app.send(make_message(SCHEMAS.DRAW.PIXEL, {x:dx+i, y:dy+j-met.h - 3, color:'black'}))
+                                img.set(dx+i, dy+j, 0x000000FF)
                             }
                         }
                     }
@@ -93,6 +118,11 @@ class PixelFontImpl {
             }
             dy += 10
         })
+        //draw diagonal
+        // for(let i=0; i<Math.min(w,h); i++) {
+        //     img.set(i, i, 0x00FF00FF)
+        // }
+        app.send(make_message(SCHEMAS.DRAW.IMAGE,{x:x,y:y,width:w,height:h,pixels:img.to_array()}))
     }
 }
 

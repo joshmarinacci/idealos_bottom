@@ -54,8 +54,8 @@ const label = (x,y,text,color) => draw_text(x,y,text,color)
 const button = (x,y,width,height,text) => {
     let bg = 'blue'
     if(mouse.inside(x,y,width,height) && mouse.down) bg = 'red'
-    draw_rect(x,y,width,height,bg)
-    draw_text(x+1,y+height,text,'black')
+    draw_rect(x,y,width,height,'blue')
+    draw_text(x,y,text,'black')
 }
 
 const draw_text = (x,y,text,color) => {

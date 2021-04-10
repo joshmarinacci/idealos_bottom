@@ -115,6 +115,7 @@ function start_message_server() {
 
             if(message_match(SCHEMAS.DRAW.PIXEL,msg)) return forward_to_screen(msg)
             if(message_match(SCHEMAS.DRAW.RECT,msg)) return forward_to_screen(msg)
+            if(message_match(SCHEMAS.DRAW.IMAGE,msg)) return forward_to_screen(msg)
 
             if(message_match(SCHEMAS.MOUSE.DOWN,msg)) return forward_to_target(msg)
             if(message_match(SCHEMAS.MOUSE.UP,msg)) return forward_to_target(msg)

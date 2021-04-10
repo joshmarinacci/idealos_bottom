@@ -12,8 +12,7 @@ use std::collections::HashMap;
 use websocket::receiver::Reader;
 use std::net::TcpStream;
 use websocket::sender::Writer;
-
-const scale: f32 = 5.0;
+use std::f32::consts::PI;
 
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -132,7 +131,9 @@ struct DrawImageMessage {
     window:String,
     x:i32,
     y:i32,
-    bitmap: Vec<u8>,
+    width:i32,
+    height:i32,
+    pixels: Vec<i32>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -360,8 +361,8 @@ fn process_mouse_input(rl: &mut RaylibHandle, windows:&HashMap<String,Window>, w
     if rl.is_mouse_button_pressed(MouseButton::MOUSE_LEFT_BUTTON) {
         let pos = rl.get_mouse_position();
         let pt = Point {
-            x:(pos.x/scale) as i32,
-            y:(pos.y/scale) as i32,
+            x:(pos.x) as i32,
+            y:(pos.y) as i32,
         };
 
         for win in windows.values() {
@@ -383,8 +384,8 @@ fn process_mouse_input(rl: &mut RaylibHandle, windows:&HashMap<String,Window>, w
     if rl.is_mouse_button_released(MouseButton::MOUSE_LEFT_BUTTON) {
         let pos = rl.get_mouse_position();
         let pt = Point {
-            x:(pos.x/scale) as i32,
-            y:(pos.y/scale) as i32,
+            x:(pos.x) as i32,
+            y:(pos.y) as i32,
         };
 
         for win in windows.values() {
@@ -469,17 +470,20 @@ fn process_render_drawing(windows: &HashMap<String, Window>, d: &mut RaylibDrawH
     for(_, win) in windows {
         //draw bg of window
         d.draw_rectangle(
-            (win.x-1)*(scale as i32),
-            (win.y-1)*(scale as i32),
-            (win.width+2)*(scale as i32),
-            (win.height+2)*(scale as i32),
+            (win.x-1),
+            (win.y-1),
+            (win.width+2),
+            (win.height+2),
             calc_window_background(win,active_window),
         );
         //draw window buffer
-        d.draw_texture_ex(&win.tex,
-            rvec2(win.x*(scale as i32),win.y*(scale as i32)),
-            0.0,
-            scale,
+        d.draw_texture_rec(&win.tex, Rectangle{
+            x: 0.0,
+            y: 0.0,
+            width: win.width as f32,
+            height: -win.height as f32,
+        },
+           rvec2(win.x,win.y),
             Color::WHITE
         );
     }
@@ -545,9 +549,19 @@ fn process_render_messages(mut rl: &mut RaylibHandle, windows:&mut HashMap<Strin
                                 println!("no window found for {}", m.window.as_str())
                             }
                             Some(win) => {
-                                println!("drawing an image {:?}",m);
-                                // let mut d = rl.begin_texture_mode(thread, &mut *win.tex);
-                                // d.draw_rectangle(m.x,m.y,1,1,color);
+                                // println!("drawing an image {}x{} at {},{}",m.width,m.height,m.x,m.y);
+                                let mut img = Image::gen_image_color(m.width, m.height, Color::WHITE);
+                                for i in 0..m.width {
+                                    for j in 0..m.height {
+                                        let n = (j*m.width+i) as usize;
+                                        let px = m.pixels[n];
+                                        let col = Color::get_color(px);
+                                        img.draw_pixel(i,j,col);
+                                    }
+                                }
+                                let tex = rl.load_texture_from_image(thread, &img).unwrap();
+                                let mut d = rl.begin_texture_mode(thread, &mut *win.tex);
+                                d.draw_texture(&tex,m.x,m.y, Color::WHITE);
                             }
                         }
                     },
@@ -558,6 +572,7 @@ fn process_render_messages(mut rl: &mut RaylibHandle, windows:&mut HashMap<Strin
                             }
                             Some(win) => {
                                 if let Some(color) = colors.get(m.color.as_str()) {
+                                    // println!("drawing a rect {}x{} at {},{}",m.width,m.height,m.x,m.y);
                                     let mut d = rl.begin_texture_mode(thread, &mut *win.tex);
                                     d.draw_rectangle(m.x,m.y,m.width,m.height,color);
                                 } else {
