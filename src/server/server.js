@@ -106,15 +106,19 @@ function start_message_server() {
         ws.on("message", (m) => {
             let msg = JSON.parse(m)
             forward_to_debug(msg)
+            if(message_match(SCHEMAS.GENERAL.HEARTBEAT,msg)) return do_nothing(msg)
             if(message_match(SCHEMAS.SCREEN.START,msg)) return handle_start_message(ws,msg)
+
             if(message_match(SCHEMAS.WINDOW.OPEN,msg)) return handle_open_window_message(ws,msg)
             if(message_match(SCHEMAS.WINDOW.OPEN_RESPONSE,msg)) return forward_to_target(msg)
+            if(message_match(SCHEMAS.WINDOW.REFRESH,msg)) return forward_to_target(msg)
+
             if(message_match(SCHEMAS.DRAW.PIXEL,msg)) return forward_to_screen(msg)
             if(message_match(SCHEMAS.DRAW.RECT,msg)) return forward_to_screen(msg)
-            if(message_match(SCHEMAS.GENERAL.HEARTBEAT,msg)) return do_nothing(msg)
+
             if(message_match(SCHEMAS.MOUSE.DOWN,msg)) return forward_to_target(msg)
             if(message_match(SCHEMAS.MOUSE.UP,msg)) return forward_to_target(msg)
-            if(message_match(SCHEMAS.WINDOW.REFRESH,msg)) return forward_to_target(msg)
+
             if(message_match(SCHEMAS.DEBUG.LIST,msg)) return list_apps(ws,msg)
             if(message_match(SCHEMAS.DEBUG.RESTART_APP,msg)) return restart_app(msg)
             log("unknown incoming message", msg)
