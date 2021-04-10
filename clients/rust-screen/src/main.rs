@@ -14,6 +14,7 @@ use std::net::TcpStream;
 use websocket::sender::Writer;
 use std::f32::consts::PI;
 
+const scale: i32 = 10;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct Rect {
@@ -299,9 +300,10 @@ fn main() {
         .size(640, 480)
         .title(name)
         .build();
-    rl.set_target_fps(10);
+    rl.set_target_fps(60);
     let sender3 = tx.clone();
     while !rl.window_should_close() {
+        // println!("scale is {:?}",&rl.get_window_scale_dpi());
         // println!("render");
         process_render_messages(&mut rl, &mut windows, &render_loop_receive, &tx, &colors, &thread);
         process_keyboard_input(&mut rl);
@@ -341,8 +343,8 @@ fn process_mouse_input(rl: &mut RaylibHandle, windows:&HashMap<String,Window>, w
     if rl.is_mouse_button_pressed(MouseButton::MOUSE_LEFT_BUTTON) {
         let pos = rl.get_mouse_position();
         let pt = Point {
-            x:(pos.x) as i32,
-            y:(pos.y) as i32,
+            x:(pos.x/scale as f32) as i32,
+            y:(pos.y/scale as f32) as i32,
         };
 
         for win in windows.values() {
@@ -364,8 +366,8 @@ fn process_mouse_input(rl: &mut RaylibHandle, windows:&HashMap<String,Window>, w
     if rl.is_mouse_button_released(MouseButton::MOUSE_LEFT_BUTTON) {
         let pos = rl.get_mouse_position();
         let pt = Point {
-            x:(pos.x) as i32,
-            y:(pos.y) as i32,
+            x:(pos.x/scale as f32) as i32,
+            y:(pos.y/scale as f32) as i32,
         };
 
         for win in windows.values() {
@@ -450,22 +452,27 @@ fn process_render_drawing(windows: &HashMap<String, Window>, d: &mut RaylibDrawH
     for(_, win) in windows {
         //draw bg of window
         d.draw_rectangle(
-            (win.x-1),
-            (win.y-1),
-            (win.width+2),
-            (win.height+2),
+            (win.x*scale-1*scale),
+            (win.y*scale-1*scale),
+            (win.width*scale+2*scale),
+            (win.height*scale+2*scale),
             calc_window_background(win,active_window),
         );
         //draw window buffer
-        d.draw_texture_rec(&win.tex, Rectangle{
+        let src = Rectangle{
             x: 0.0,
             y: 0.0,
             width: win.width as f32,
             height: -win.height as f32,
-        },
-           rvec2(win.x,win.y),
-            Color::WHITE
-        );
+        };
+        let dst = Rectangle {
+            x: (win.x*scale) as f32,
+            y: (win.y*scale) as f32,
+            width: (win.width*scale) as f32 ,
+            height: (win.height*scale) as f32,
+        };
+        let origin = rvec2(0,0);
+        d.draw_texture_pro(&win.tex, src,dst,origin,0.0,Color::WHITE)
     }
 }
 
