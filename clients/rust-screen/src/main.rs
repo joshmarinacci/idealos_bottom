@@ -133,7 +133,7 @@ struct DrawImageMessage {
     y:i32,
     width:i32,
     height:i32,
-    pixels: Vec<i32>,
+    pixels: Vec<u8>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -222,26 +222,6 @@ fn parse_message(sender:&Sender<OwnedMessage>,  renderloop_send:&Sender<RenderMe
     }
    Ok(())
 }
-/*
-fn window_list(windows:&mut HashMap<String, Window>, sender:&Sender<OwnedMessage>, msg:&WindowListMessage) {
-    println!("got window list {:?}",msg);
-    for(key,value) in &msg.windows {
-        println!("make window id {} at {},{}", value.id,value.x, value.y);
-        windows.insert(key.clone(), Window.from_info(value));
-    }
-    println!("window count is {:?}",windows.len());
-    for(_, win) in windows {
-        println!("sending to window {}", win.id);
-        let msg2 = RefreshWindowMessage {
-            type_:"WINDOW_REFRESH".to_string(),
-            target: win.owner.clone(),
-            window:win.id.clone()
-        };
-        let val = json!(msg2);
-        let txt = OwnedMessage::Text(val.to_string());
-        sender.send(txt);
-    }
-}*/
 
 fn screen_name(msg:&OpenWindowScreen) {
     println!("go screen name {:?}",msg)
@@ -549,13 +529,17 @@ fn process_render_messages(mut rl: &mut RaylibHandle, windows:&mut HashMap<Strin
                                 println!("no window found for {}", m.window.as_str())
                             }
                             Some(win) => {
-                                // println!("drawing an image {}x{} at {},{}",m.width,m.height,m.x,m.y);
+                                // println!("drawing an image {}x{} at {},{}, len = {}",m.width,m.height,m.x,m.y,m.pixels.len());
                                 let mut img = Image::gen_image_color(m.width, m.height, Color::WHITE);
                                 for i in 0..m.width {
                                     for j in 0..m.height {
-                                        let n = (j*m.width+i) as usize;
-                                        let px = m.pixels[n];
-                                        let col = Color::get_color(px);
+                                        let n = ((j*m.width+i)*4) as usize;
+                                        let r = m.pixels[n+0] as u8;
+                                        let g = m.pixels[n+1] as u8;
+                                        let b = m.pixels[n+2] as u8;
+                                        let a = m.pixels[n+3] as u8;
+                                        let col = Color::from((r,g,b,a));
+                                        // println!("at {},{} color is {:?}",i,j,col);
                                         img.draw_pixel(i,j,col);
                                     }
                                 }

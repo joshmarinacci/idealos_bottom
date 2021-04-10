@@ -63,21 +63,24 @@ class BufferImage {
     constructor(width, height) {
         this.width = width;
         this.height = height;
-        this.pixels = new Array(width*height)
-        this.pixels.fill(0x00000000)
+        this.pixels = new Array(width*height*4)
+        this.pixels.fill(0)
     }
     to_array() {
         return this.pixels
     }
 
-    set(x, y, val) {
+    set(x, y, r,g,b,a) {
         // console.log('setting at',x,y,val)
         if(x<0) return;
         if(y<0) return;
-        let n = y*this.width+x;
-        if(n>=this.width*this.height) return;
-        this.pixels[n] = val
-        // console.log("setting value",val)
+        let n = (y*this.width+x)*4;
+        if(n>=this.width*this.height*4) return;
+        this.pixels[n+0] = r
+        this.pixels[n+1] = g
+        this.pixels[n+2] = b
+        this.pixels[n+3] = a
+        // console.log("setting value",x,y,r,g,b,a)
     }
 }
 
@@ -108,7 +111,7 @@ class PixelFontImpl {
                         for(let j=0; j<met.h; j++) {
                             let color = this.bitmap.getPixelRGBA(i+met.x,j+met.y)
                             if(color > 0) {
-                                img.set(dx+i, dy+j, 0x000000FF)
+                                img.set(dx+i, dy+j, 0,0,0,255)
                             }
                         }
                     }
@@ -120,7 +123,7 @@ class PixelFontImpl {
         })
         //draw diagonal
         // for(let i=0; i<Math.min(w,h); i++) {
-        //     img.set(i, i, 0x00FF00FF)
+        //     img.set(i, i, 128,0,0,255)
         // }
         app.send(make_message(SCHEMAS.DRAW.IMAGE,{x:x,y:y,width:w,height:h,pixels:img.to_array()}))
     }
