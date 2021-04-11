@@ -99,6 +99,7 @@ class PixelFontImpl {
         let w = 40
         let h = 20
         let img = new BufferImage(w,h)
+        let line_height = 10;
         text.split("\n").forEach(line => {
             // app.log("line",line)
             // app.log("dy",dy)
@@ -111,7 +112,7 @@ class PixelFontImpl {
                         for(let j=0; j<met.h; j++) {
                             let color = this.bitmap.getPixelRGBA(i+met.x,j+met.y)
                             if(color > 0) {
-                                img.set(dx+i, dy+j, 0,0,0,255)
+                                img.set(dx+i, dy+j+line_height-met.h, 0,0,0,255)
                             }
                         }
                     }
@@ -122,9 +123,9 @@ class PixelFontImpl {
             dy += 10
         })
         //draw diagonal
-        // for(let i=0; i<Math.min(w,h); i++) {
-        //     img.set(i, i, 128,0,0,255)
-        // }
+        for(let i=0; i<Math.min(w,h); i++) {
+            img.set(i, i, 128,0,0,255)
+        }
         app.send(make_message(SCHEMAS.DRAW.IMAGE,{x:x,y:y,width:w,height:h,pixels:img.to_array()}))
     }
 }
