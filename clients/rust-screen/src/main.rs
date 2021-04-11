@@ -1,180 +1,24 @@
-use std::sync::mpsc::{channel, Sender, Receiver};
+use std::collections::HashMap;
+use std::f32::consts::PI;
+use std::net::TcpStream;
+use std::sync::mpsc::{channel, Receiver, Sender};
 use std::thread;
 
 use raylib::prelude::*;
-
-use websocket::ClientBuilder;
-use websocket::{Message, OwnedMessage};
-
-use serde_json::{Result, Value, json};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use serde_json::{json, Result, Value};
+use websocket::{Message, OwnedMessage};
+use websocket::ClientBuilder;
 use websocket::receiver::Reader;
-use std::net::TcpStream;
 use websocket::sender::Writer;
-use std::f32::consts::PI;
+
+use messages::{CloseWindowScreen, DrawImageMessage, DrawPixelMessage, FillRectMessage, MouseDownMessage, MouseUpMessage, OpenWindowScreen, RefreshWindowMessage, RenderMessage, WindowListMessage};
+use window::{Point, Window};
+
+mod messages;
+mod window;
 
 const scale: i32 = 10;
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct Rect {
-    x:i32,
-    y:i32,
-    width:i32,
-    height:i32,
-    color:String,
-}
-
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct Point {
-    x:i32,
-    y:i32,
-}
-
-struct Window {
-    id:String,
-    x:i32,
-    y:i32,
-    width:i32,
-    height:i32,
-    owner:String,
-    tex:RenderTexture2D
-}
-impl Window {
-    fn from_info(mut rl:&mut RaylibHandle, thread:&RaylibThread, info:&WindowInfo) -> Window {
-        let mut target = rl.load_render_texture(thread, info.width as u32, info.height as u32).unwrap();
-        {
-            let mut d = rl.begin_texture_mode(thread,  &mut target);
-            d.clear_background(Color::MAROON);
-            d.draw_circle(info.width/2,info.height/2,4.0,Color::GREEN);
-        }
-        Window {
-            id:info.id.clone(),
-            x:info.x,
-            y:info.y,
-            width: info.width,
-            height: info.height,
-            owner: info.owner.clone(),
-            tex: target,
-        }
-    }
-
-    fn contains(&self, pt:&Point) -> bool {
-        if pt.x < self.x { return false; }
-        if pt.x > (self.x + self.width) { return false; }
-        if pt.y < self.y { return false; }
-        if pt.y > (self.y + self.height) { return false; }
-        return true
-    }
-}
-
-
-#[derive(Serialize, Deserialize, Debug)]
-struct WindowListMessage  {
-    #[serde(rename = "type")]
-    type_:String,
-    windows:HashMap<String,WindowInfo>,
-}
-
-#[derive(Debug)]
-enum RenderMessage {
-    WindowList(WindowListMessage),
-    OpenWindow(OpenWindowScreen),
-    CloseWindow(CloseWindowScreen),
-    DrawPixel(DrawPixelMessage),
-    DrawImage(DrawImageMessage),
-    FillRect(FillRectMessage),
-}
-
-
-#[derive(Serialize, Deserialize, Debug)]
-struct RefreshWindowMessage {
-    #[serde(rename = "type")]
-    type_:String,
-    target:String,
-    window:String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct MouseDownMessage {
-    #[serde(rename = "type")]
-    type_:String,
-    target:String,
-    x:i32,
-    y:i32,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct MouseUpMessage {
-    #[serde(rename = "type")]
-    type_:String,
-    target:String,
-    x:i32,
-    y:i32,
-}
-
-
-#[derive(Serialize, Deserialize, Debug)]
-struct DrawPixelMessage {
-    #[serde(rename = "type")]
-    type_:String,
-    color:String,
-    window:String,
-    x:i32,
-    y:i32,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct DrawImageMessage {
-    #[serde(rename = "type")]
-    type_:String,
-    window:String,
-    x:i32,
-    y:i32,
-    width:i32,
-    height:i32,
-    pixels: Vec<u8>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct FillRectMessage {
-    #[serde(rename = "type")]
-    type_:String,
-    color:String,
-    window:String,
-    x:i32,
-    y:i32,
-    width:i32,
-    height:i32,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct OpenWindowScreen {
-    #[serde(rename = "type")]
-    type_:String,
-    target:String,
-    window: WindowInfo,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct CloseWindowScreen {
-    #[serde(rename = "type")]
-    type_:String,
-    target:String,
-    window: WindowInfo,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct WindowInfo {
-    id:String,
-    x:i32,
-    y:i32,
-    width:i32,
-    height:i32,
-    owner:String,
-}
-
 
 
 fn parse_message(sender:&Sender<OwnedMessage>,  renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<()>{
