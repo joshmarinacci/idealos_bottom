@@ -12,6 +12,7 @@ use crate::incoming::process_incoming;
 use crate::outgoing::process_outgoing;
 use crate::backend::Backend;
 use crate::raylib_backend::RaylibBackend;
+use crate::sdl2backend::SDL2Backend;
 
 mod messages;
 mod window;
@@ -19,9 +20,10 @@ mod incoming;
 mod outgoing;
 mod raylib_backend;
 mod backend;
+mod sdl2backend;
 
 
-fn main() {
+pub fn main() -> Result<(),String> {
     let mut windows:HashMap<String,Window> = HashMap::new();
 
 
@@ -63,7 +65,8 @@ fn main() {
         }
     }
 
-    let mut backend= RaylibBackend::make(640,480,60);
+    // let mut backend= RaylibBackend::make(640,480,60);
+    let mut backend = SDL2Backend::make(640,480,60)?;
     backend.start_loop(&mut windows, &render_loop_receive, &server_out_receive.clone());
 
         //wait for the end
@@ -73,6 +76,6 @@ fn main() {
     let _ = receive_loop.join();
 
     println!("Exited");
-
+    Ok(())
 }
 

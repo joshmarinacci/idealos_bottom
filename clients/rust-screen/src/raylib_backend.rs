@@ -259,7 +259,7 @@ impl RaylibBackend {
 const SCALE: i32 = 10;
 
 impl Backend for RaylibBackend {
-    fn start_loop(&mut self, windows:&mut HashMap<String,Window>, input: &Receiver<RenderMessage>, output:&Sender<OwnedMessage>) {
+    fn start_loop(&mut self, windows:&mut HashMap<String,Window>, input: &Receiver<RenderMessage>, output:&Sender<OwnedMessage>) -> Result<(),String> {
         while !self.rl.window_should_close() {
             // println!("SCALE is {:?}",&rl.get_window_scale_dpi());
             self.process_render_messages(windows, input, output);
@@ -267,6 +267,8 @@ impl Backend for RaylibBackend {
             self.process_mouse_input(windows, output);
             self.process_render_drawing(windows);
         }
+
+        Ok(())
     }
 }
 
