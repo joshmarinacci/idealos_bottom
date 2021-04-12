@@ -11,16 +11,15 @@ use window::{Window};
 use crate::incoming::process_incoming;
 use crate::outgoing::process_outgoing;
 use crate::backend::Backend;
-use crate::raylib_backend::RaylibBackend;
 use crate::sdl2backend::SDL2Backend;
 
 mod messages;
 mod window;
 mod incoming;
 mod outgoing;
-mod raylib_backend;
 mod backend;
 mod sdl2backend;
+mod common;
 
 
 pub fn main() -> Result<(),String> {
@@ -66,8 +65,33 @@ pub fn main() -> Result<(),String> {
     }
 
     // let mut backend= RaylibBackend::make(640,480,60);
-    let mut backend = SDL2Backend::make(640,480,60)?;
-    backend.start_loop(&mut windows, &render_loop_receive, &server_out_receive.clone());
+
+
+        let sdl_context = sdl2::init()?;
+        let video_subsystem = sdl_context.video()?;
+        let window = video_subsystem
+            .window("rust-sdl2 demo: Video", 800, 600)
+            .position_centered()
+            .opengl()
+            .build()
+            .map_err(|e| e.to_string())?;
+
+        let canvas_builder = window.into_canvas();
+        let mut canvas = canvas_builder.build().map_err(|e| e.to_string())?;
+        let creator = canvas.texture_creator();
+        let mut backend = SDL2Backend {
+            sdl_context: &sdl_context,
+            active_window: None,
+            canvas:canvas,
+            creator: &creator,
+            window_buffers: Default::default()
+        };
+        // let mut backend = SDL2Backend::make(canvas,&creator)?;
+        backend.start_loop(
+            &mut windows,
+            &render_loop_receive,
+            &server_out_receive.clone()
+        );
 
         //wait for the end
     println!("Waiting for child threads to exit");

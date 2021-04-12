@@ -4,7 +4,7 @@ use crate::backend::Backend;
 
 use crate::window::{Window, Point};
 use websocket::OwnedMessage;
-use crate::messages::{MouseDownMessage, MouseUpMessage, RenderMessage, RefreshWindowMessage};
+use crate::messages::{MouseDownMessage, MouseUpMessage, RenderMessage};
 use std::sync::mpsc::{Sender, Receiver};
 use serde_json::{json};
 
@@ -17,12 +17,14 @@ use raylib::prelude::Image;
 use raylib::core::math::{Rectangle, rvec2};
 */
 use raylib::prelude::*;
+use crate::common::send_refresh_all_windows_request;
 
 pub struct RaylibBackend {
     rl:RaylibHandle,
     thread:RaylibThread,
     colors:HashMap<String,Color>,
     active_window:Option<String>,
+    window_buffers:HashMap<String,RenderTexture2D>,
 }
 
 impl RaylibBackend {
@@ -48,6 +50,7 @@ impl RaylibBackend {
             thread:thread,
             colors:colors,
             active_window:Option::None,
+            window_buffers: Default::default()
         }
     }
 
@@ -80,9 +83,23 @@ impl RaylibBackend {
                 height: (win.height* SCALE) as f32,
             };
             let origin = rvec2(0,0);
-            d.draw_texture_pro(&win.tex, src,dst,origin,0.0,Color::WHITE)
+            if let Some(tex) = self.window_buffers.get_mut(&*win.id) {
+                d.draw_texture_pro(&tex, src, dst, origin, 0.0, Color::WHITE)
+            }
         }
 
+    }
+
+    fn init_window(&mut self, win:&Window) {
+        let mut rl = &mut self.rl;
+        let thread = &self.thread;
+        let mut target = rl.load_render_texture(thread, win.width as u32, win.height as u32).unwrap();
+        {
+            let mut d = rl.begin_texture_mode(thread,  &mut target);
+            d.clear_background(Color::MAROON);
+            d.draw_circle(win.width/2,win.height/2,4.0,Color::GREEN);
+        }
+        self.window_buffers.insert(win.id.clone(),target);
     }
 
     fn process_render_messages(&mut self,
@@ -107,8 +124,11 @@ impl RaylibBackend {
                     match msg {
                         RenderMessage::OpenWindow(m) => {
                             println!("opening a window");
-                            windows.insert(m.window.id.clone(), Window::from_info(rl, thread, &m.window));
+                            let win = Window::from_info(&m.window);
+                            self.init_window(&win);
+                            windows.insert(m.window.id.clone(), win);
                             println!("window count is {}", windows.len());
+                            ()
                         }
                         RenderMessage::CloseWindow(m) => {
                             println!("closing a window");
@@ -119,9 +139,13 @@ impl RaylibBackend {
                         RenderMessage::WindowList(m) => {
                             for (key, value) in &m.windows {
                                 println!("make window id {} at {},{}", value.id, value.x, value.y);
-                                windows.insert(key.clone(), Window::from_info(rl, thread, &value));
+                                windows.insert(key.clone(), Window::from_info(&value));
                             }
                             println!("window count is {:?}", windows.len());
+                            for(_, win) in windows.into_iter() {
+                                self.init_window(win);
+                            }
+
                             send_refresh_all_windows_request(&windows, &tx);
                         },
                         RenderMessage::DrawPixel(m) => {
@@ -131,8 +155,10 @@ impl RaylibBackend {
                                 }
                                 Some(win) => {
                                     if let Some(color) = colors.get(m.color.as_str()) {
-                                        let mut d = rl.begin_texture_mode(thread, &mut *win.tex);
-                                        d.draw_rectangle(m.x,m.y,1,1,color);
+                                        if let Some(tex) = self.window_buffers.get_mut(&*win.id) {
+                                            let mut d = rl.begin_texture_mode(thread, tex);
+                                            d.draw_rectangle(m.x, m.y, 1, 1, color);
+                                        }
                                     } else {
                                         println!("invalid color {}",m.color);
                                     }
@@ -159,9 +185,11 @@ impl RaylibBackend {
                                             img.draw_pixel(i,j,col);
                                         }
                                     }
-                                    let tex = rl.load_texture_from_image(thread, &img).unwrap();
-                                    let mut d = rl.begin_texture_mode(thread, &mut *win.tex);
-                                    d.draw_texture(&tex,m.x,m.y, Color::WHITE);
+                                    if let Some(tex2) = self.window_buffers.get_mut(&*win.id) {
+                                        let tex = rl.load_texture_from_image(thread, &img).unwrap();
+                                        let mut d = rl.begin_texture_mode(thread, tex2);
+                                        d.draw_texture(&tex, m.x, m.y, Color::WHITE);
+                                    }
                                 }
                             }
                         },
@@ -173,8 +201,10 @@ impl RaylibBackend {
                                 Some(win) => {
                                     if let Some(color) = colors.get(m.color.as_str()) {
                                         // println!("drawing a rect {}x{} at {},{}",m.width,m.height,m.x,m.y);
-                                        let mut d = rl.begin_texture_mode(thread, &mut *win.tex);
-                                        d.draw_rectangle(m.x,m.y,m.width,m.height,color);
+                                        if let Some(tex2) = self.window_buffers.get_mut(&*win.id) {
+                                            let mut d = rl.begin_texture_mode(thread, tex2);
+                                            d.draw_rectangle(m.x, m.y, m.width, m.height, color);
+                                        }
                                     } else {
                                         println!("invalid color {}",m.color);
                                     }
@@ -258,7 +288,7 @@ impl RaylibBackend {
 
 const SCALE: i32 = 10;
 
-impl Backend for RaylibBackend {
+impl Backend<'_> for RaylibBackend {
     fn start_loop(&mut self, windows:&mut HashMap<String,Window>, input: &Receiver<RenderMessage>, output:&Sender<OwnedMessage>) -> Result<(),String> {
         while !self.rl.window_should_close() {
             // println!("SCALE is {:?}",&rl.get_window_scale_dpi());
@@ -285,17 +315,3 @@ fn calc_window_background(win: &Window, active_window: &Option<String>) -> Color
     }
 }
 
-fn send_refresh_all_windows_request(windows: &HashMap<String, Window>, sender:&Sender<OwnedMessage>) {
-    println!("sending out full refresh request");
-    for(_, win) in windows {
-        println!("sending to window {}", win.id);
-        let msg2 = RefreshWindowMessage {
-            type_:"WINDOW_REFRESH".to_string(),
-            target: win.owner.clone(),
-            window:win.id.clone()
-        };
-        let val = json!(msg2);
-        let txt = OwnedMessage::Text(val.to_string());
-        sender.send(txt);
-    }
-}
