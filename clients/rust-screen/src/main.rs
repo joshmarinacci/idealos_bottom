@@ -33,26 +33,30 @@ fn main() {
 
     println!("we are connected now!");
 
-    let (mut server_reader, mut server_sender) = client.split().unwrap();
-    //create a channel
-    let (tx, websocket_sending_rx) = channel();
-    let websocket_sending_tx = tx.clone();
+    //websocket connection
+    let (mut server_in, mut server_out) = client.split().unwrap();
+
+    //channel to talk to server sender thread
+    let (server_out_receive, server_out_send) = channel();
+
+    //channel to connect server receiver thread and render loop
     let (render_loop_send, render_loop_receive) = channel::<RenderMessage>();
 
     //loop for receiving
+    let server_out_receive_2 = server_out_receive.clone();
     let receive_loop = thread::spawn(move || {
-        process_incoming(&mut server_reader, &websocket_sending_tx, &render_loop_send);
+        process_incoming(&mut server_in, &server_out_receive_2, &render_loop_send);
     });
 
     //loop for sending
     let send_loop = thread::spawn(move || {
-        process_outgoing(&websocket_sending_rx, &mut server_sender);
+        process_outgoing(&server_out_send, &mut server_out);
     });
 
 
     //send the initial connection message
     let message = OwnedMessage::Text("{\"type\":\"SCREEN_START\"}".to_string());
-    match tx.send(message) {
+    match server_out_receive.send(message) {
         Ok(()) => (),
         Err(e) => {
             println!("error sending: {:?}", e);
@@ -60,7 +64,7 @@ fn main() {
     }
 
     let mut backend= RaylibBackend::make(640,480,60);
-    backend.start_loop(&mut windows, &render_loop_receive, &tx);
+    backend.start_loop(&mut windows, &render_loop_receive, &server_out_receive.clone());
 
         //wait for the end
     println!("Waiting for child threads to exit");

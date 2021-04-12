@@ -8,7 +8,7 @@ use std::sync::mpsc::Sender;
 use websocket::OwnedMessage;
 use crate::messages::{RenderMessage, WindowListMessage, OpenWindowScreen, DrawPixelMessage, FillRectMessage, DrawImageMessage, CloseWindowScreen};
 
-fn parse_message(sender:&Sender<OwnedMessage>,  renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<()>{
+fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<()>{
     let v: Value = serde_json::from_str(txt.as_str())?;
     match &v["type"] {
         Value::String(msg_type) => {
@@ -58,6 +58,7 @@ fn parse_message(sender:&Sender<OwnedMessage>,  renderloop_send:&Sender<RenderMe
 pub fn process_incoming(receiver: &mut Reader<TcpStream>, websocket_sending_tx: &Sender<OwnedMessage>, render_loop_send: &Sender<RenderMessage>) {
     // Receive loop
     for message in receiver.incoming_messages() {
+        //if error, send back a close message directly
         let message = match message {
             Ok(m) => m,
             Err(e) => {
@@ -76,7 +77,7 @@ pub fn process_incoming(receiver: &mut Reader<TcpStream>, websocket_sending_tx: 
             // Say what we received
             OwnedMessage::Text(txt) => {
                 // println!("received message {:?}", txt);
-                parse_message(websocket_sending_tx, render_loop_send, txt);
+                parse_message(render_loop_send, txt);
             }
             _ => {
                 println!("Receive Loop: {:?}", message);
