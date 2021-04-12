@@ -108,7 +108,8 @@ impl<'a> SDL2Backend<'a> {
                         RenderMessage::DrawImage(m) => {
                             if let Some(win) = windows.get_mut(m.window.as_str()) {
                                 if let Some(tex) = self.window_buffers.get_mut(win.id.as_str()) {
-                                    println!("drawing an image")
+                                    println!("drawing an image {}x{}", m.width, m.height);
+                                    tex.update(Rect::new(m.x, m.y, m.width as u32, m.height as u32), &*m.pixels, (4 * m.width) as usize);
                                 }
                             }
                         }
