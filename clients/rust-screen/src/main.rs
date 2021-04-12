@@ -1,17 +1,12 @@
 use std::collections::HashMap;
-use std::f32::consts::PI;
-use std::net::TcpStream;
 use std::sync::mpsc::{channel};
 use std::thread;
 
-use serde::{Deserialize, Serialize};
-use websocket::{Message, OwnedMessage};
+use websocket::{OwnedMessage};
 use websocket::ClientBuilder;
-use websocket::receiver::Reader;
-use websocket::sender::Writer;
 
-use messages::{CloseWindowScreen, DrawImageMessage, DrawPixelMessage, FillRectMessage, MouseDownMessage, MouseUpMessage, OpenWindowScreen, RefreshWindowMessage, RenderMessage, WindowListMessage};
-use window::{Point, Window};
+use messages::{RenderMessage};
+use window::{Window};
 
 use crate::incoming::process_incoming;
 use crate::outgoing::process_outgoing;

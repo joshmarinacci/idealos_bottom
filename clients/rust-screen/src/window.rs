@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Result, Value};
 
 use raylib::{RaylibHandle, RaylibThread};
 use raylib::color::Color;
