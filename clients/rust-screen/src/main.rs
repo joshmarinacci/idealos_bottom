@@ -17,23 +17,20 @@ use window::{Point, Window};
 
 use crate::incoming::process_incoming;
 use crate::outgoing::process_outgoing;
+use crate::backend::Backend;
+use crate::raylib::RaylibBackend;
 
 mod messages;
 mod window;
 mod incoming;
 mod outgoing;
+mod raylib;
+mod backend;
 
 const scale: i32 = 10;
 
 fn main() {
     let mut windows:HashMap<String,Window> = HashMap::new();
-    let mut colors:HashMap<String,Color> = HashMap::new();
-    colors.insert("black".parse().unwrap(), Color::BLACK);
-    colors.insert("white".parse().unwrap(), Color::WHITE);
-    colors.insert("red".parse().unwrap(), Color::RED);
-    colors.insert("green".parse().unwrap(), Color::GREEN);
-    colors.insert("skyblue".parse().unwrap(), Color::SKYBLUE);
-    colors.insert("blue".parse().unwrap(), Color::BLUE);
 
     let mut active_window:Option<String> = Option::None;
 
@@ -71,12 +68,9 @@ fn main() {
         }
     }
 
-    // open window
-    let (mut rl, thread) = raylib::init()
-        .size(640, 480)
-        .title(name)
-        .build();
-    rl.set_target_fps(60);
+    let backend:Backend = RaylibBackend::make(640,480,60);
+    backend.start_loop(&mut windows, &render_loop_receive, &tx);
+
     let sender3 = tx.clone();
     while !rl.window_should_close() {
         // println!("scale is {:?}",&rl.get_window_scale_dpi());
@@ -94,7 +88,7 @@ fn main() {
     println!("Waiting for child threads to exit");
 
     let _ = send_loop.join();
-    // let _ = receive_loop.join();
+    let _ = receive_loop.join();
 
     println!("Exited");
 
