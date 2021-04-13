@@ -23,19 +23,19 @@ use sdl2::audio::AudioFormat::S8;
 use Event::MouseButtonDown;
 use sdl2::mouse::MouseButton;
 use std::cmp::{max, min};
+use sdl2::controller::Button::B;
 
 
 const SCALE: u32 = 2;
 const SCALEI: i32 = SCALE as i32;
+const BORDER: i32 = 1;
 
 pub struct SDL2Backend<'a> {
     pub active_window:Option<String>,
     pub sdl_context: &'a Sdl,
-    // window: SDLWindow,
     pub canvas: WindowCanvas,
     pub creator: &'a TextureCreator<WindowContext>,
     pub window_buffers:HashMap<String,Texture<'a>>,
-    // window_buffers:Texture<'a>,
 }
 
 impl<'a> SDL2Backend<'a> {
@@ -162,85 +162,9 @@ impl<'a> SDL2Backend<'a> {
                         println!("quitting");
                         break 'done;
                     },
-                    Event::KeyDown {keycode,..} => {
-                        if let Some(keycode) = keycode {
-                            println!("keycode pressed {}",keycode);
-                            match keycode {
-                                Keycode::Right => {
-                                    if let Some(id) = &self.active_window {
-                                        if let Some(win) = windows.get_mut(id) {
-                                            println!("moving active window right");
-                                            win.x = min(    win.x+5,100);
-                                        }
-                                    }
-                                }
-                                Keycode::Left => {
-                                    if let Some(id) = &self.active_window {
-                                        if let Some(win) = windows.get_mut(id) {
-                                            println!("moving active window right");
-                                            win.x = max(win.x-5,1);
-                                        }
-                                    }
-                                }
-                                Keycode::Up => {
-                                    if let Some(id) = &self.active_window {
-                                        if let Some(win) = windows.get_mut(id) {
-                                            println!("moving active window right");
-                                            win.y = max(win.y-5,1);
-                                        }
-                                    }
-                                }
-                                Keycode::Down => {
-                                    if let Some(id) = &self.active_window {
-                                        if let Some(win) = windows.get_mut(id) {
-                                            println!("moving active window right");
-                                            win.y = min(win.y+5,100);
-                                        }
-                                    }
-                                }
-                                _ => {
-
-                                }
-                            }
-                        }
-                    }
-                    Event::MouseButtonDown { x, y, which, mouse_btn, .. } => {
-                        match mouse_btn {
-                            MouseButton::Left => {
-                                let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
-                                for win in windows.values() {
-                                    if win.contains(&pt) {
-                                        self.active_window = Some(win.id.clone());
-                                        let msg = MouseDownMessage {
-                                            type_: "MOUSE_DOWN".to_string(),
-                                            x: (pt.x) - win.x,
-                                            y: (pt.y) - win.y,
-                                            target: win.owner.clone()
-                                        };
-                                        output.send(OwnedMessage::Text(json!(msg).to_string()));
-                                    }
-                                }
-                            }
-                            _ => {}
-                        };
-                    }
-                    Event::MouseButtonUp {x,y,mouse_btn,..} => {
-                        if let MouseButton::Left = mouse_btn {
-                            let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
-                            if let Some(id) = &self.active_window {
-                                if let Some(win) = windows.get(id) {
-                                    let msg = MouseUpMessage {
-                                        type_: "MOUSE_UP".to_string(),
-                                        x: (pt.x) - win.x,
-                                        y: (pt.y) - win.y,
-                                        target: win.owner.clone()
-                                    };
-                                    output.send(OwnedMessage::Text(json!(msg).to_string()));
-                                }
-                            }
-
-                        }
-                    }
+                    Event::KeyDown {keycode,..} => self.process_keydown(keycode, windows),
+                    Event::MouseButtonDown { x, y,mouse_btn, .. } => self.process_mousedown(x,y,mouse_btn, windows, output),
+                    Event::MouseButtonUp {x,y,mouse_btn,..} =>  self.process_mouseup(x,y,mouse_btn,windows,output),
                     _ => {}
                 }
             }
@@ -249,15 +173,8 @@ impl<'a> SDL2Backend<'a> {
                                          input,
                                          output,
             );
-
-            /*
-            self.process_keyboard_input(windows,output);
-             */
-            self.process_mouse_input(windows, output);
             self.process_render_drawing(windows);
-            // println!("rendering");
             ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
-            // The rest of the game loop goes here...
         }
         println!("SDL thread is ending");
 
@@ -271,12 +188,12 @@ impl<'a> SDL2Backend<'a> {
         for(id,win) in windows {
             if let Some(tex) = self.window_buffers.get(id) {
                 //draw background / border
-                self.canvas.set_draw_color(Color::RGBA(255,255,0,255));
+                self.canvas.set_draw_color(self.calc_window_border_color(win));
                 self.canvas.fill_rect(Rect::new(
-                    ((win.x-5)*(SCALE as i32)) as i32,
-                    ((win.y-5)*(SCALE as i32)) as i32,
-                    (win.width+10)as u32*SCALE as u32,
-                    (win.height+10)as u32*SCALE as u32));
+                    ((win.x-BORDER)*(SCALE as i32)) as i32,
+                    ((win.y-BORDER)*(SCALE as i32)) as i32,
+                    (win.width+BORDER+BORDER)as u32*SCALE as u32,
+                    (win.height+BORDER+BORDER)as u32*SCALE as u32));
                 //draw window texture
                 let dst = Some(Rect::new((win.x as u32*SCALE) as i32,
                                          (win.y as u32*SCALE) as i32,
@@ -289,7 +206,89 @@ impl<'a> SDL2Backend<'a> {
         }
         self.canvas.present();
     }
-    fn process_mouse_input(&self, windows: &mut HashMap<String, Window>, output: &Sender<OwnedMessage>) {
+    fn process_keydown(&self, keycode: Option<Keycode>, windows:&mut HashMap<String,Window>) {
+        if let Some(keycode) = keycode {
+            // println!("keycode pressed {}",keycode);
+            match keycode {
+                Keycode::Right => {
+                    if let Some(id) = &self.active_window {
+                        if let Some(win) = windows.get_mut(id) {
+                            win.x = min(    win.x+5,100);
+                        }
+                    }
+                }
+                Keycode::Left => {
+                    if let Some(id) = &self.active_window {
+                        if let Some(win) = windows.get_mut(id) {
+                            win.x = max(win.x-5,BORDER);
+                        }
+                    }
+                }
+                Keycode::Up => {
+                    if let Some(id) = &self.active_window {
+                        if let Some(win) = windows.get_mut(id) {
+                            win.y = max(win.y-5,BORDER);
+                        }
+                    }
+                }
+                Keycode::Down => {
+                    if let Some(id) = &self.active_window {
+                        if let Some(win) = windows.get_mut(id) {
+                            win.y = min(win.y+5,100);
+                        }
+                    }
+                }
+                _ => {
+
+                }
+            }
+        }
+
+    }
+    fn process_mousedown(&mut self, x: i32, y: i32, mouse_btn: MouseButton, windows: &mut HashMap<String, Window>, output: &Sender<OwnedMessage>) {
+        match mouse_btn {
+            MouseButton::Left => {
+                let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
+                for win in windows.values() {
+                    if win.contains(&pt) {
+                        self.active_window = Some(win.id.clone());
+                        let msg = MouseDownMessage {
+                            type_: "MOUSE_DOWN".to_string(),
+                            x: (pt.x) - win.x,
+                            y: (pt.y) - win.y,
+                            target: win.owner.clone()
+                        };
+                        output.send(OwnedMessage::Text(json!(msg).to_string()));
+                    }
+                }
+            }
+            _ => {}
+        };
+
+    }
+    fn process_mouseup(&self, x: i32, y: i32, mouse_btn: MouseButton, windows: &mut HashMap<String, Window>, output: &Sender<OwnedMessage>) {
+        if let MouseButton::Left = mouse_btn {
+            let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
+            if let Some(id) = &self.active_window {
+                if let Some(win) = windows.get(id) {
+                    let msg = MouseUpMessage {
+                        type_: "MOUSE_UP".to_string(),
+                        x: (pt.x) - win.x,
+                        y: (pt.y) - win.y,
+                        target: win.owner.clone()
+                    };
+                    output.send(OwnedMessage::Text(json!(msg).to_string()));
+                }
+            }
+        }
+
+    }
+    fn calc_window_border_color(&self, win: &mut Window) -> Color {
+        return if self.active_window == Some(win.id.clone()) {
+            Color::RGBA(0, 255, 255, 255)
+        } else {
+            Color::RGBA(255, 255, 0, 255)
+        }
     }
 }
 
