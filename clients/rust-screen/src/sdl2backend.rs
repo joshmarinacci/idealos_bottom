@@ -165,12 +165,11 @@ impl<'a> SDL2Backend<'a> {
             self.process_render_messages(windows,
                                          input,
                                          output,
-                                         //&mut self.creator, &mut self.window_buffers
             );
             /*
             self.process_keyboard_input(windows,output);
-            self.process_mouse_input(windows, output);
              */
+            self.process_mouse_input(windows, output);
             self.process_render_drawing(windows);
             // println!("rendering");
             ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
@@ -205,6 +204,8 @@ impl<'a> SDL2Backend<'a> {
             }
         }
         self.canvas.present();
+    }
+    fn process_mouse_input(&self, windows: &mut HashMap<String, Window>, output: &Sender<OwnedMessage>) {
     }
 }
 

@@ -96,6 +96,7 @@ pub fn main() -> Result<(),String> {
         //wait for the end
     println!("Waiting for child threads to exit");
 
+    server_out_receive.send(OwnedMessage::Close(None));
     let _ = send_loop.join();
     let _ = receive_loop.join();
 
