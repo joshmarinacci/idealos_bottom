@@ -165,8 +165,8 @@ async function start_app2() {
     await sleep(250)
     at.start(app.id)
 }
-async function start_app3() {
-    let app = at.create_app({name:'guitest',path:'src/clients/gui_test.js',args: []})
+async function do_start_app(opts) {
+    let app = at.create_app(opts)
     await sleep(250)
     at.start(app.id)
 }
@@ -188,7 +188,8 @@ function screen_connected() {
 }
 
 await screen_connected()
-await start_app1()
-await start_app2()
-await start_app3()
+await do_start_app({name:'app1', path:'src/clients/app1.js',args:[]});
+await do_start_app({name:'app2', path:'src/clients/app2.js',args:[]});
+await do_start_app({name:'guitest', path:'src/clients/gui_test.js',args:[]});
+await do_start_app({name:'fractal', path:'src/clients/fractal.js',args:[]});
 log('started everything')

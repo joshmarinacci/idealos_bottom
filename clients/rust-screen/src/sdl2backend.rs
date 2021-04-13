@@ -26,7 +26,7 @@ use std::cmp::{max, min};
 use sdl2::controller::Button::B;
 
 
-const SCALE: u32 = 2;
+const SCALE: u32 = 5;
 const SCALEI: i32 = SCALE as i32;
 const BORDER: i32 = 1;
 
