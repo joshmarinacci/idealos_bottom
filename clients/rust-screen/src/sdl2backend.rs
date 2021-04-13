@@ -92,7 +92,7 @@ impl<'a> SDL2Backend<'a> {
                                             .fill_rect(Rect::new(m.x*SCALEI,
                                                                  m.y*SCALEI, SCALE, SCALE))
                                             .expect("could not fill rect");
-                                        println!("drew pixel to texture at {},{} c={}",m.x,m.y, m.color);
+                                        // println!("drew pixel to texture at {},{} c={}",m.x,m.y, m.color);
                                     });
                                 }
                             }
@@ -105,7 +105,7 @@ impl<'a> SDL2Backend<'a> {
                                         texture_canvas
                                             .fill_rect(Rect::new(m.x*SCALEI, m.y*SCALEI, (m.width*SCALEI) as u32, (m.height*SCALEI) as u32))
                                             .expect("could not fill rect");
-                                        println!("drew rect to texture at {},{} - {}x{}",m.x,m.y,m.width,m.height);
+                                        // println!("drew rect to texture at {},{} - {}x{}",m.x,m.y,m.width,m.height);
                                     });
                                 }
                             }
@@ -113,7 +113,7 @@ impl<'a> SDL2Backend<'a> {
                         RenderMessage::DrawImage(m) => {
                             if let Some(win) = windows.get_mut(m.window.as_str()) {
                                 if let Some(tex) = self.window_buffers.get_mut(win.id.as_str()) {
-                                    println!("drawing an image {}x{}", m.width, m.height);
+                                    // println!("drawing an image {}x{}", m.width, m.height);
                                     tex.update(Rect::new(m.x, m.y, m.width as u32, m.height as u32), &*m.pixels, (4 * m.width) as usize);
                                 }
                             }

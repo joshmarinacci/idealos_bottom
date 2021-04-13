@@ -1,8 +1,8 @@
 import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp} from './app_utils.js'
 
-let width = 100
-let height = 100
+let width = 50
+let height = 50
 
 let app = new CommonApp(process.argv, width, height)
 
@@ -47,7 +47,7 @@ function init() {
         calc_pixel(count)
         count++
         if(count > width*height) clearInterval(id)
-    }, 10)
+    }, 100)
 
 }
 
