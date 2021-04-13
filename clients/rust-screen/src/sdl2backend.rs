@@ -24,6 +24,7 @@ use Event::MouseButtonDown;
 use sdl2::mouse::MouseButton;
 use std::cmp::{max, min};
 use sdl2::controller::Button::B;
+use colors_transform::{Rgb, Color as CTColor};
 
 
 const SCALE: u32 = 5;
@@ -293,6 +294,12 @@ impl<'a> SDL2Backend<'a> {
 }
 
 fn lookup_color(name: &String) -> Color {
+    if name.starts_with("#") {
+        // println!("its hex");
+        let col = Rgb::from_hex_str(name).unwrap();
+        // println!("parsed the color ${:?}",col);
+        return Color::RGBA(col.get_red() as u8, col.get_green() as u8, col.get_blue() as u8, 255);
+    }
     return match name.as_str() {
         "red" => Color::RED,
         "black" => Color::BLACK,

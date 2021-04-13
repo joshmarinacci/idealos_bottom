@@ -117,6 +117,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "colors-transform"
+version = "0.2.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9226dbc05df4fb986f48d730b001532580883c4c06c5d1c213f4b34c1c157178"
+
+[[package]]
 name = "core-foundation"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -751,6 +757,7 @@ dependencies = [
 name = "rust-screen"
 version = "0.1.0"
 dependencies = [
+ "colors-transform",
  "raylib",
  "sdl2",
  "serde",
