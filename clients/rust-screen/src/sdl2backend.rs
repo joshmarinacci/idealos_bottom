@@ -2,9 +2,10 @@ use std::time::Duration;
 use std::sync::mpsc::{Sender, Receiver};
 use std::collections::HashMap;
 use websocket::OwnedMessage;
+use serde_json::{json};
 
-use crate::window::Window;
-use crate::messages::RenderMessage;
+use crate::window::{Window, Point};
+use crate::messages::{RenderMessage, MouseDownMessage, MouseUpMessage};
 use crate::backend::Backend;
 
 
@@ -19,6 +20,9 @@ use sdl2::video::Window as SDLWindow;
 use std::cell::RefCell;
 use sdl2::rect::Rect;
 use sdl2::audio::AudioFormat::S8;
+use Event::MouseButtonDown;
+use sdl2::mouse::MouseButton;
+use std::cmp::{max, min};
 
 
 const SCALE: u32 = 2;
@@ -158,6 +162,85 @@ impl<'a> SDL2Backend<'a> {
                         println!("quitting");
                         break 'done;
                     },
+                    Event::KeyDown {keycode,..} => {
+                        if let Some(keycode) = keycode {
+                            println!("keycode pressed {}",keycode);
+                            match keycode {
+                                Keycode::Right => {
+                                    if let Some(id) = &self.active_window {
+                                        if let Some(win) = windows.get_mut(id) {
+                                            println!("moving active window right");
+                                            win.x = min(    win.x+5,100);
+                                        }
+                                    }
+                                }
+                                Keycode::Left => {
+                                    if let Some(id) = &self.active_window {
+                                        if let Some(win) = windows.get_mut(id) {
+                                            println!("moving active window right");
+                                            win.x = max(win.x-5,1);
+                                        }
+                                    }
+                                }
+                                Keycode::Up => {
+                                    if let Some(id) = &self.active_window {
+                                        if let Some(win) = windows.get_mut(id) {
+                                            println!("moving active window right");
+                                            win.y = max(win.y-5,1);
+                                        }
+                                    }
+                                }
+                                Keycode::Down => {
+                                    if let Some(id) = &self.active_window {
+                                        if let Some(win) = windows.get_mut(id) {
+                                            println!("moving active window right");
+                                            win.y = min(win.y+5,100);
+                                        }
+                                    }
+                                }
+                                _ => {
+
+                                }
+                            }
+                        }
+                    }
+                    Event::MouseButtonDown { x, y, which, mouse_btn, .. } => {
+                        match mouse_btn {
+                            MouseButton::Left => {
+                                let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
+                                for win in windows.values() {
+                                    if win.contains(&pt) {
+                                        self.active_window = Some(win.id.clone());
+                                        let msg = MouseDownMessage {
+                                            type_: "MOUSE_DOWN".to_string(),
+                                            x: (pt.x) - win.x,
+                                            y: (pt.y) - win.y,
+                                            target: win.owner.clone()
+                                        };
+                                        output.send(OwnedMessage::Text(json!(msg).to_string()));
+                                    }
+                                }
+                            }
+                            _ => {}
+                        };
+                    }
+                    Event::MouseButtonUp {x,y,mouse_btn,..} => {
+                        if let MouseButton::Left = mouse_btn {
+                            let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
+                            if let Some(id) = &self.active_window {
+                                if let Some(win) = windows.get(id) {
+                                    let msg = MouseUpMessage {
+                                        type_: "MOUSE_UP".to_string(),
+                                        x: (pt.x) - win.x,
+                                        y: (pt.y) - win.y,
+                                        target: win.owner.clone()
+                                    };
+                                    output.send(OwnedMessage::Text(json!(msg).to_string()));
+                                }
+                            }
+
+                        }
+                    }
                     _ => {}
                 }
             }
@@ -166,6 +249,7 @@ impl<'a> SDL2Backend<'a> {
                                          input,
                                          output,
             );
+
             /*
             self.process_keyboard_input(windows,output);
              */
