@@ -28,7 +28,7 @@ class Panel {
         this.children = opts.children || []
     }
     redraw(gfx) {
-        gfx.rect(this.x,this.y,this.width,this.height,'blue')
+        gfx.rect(this.x,this.y,this.width,this.height,'white')
         this.children.forEach(ch => ch.redraw(gfx))
     }
 }
@@ -42,17 +42,37 @@ class Label {
         this.text = opts.text || "hi"
     }
     redraw(gfx) {
-        gfx.rect(this.x,this.y,40,20,'red')
+        // gfx.rect(this.x,this.y,40,20,'green')
         gfx.text(this.x,this.y,this.text,'black')
+    }
+}
+class Button {
+    constructor(opts) {
+        this.x = opts.x || 0
+        this.y = opts.y || 0
+        this.width = opts.width || 10
+        this.height = opts.height || 10
+        this.text = opts.text || "hi"
+        this.pressed = false
+    }
+    redraw(gfx) {
+        console.log("mouse is",mouse)
+        this.pressed = mouse.inside(this.x,this.y,this.width,this.height) && mouse.down;
+        if(this.pressed) {
+            gfx.rect(this.x, this.y, this.width, this.height, 'black')
+            gfx.text(this.x,this.y,this.text,'white')
+        } else {
+            gfx.rect(this.x, this.y, this.width, this.height, 'blue')
+            gfx.text(this.x,this.y,this.text,'white')
+        }
     }
 }
 
 function build_gui() {
     root = new Panel({width,height,children:[
-            new Label({text:"foo",x:0, width:20}),
-            new Label({text:'bar',x:30, y:30, width:20})
+            new Label({text:"label",x:0, width:20}),
+            new Button({text:'button',x:0, y:30, width:30, height:15})
         ]})
-    // root = new Label({text:"foo"})
 }
 
 async function init() {
@@ -73,6 +93,7 @@ function redraw() {
             font.draw_text(app,x,y,text,color);
         }
     }
+    app.log("redrawing gui test")
     root.redraw(gfx)
 }
 

@@ -85,11 +85,11 @@ class BufferImage {
 }
 
 const color_map = {
-    'black':[0,0,0,255],
-    'red':[0,255,0,255],
-    'green':[0,255,0,255],
-    'blue':[0,0,255,255],
-    'white':[255,255,255],
+    'black': [0,   0,   0,255],
+    'red':   [255, 0,   0,255],
+    'green': [0, 255,   0,255],
+    'blue':  [0,    0,255,255],
+    'white': [255,255,255,255],
 }
 
 function color_to_rgba(color) {
@@ -104,10 +104,11 @@ class PixelFontImpl {
     }
 
     draw_text(app, x, y, text, color) {
-        app.log('drawing text ',text,'at',x,y,'with color',color)
         // app.log("image is",this.bitmap)
         // app.log("metrics is",this.info.metrics)
-        let rgba = color_to_rgba(color);
+        let rgba = color_to_rgba(color)
+        app.log("color is",rgba)
+        app.log('drawing text ',text,'at',x,y,'with color',rgba)
         let dx = 0
         let dy = 0
         let w = 40
@@ -139,9 +140,9 @@ class PixelFontImpl {
             dy += 10
         })
         //draw diagonal
-        for(let i=0; i<Math.min(w,h); i++) {
-            img.set(i, i, 128,0,0,255)
-        }
+        // for(let i=0; i<Math.min(w,h); i++) {
+        //     img.set(i, i, 128,0,0,255)
+        // }
         app.send(make_message(SCHEMAS.DRAW.IMAGE,{x:x,y:y,width:w,height:h,pixels:img.to_array()}))
     }
 }
