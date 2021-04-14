@@ -84,6 +84,19 @@ class BufferImage {
     }
 }
 
+const color_map = {
+    'black':[0,0,0,255],
+    'red':[0,255,0,255],
+    'green':[0,255,0,255],
+    'blue':[0,0,255,255],
+    'white':[255,255,255],
+}
+
+function color_to_rgba(color) {
+    if(color_map[color]) return color_map[color]
+    return [255,255,0,255]
+}
+
 class PixelFontImpl {
     constructor(img, metrics) {
         this.bitmap = img
@@ -91,9 +104,10 @@ class PixelFontImpl {
     }
 
     draw_text(app, x, y, text, color) {
-        app.log('drawing text ',text,'at',x,y)
+        app.log('drawing text ',text,'at',x,y,'with color',color)
         // app.log("image is",this.bitmap)
         // app.log("metrics is",this.info.metrics)
+        let rgba = color_to_rgba(color);
         let dx = 0
         let dy = 0
         let w = 40
@@ -112,7 +126,9 @@ class PixelFontImpl {
                         for(let j=0; j<met.h; j++) {
                             let color = this.bitmap.getPixelRGBA(i+met.x,j+met.y)
                             if(color > 0) {
-                                img.set(dx+i, dy+j+line_height-met.h, 0,0,0,255)
+                                //draws only yellow text
+                                //pixel order is backwards for now
+                                img.set(dx+i, dy+j+line_height-met.h, ...rgba)
                             }
                         }
                     }

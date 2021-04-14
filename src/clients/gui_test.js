@@ -1,8 +1,8 @@
 import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp, PixelFont} from './app_utils.js'
 
-let width = 40
-let height = 30
+let width = 100
+let height = 100
 let app = new CommonApp(process.argv,width,height)
 let mouse = {
     x:-1,
@@ -17,20 +17,63 @@ let mouse = {
     }
 }
 let font = null
+let root = null
+
+class Panel {
+    constructor(opts) {
+        this.x = opts.x || 0
+        this.y = opts.y || 0
+        this.width = opts.width || 10
+        this.height = opts.height || 10
+        this.children = opts.children || []
+    }
+    redraw(gfx) {
+        gfx.rect(this.x,this.y,this.width,this.height,'blue')
+        this.children.forEach(ch => ch.redraw(gfx))
+    }
+}
+
+class Label {
+    constructor(opts) {
+        this.x = opts.x || 0
+        this.y = opts.y || 0
+        this.width = opts.width || 10
+        this.height = opts.height || 10
+        this.text = opts.text || "hi"
+    }
+    redraw(gfx) {
+        gfx.rect(this.x,this.y,40,20,'red')
+        gfx.text(this.x,this.y,this.text,'black')
+    }
+}
+
+function build_gui() {
+    root = new Panel({width,height,children:[
+            new Label({text:"foo",x:0, width:20}),
+            new Label({text:'bar',x:30, y:30, width:20})
+        ]})
+    // root = new Label({text:"foo"})
+}
 
 async function init() {
     try {
         font = await PixelFont.load("src/clients/fonts/font.png", "src/clients/fonts/font.metrics.json")
+        build_gui()
         redraw()
     } catch (e) {
         app.log(e)
     }
 }
 function redraw() {
-    //bg panel
-    draw_rect(0,0,width,height,'white')
-    // label(1,1,"G","black")
-    button(1,4,25,10, "hello")
+    let gfx = {
+        rect:(x,y,width,height,color) => {
+            app.send(make_message(SCHEMAS.DRAW.RECT, {x, y, width, height, color}))
+        },
+        text:(x,y,text,color) => {
+            font.draw_text(app,x,y,text,color);
+        }
+    }
+    root.redraw(gfx)
 }
 
 
@@ -49,17 +92,14 @@ app.on(SCHEMAS.WINDOW.REFRESH.NAME, ()=>{
     redraw()
 })
 
-const draw_rect = (x,y,width,height,color) => app.send(make_message(SCHEMAS.DRAW.RECT, {x, y, width, height, color}))
-const label = (x,y,text,color) => draw_text(x,y,text,color)
-const button = (x,y,width,height,text) => {
-    let bg = 'blue'
-    if(mouse.inside(x,y,width,height) && mouse.down) bg = 'red'
-    draw_rect(x,y,width,height,bg)
-    draw_text(x,y,text,'black')
-}
+// const draw_rect = (x,y,width,height,color) => app.send(make_message(SCHEMAS.DRAW.RECT, {x, y, width, height, color}))
+// const label = (x,y,text,color) => draw_text(x,y,text,color)
+// const button = (x,y,width,height,text) => {
+//     let bg = 'blue'
+//     if(mouse.inside(x,y,width,height) && mouse.down) bg = 'red'
+//     draw_rect(x,y,width,height,bg)
+//     draw_text(x,y,text,'black')
+// }
 
-const draw_text = (x,y,text,color) => {
-    font.draw_text(app,x,y,text,color);
-}
 app.on('start',()=>init())
 
