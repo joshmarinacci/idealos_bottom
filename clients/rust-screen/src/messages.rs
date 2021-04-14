@@ -45,6 +45,14 @@ pub struct MouseUpMessage {
     pub y:i32,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct KeyboardDownMessage {
+    #[serde(rename = "type")]
+    pub type_:String,
+    pub target:String,
+    pub keyname:String,
+}
+
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DrawPixelMessage {

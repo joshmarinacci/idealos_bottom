@@ -136,6 +136,8 @@ function start_message_server() {
 
                 if (message_match(SCHEMAS.MOUSE.DOWN, msg)) return forward_to_target(msg)
                 if (message_match(SCHEMAS.MOUSE.UP, msg)) return forward_to_target(msg)
+                if (message_match(SCHEMAS.KEYBOARD.DOWN,msg)) return forward_to_target(msg)
+                if (message_match(SCHEMAS.KEYBOARD.UP,msg)) return forward_to_target(msg)
 
                 if (message_match(SCHEMAS.DEBUG.LIST, msg)) return list_apps(ws, msg)
                 if (message_match(SCHEMAS.DEBUG.RESTART_APP, msg)) return restart_app(msg)

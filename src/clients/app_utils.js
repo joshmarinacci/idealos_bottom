@@ -17,6 +17,7 @@ export class CommonApp {
         })
         this.ws.on("message",(data)=>{
             let msg = JSON.parse(data)
+            // console.log("incoming message",msg);
             if(message_match(SCHEMAS.WINDOW.OPEN_RESPONSE,msg)) {
                 this.win_id = msg.window
                 this.fireLater('start',{})
@@ -128,8 +129,8 @@ class PixelFontImpl {
         // app.log("image is",this.bitmap)
         // app.log("metrics is",this.info.metrics)
         let rgba = color_to_rgba(color)
-        app.log("color is",rgba)
-        app.log('drawing text ',text,'at',x,y,'with color',rgba)
+        // app.log("color is",rgba)
+        // app.log('drawing text ',text,'at',x,y,'with color',rgba)
         let dx = 0
         let dy = 0
         let w = 40

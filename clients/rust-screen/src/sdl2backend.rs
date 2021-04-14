@@ -5,7 +5,7 @@ use websocket::OwnedMessage;
 use serde_json::{json};
 
 use crate::window::{Window, Point};
-use crate::messages::{RenderMessage, MouseDownMessage, MouseUpMessage};
+use crate::messages::{RenderMessage, MouseDownMessage, MouseUpMessage, KeyboardDownMessage};
 use crate::backend::Backend;
 
 
@@ -190,7 +190,7 @@ impl<'a> SDL2Backend<'a> {
                         println!("quitting");
                         break 'done;
                     },
-                    Event::KeyDown {keycode,..} => self.process_keydown(keycode, windows),
+                    Event::KeyDown {keycode,..} => self.process_keydown(keycode, windows,output),
                     Event::MouseButtonDown { x, y,mouse_btn, .. } => self.process_mousedown(x,y,mouse_btn, windows, output),
                     Event::MouseButtonUp {x,y,mouse_btn,..} =>  self.process_mouseup(x,y,mouse_btn,windows,output),
                     _ => {}
@@ -234,7 +234,7 @@ impl<'a> SDL2Backend<'a> {
         }
         self.canvas.present();
     }
-    fn process_keydown(&self, keycode: Option<Keycode>, windows:&mut HashMap<String,Window>) {
+    fn process_keydown(&self, keycode: Option<Keycode>, windows:&mut HashMap<String,Window>, output: &Sender<OwnedMessage>) {
         if let Some(keycode) = keycode {
             // println!("keycode pressed {}",keycode);
             match keycode {
@@ -266,8 +266,20 @@ impl<'a> SDL2Backend<'a> {
                         }
                     }
                 }
+                Keycode => {
+                    if let Some(id) = &self.active_window {
+                        if let Some(win) = windows.get_mut(id) {
+                            // println!("got a message {:?}",keycode.name());
+                            let msg = KeyboardDownMessage {
+                                type_: "KEYBOARD_DOWN".to_string(),
+                                keyname: keycode.name(),
+                                target: win.owner.clone()
+                            };
+                            output.send(OwnedMessage::Text(json!(msg).to_string()));
+                        }
+                    }
+                }
                 _ => {
-
                 }
             }
         }
@@ -333,6 +345,9 @@ fn lookup_color(name: &String) -> Color {
         "blue" => Color::BLUE,
         "white" => Color::WHITE,
         "green" => Color::GREEN,
+        "yellow" => Color::YELLOW,
+        "grey" => Color::GREY,
+        "gray" => Color::GRAY,
         _ => {
             println!("unknown color {}",name);
             Color::MAGENTA

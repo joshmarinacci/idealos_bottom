@@ -16,6 +16,9 @@ let mouse = {
         return true
     }
 }
+let keyboard = {
+    keycode:-1,
+}
 let font = null
 let root = null
 
@@ -90,10 +93,31 @@ class Button {
     }
 }
 
+class TextBox {
+    constructor(opts) {
+        this.x = opts.x || 0
+        this.y = opts.y || 0
+        this.width = opts.width || 10
+        this.height = opts.height || 10
+        this.text = opts.text || "hi"
+        this.focused = false
+        this.padding = new Insets(5)
+    }
+    layout(gfx) {
+
+    }
+    redraw(gfx) {
+        gfx.rect(this.x, this.y, this.width, this.height, 'yellow')
+        gfx.text(this.padding.left+this.x,this.y,this.text,'black')
+    }
+
+}
+
 function build_gui() {
     root = new Panel({width,height,children:[
             new Label({text:"label",x:0, width:20}),
-            new Button({text:'button',x:0, y:30, width:30, height:15})
+            new Button({text:'button',x:0, y:30, width:30, height:15}),
+            new TextBox({text:"emptytext",y:50, width:60, height: 15}),
         ]})
 }
 
@@ -118,7 +142,7 @@ function redraw() {
             return font.measure_text(app,text);
         }
     }
-    app.log("redrawing gui test")
+    // app.log("redrawing gui test")
     root.layout(gfx)
     root.redraw(gfx)
 }
@@ -137,6 +161,11 @@ app.on(SCHEMAS.MOUSE.UP.NAME,()=>{
 })
 app.on(SCHEMAS.WINDOW.REFRESH.NAME, ()=>{
     redraw()
+})
+app.on(SCHEMAS.KEYBOARD.DOWN.NAME, (e)=>{
+    console.log("keyboard pressed in app",e)
+    keyboard.keycode = e.payload.keycode;
+    redraw();
 })
 
 // const draw_rect = (x,y,width,height,color) => app.send(make_message(SCHEMAS.DRAW.RECT, {x, y, width, height, color}))

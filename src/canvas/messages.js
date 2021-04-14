@@ -60,7 +60,8 @@ let schemas = {
         DOWN:[],
     },
     KEYBOARD: {
-
+        UP:[],
+        DOWN:[],
     },
     DEBUG:{
         LIST:[],
