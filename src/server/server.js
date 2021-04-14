@@ -37,7 +37,8 @@ function handle_open_window_message(ws,msg) {
     if(!connections[CLIENT_TYPES.SCREEN]) return log("can't open a window because there is no screen")
 
     if(!connections[msg.sender]) connections[msg.sender] = ws
-    let win_id = "id_"+Math.floor(Math.random()*10000)
+    ws.target = msg.sender
+    let win_id = "win_"+Math.floor(Math.random()*10000)
     let y = wids.length()
     wids.add_window(win_id, {
         id:win_id,
@@ -72,16 +73,23 @@ function list_apps(ws,msg) {
         connection_count:Object.keys(connections).length,
         apps:at.list_apps(),
     })
-    if(connections[msg.sender]) return connections[msg.sender].send(JSON.stringify(response))
+    if(connections[CLIENT_TYPES.DEBUG]) return connections[CLIENT_TYPES.DEBUG].send(JSON.stringify(response))
 }
 
 function restart_app(msg) {
+    log("restarting app",msg)
+        // at.start(appid)
+    // }
+}
+
+function stop_app(msg) {
     let appid = msg.target
     if(at.has_app(appid)) {
         at.stop(appid)
         wids.windows_for_appid(appid).forEach(win => {
             forward_to_screen(make_message(SCHEMAS.WINDOW.CLOSE, {
-                target: appid, window: {
+                target: appid,
+                window: {
                     id: win.id,
                     width: win.width,
                     height: win.height,
@@ -92,9 +100,16 @@ function restart_app(msg) {
             }))
         })
         wids.remove_windows_for_appid(appid)
+    }
+}
+function start_app(msg) {
+    log("trying to start the app",msg)
+    let appid = msg.target
+    if(at.has_app(appid)) {
         at.start(appid)
     }
 }
+
 
 function start_message_server() {
     const server = new WS.Server({
@@ -104,25 +119,34 @@ function start_message_server() {
 
     server.on("connection", (ws) => {
         ws.on("message", (m) => {
-            let msg = JSON.parse(m)
-            forward_to_debug(msg)
-            if(message_match(SCHEMAS.GENERAL.HEARTBEAT,msg)) return do_nothing(msg)
-            if(message_match(SCHEMAS.SCREEN.START,msg)) return handle_start_message(ws,msg)
+            try {
+                let msg = JSON.parse(m)
+                forward_to_debug(msg)
+                if (message_match(SCHEMAS.GENERAL.HEARTBEAT, msg)) return do_nothing(msg)
+                if (message_match(SCHEMAS.SCREEN.START, msg)) return handle_start_message(ws, msg)
 
-            if(message_match(SCHEMAS.WINDOW.OPEN,msg)) return handle_open_window_message(ws,msg)
-            if(message_match(SCHEMAS.WINDOW.OPEN_RESPONSE,msg)) return forward_to_target(msg)
-            if(message_match(SCHEMAS.WINDOW.REFRESH,msg)) return forward_to_target(msg)
+                if (message_match(SCHEMAS.WINDOW.OPEN, msg)) return handle_open_window_message(ws, msg)
+                if (message_match(SCHEMAS.WINDOW.OPEN_RESPONSE, msg)) return forward_to_target(msg)
+                if (message_match(SCHEMAS.WINDOW.REFRESH, msg)) return forward_to_target(msg)
 
-            if(message_match(SCHEMAS.DRAW.PIXEL,msg)) return forward_to_screen(msg)
-            if(message_match(SCHEMAS.DRAW.RECT,msg)) return forward_to_screen(msg)
-            if(message_match(SCHEMAS.DRAW.IMAGE,msg)) return forward_to_screen(msg)
+                if (message_match(SCHEMAS.DRAW.PIXEL, msg)) return forward_to_screen(msg)
+                if (message_match(SCHEMAS.DRAW.RECT, msg)) return forward_to_screen(msg)
+                if (message_match(SCHEMAS.DRAW.IMAGE, msg)) return forward_to_screen(msg)
 
-            if(message_match(SCHEMAS.MOUSE.DOWN,msg)) return forward_to_target(msg)
-            if(message_match(SCHEMAS.MOUSE.UP,msg)) return forward_to_target(msg)
+                if (message_match(SCHEMAS.MOUSE.DOWN, msg)) return forward_to_target(msg)
+                if (message_match(SCHEMAS.MOUSE.UP, msg)) return forward_to_target(msg)
 
-            if(message_match(SCHEMAS.DEBUG.LIST,msg)) return list_apps(ws,msg)
-            if(message_match(SCHEMAS.DEBUG.RESTART_APP,msg)) return restart_app(msg)
-            log("unknown incoming message", msg)
+                if (message_match(SCHEMAS.DEBUG.LIST, msg)) return list_apps(ws, msg)
+                if (message_match(SCHEMAS.DEBUG.RESTART_APP, msg)) return restart_app(msg)
+                if (message_match(SCHEMAS.DEBUG.STOP_APP, msg)) return stop_app(msg)
+                if (message_match(SCHEMAS.DEBUG.START_APP, msg)) return start_app(msg)
+                log("unknown incoming message", msg)
+            } catch (e) {
+                log("ERROR",e)
+            }
+        })
+        ws.on('close',(code)=>{
+            delete connections[ws.target]
         })
         ws.send(JSON.stringify(make_message(SCHEMAS.GENERAL.CONNECTED,{})))
     })
@@ -155,16 +179,6 @@ function start_web_server() {
     })
 }
 
-async function start_app1() {
-    let app = at.create_app({name:'app1',path:'src/clients/app1.js',args: []})
-    await sleep(250)
-    at.start(app.id)
-}
-async function start_app2() {
-    let app = at.create_app({name:'app2',path:'src/clients/app2.js',args: []})
-    await sleep(250)
-    at.start(app.id)
-}
 async function do_start_app(opts) {
     let app = at.create_app(opts)
     await sleep(250)
@@ -188,7 +202,7 @@ function screen_connected() {
 }
 
 await screen_connected()
-await do_start_app({name:'app1', path:'src/clients/app1.js',args:[]});
+await do_start_app({name:'dotclock', path:'src/clients/app1.js',args:[]});
 await do_start_app({name:'app2', path:'src/clients/app2.js',args:[]});
 await do_start_app({name:'guitest', path:'src/clients/gui_test.js',args:[]});
 await do_start_app({name:'fractal', path:'src/clients/fractal.js',args:[]});
