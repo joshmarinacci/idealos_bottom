@@ -1,13 +1,15 @@
 import {spawn} from 'child_process'
 
 export class AppTracker {
-    constructor(hostname,websocket_port) {
+    constructor(hostname,websocket_port, log_delegate) {
         this.hostname = hostname
         this.websocket_port = websocket_port
         this.apps = []
+        this.log_delegate = log_delegate
     }
     log(...args) {
         console.log(...args)
+        if(this.log_delegate) this.log_delegate(...args)
     }
 
     create_app(opts) {

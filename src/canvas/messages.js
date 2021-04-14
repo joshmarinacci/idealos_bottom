@@ -47,7 +47,7 @@ let schemas = {
         OPEN:['width','height','sender'],
         OPEN_SCREEN:['target','window'],
         OPEN_RESPONSE:['target','window'],
-        CLOSE:[],
+        CLOSE:['target','window'],
         REFRESH:[],
     },
     DRAW:{
@@ -64,10 +64,12 @@ let schemas = {
     },
     DEBUG:{
         LIST:[],
-        LIST_RESPONSE:[],
+        LIST_RESPONSE:['connection_count','apps'],
         CLIENT:[],
         LOG:['data'],
-        RESTART_APP:[],
+        RESTART_APP:['target'],
+        STOP_APP:['target'],
+        START_APP:['target'],
     }
 }
 
@@ -90,6 +92,8 @@ function process_schema(sch) {
 export const SCHEMAS = process_schema(schemas)
 
 export function message_match(sch,msg) {
+    if(!msg || !msg.type) return false
+    if(!sch) throw new Error(`no such schema for message type ${msg.type}`)
     if(msg.type === sch.NAME) return true
     return false
 }
@@ -102,7 +106,7 @@ export function make_message(sch,opts) {
         if(!opts.hasOwnProperty(key)) throw new Error(`message missing option ${key}`)
     })
     Object.keys(opts).forEach(key => {
-        if(sch.props.indexOf(key) < 0) throw new Error(`message has extra key '${key}' compared to ${sch.props.toString()}`)
+        if(sch.props.indexOf(key) < 0) throw new Error(`message has extra key '${key}' compared to ${JSON.stringify(sch)}`)
     })
     Object.entries(opts).forEach(([key,value])=>{
         msg[key] = value

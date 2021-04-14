@@ -83,6 +83,13 @@ impl<'a> SDL2Backend<'a> {
                             println!("window count is {:?}", windows.len());
                             send_refresh_all_windows_request(&windows, &output);
                         },
+                        RenderMessage::CloseWindow(m) => {
+                            println!("closing a window {:?}",m);
+                            if let Some(win) = windows.get_mut(m.window.id.as_str()) {
+                                self.close_window(win);
+                                windows.remove(m.window.id.as_str());
+                            }
+                        },
                         RenderMessage::DrawPixel(m) => {
                             if let Some(win) = windows.get_mut(m.window.as_str()) {
                                 if let Some(tex) = self.window_buffers.get_mut(win.id.as_str()) {
@@ -143,6 +150,13 @@ impl<'a> SDL2Backend<'a> {
         });
         self.window_buffers.insert(win.id.clone(),tex);
     }
+    fn close_window(&mut self, win: &mut Window) {
+        // println!("found texture for window");
+        //destroy the texture
+        //remove from window_buffers
+        self.window_buffers.remove(win.id.as_str());
+    }
+
 
     pub fn start_loop(&mut self,
                       windows: &mut HashMap<String, Window>,

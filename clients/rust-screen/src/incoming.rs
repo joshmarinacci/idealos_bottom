@@ -38,7 +38,7 @@ fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<(
                     renderloop_send.send(RenderMessage::DrawImage(msg));
                     ()
                 },
-                "WINDOW_CLOSED" => {
+                "WINDOW_CLOSE" => {
                     let msg:CloseWindowScreen = serde_json::from_str(txt.as_str())?;
                     renderloop_send.send(RenderMessage::CloseWindow(msg));
                     ()
