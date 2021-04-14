@@ -20,7 +20,8 @@ const sleep = (dur) => new Promise((res,rej) => setTimeout(res,dur))
 
 const connections = {}
 const wids = new WindowTracker()
-const at = new AppTracker(hostname,websocket_port)
+const at = new AppTracker(hostname,websocket_port,log)
+
 
 const CLIENT_TYPES = {
     SCREEN:'SCREEN',
@@ -45,7 +46,7 @@ function handle_open_window_message(ws,msg) {
         width:msg.width,
         height:msg.height,
         x:10,
-        y:y*20+10,
+        y:10,
         owner:msg.sender,
         rects:[]
     })
