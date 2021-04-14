@@ -66,16 +66,16 @@ impl<'a> SDL2Backend<'a> {
                 Ok(msg) => {
                     match msg {
                         RenderMessage::OpenWindow(m) => {
-                            println!("opening a window");
+                            // println!("opening a window");
                             let win = Window::from_info(&m.window);
                             self.init_window(&win);
                             // self.window_buffers.insert(win.id.clone(),win);
                             windows.insert(m.window.id.clone(), win);
-                            println!("window count is {}", windows.len());
+                            // println!("window count is {}", windows.len());
                         }
                         RenderMessage::WindowList(m) => {
                             for (key, value) in &m.windows {
-                                println!("make window id {} at {},{}", value.id, value.x, value.y);
+                                // println!("make window id {} at {},{}", value.id, value.x, value.y);
                                 let win = Window::from_info(&value);
                                 self.init_window(&win);
                                 windows.insert(win.id.clone(), win);
@@ -84,7 +84,7 @@ impl<'a> SDL2Backend<'a> {
                             send_refresh_all_windows_request(&windows, &output);
                         },
                         RenderMessage::CloseWindow(m) => {
-                            println!("closing a window {:?}",m);
+                            // println!("closing a window {:?}",m);
                             if let Some(win) = windows.get_mut(m.window.id.as_str()) {
                                 self.close_window(win);
                                 windows.remove(m.window.id.as_str());
@@ -96,8 +96,8 @@ impl<'a> SDL2Backend<'a> {
                                     self.canvas.with_texture_canvas(tex, |texture_canvas| {
                                         texture_canvas.set_draw_color(lookup_color(&m.color));
                                         texture_canvas
-                                            .fill_rect(Rect::new(m.x*SCALEI,
-                                                                 m.y*SCALEI, SCALE, SCALE))
+                                            .fill_rect(Rect::new(m.x,
+                                                                 m.y, 1, 1))
                                             .expect("could not fill rect");
                                         // println!("drew pixel to texture at {},{} c={}",m.x,m.y, m.color);
                                     });
@@ -110,9 +110,9 @@ impl<'a> SDL2Backend<'a> {
                                     self.canvas.with_texture_canvas(tex, |texture_canvas| {
                                         texture_canvas.set_draw_color(lookup_color(&m.color));
                                         texture_canvas
-                                            .fill_rect(Rect::new(m.x*SCALEI, m.y*SCALEI, (m.width*SCALEI) as u32, (m.height*SCALEI) as u32))
+                                            .fill_rect(Rect::new(m.x, m.y, m.width as u32, m.height as u32))
                                             .expect("could not fill rect");
-                                        // println!("drew rect to texture at {},{} - {}x{}",m.x,m.y,m.width,m.height);
+                                        println!("drew rect to texture at {},{} - {}x{}",m.x,m.y,m.width,m.height);
                                     });
                                 }
                             }
@@ -121,7 +121,20 @@ impl<'a> SDL2Backend<'a> {
                             if let Some(win) = windows.get_mut(m.window.as_str()) {
                                 if let Some(tex) = self.window_buffers.get_mut(win.id.as_str()) {
                                     // println!("drawing an image {}x{}", m.width, m.height);
-                                    tex.update(Rect::new(m.x, m.y, m.width as u32, m.height as u32), &*m.pixels, (4 * m.width) as usize);
+                                    self.canvas.with_texture_canvas(tex,|texture_canvas|{
+                                        // println!("drew image to texture at {},{} - {}x{}, count={}",m.x,m.y,m.width,m.height,m.pixels.len());
+                                        for i in 0..m.width {
+                                            for j in 0..m.height {
+                                                let n:usize = ((j * m.width + i) * 4) as usize;
+                                                let alpha = m.pixels[n+3];
+                                                if alpha > 0 {
+                                                    let col = Color::RGBA(m.pixels[n + 0], m.pixels[n + 1], m.pixels[n + 2], m.pixels[n + 3]);
+                                                    texture_canvas.set_draw_color(col);
+                                                    texture_canvas.fill_rect(Rect::new(i, j, 1, 1));
+                                                }
+                                            }
+                                        }
+                                    });
                                 }
                             }
                         }
@@ -136,8 +149,8 @@ impl<'a> SDL2Backend<'a> {
     }
     fn init_window(&mut self, win: &Window) {
         let mut tex = self.creator.create_texture_target(PixelFormatEnum::RGBA8888,
-                                                         (win.width as u32)*SCALE,
-                                                         (win.height as u32)*SCALE
+                                                         (win.width as u32),
+                                                         (win.height as u32)
                                                          // 256,256
         )
             .map_err(|e|e.to_string()).unwrap();
@@ -146,7 +159,7 @@ impl<'a> SDL2Backend<'a> {
             tc.clear();
             tc.set_draw_color(Color::RGBA(0,0,0,255));
             tc
-                .fill_rect(Rect::new(0, 0, (win.width as u32*SCALE) as u32, (win.height as u32*SCALE) as u32));
+                .fill_rect(Rect::new(0, 0, (win.width as u32) as u32, (win.height as u32) as u32));
         });
         self.window_buffers.insert(win.id.clone(),tex);
     }
