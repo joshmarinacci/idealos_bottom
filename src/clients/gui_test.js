@@ -63,3 +63,5 @@ const draw_text = (x,y,text,color) => {
 }
 app.on('start',()=>init())
 
+
+
