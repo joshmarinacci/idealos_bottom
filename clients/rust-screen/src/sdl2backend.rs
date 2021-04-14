@@ -238,6 +238,7 @@ impl<'a> SDL2Backend<'a> {
         if let Some(keycode) = keycode {
             // println!("keycode pressed {}",keycode);
             match keycode {
+                /*
                 Keycode::Right => {
                     if let Some(id) = &self.active_window {
                         if let Some(win) = windows.get_mut(id) {
@@ -265,7 +266,7 @@ impl<'a> SDL2Backend<'a> {
                             win.y = min(win.y+5,100);
                         }
                     }
-                }
+                }*/
                 Keycode => {
                     if let Some(id) = &self.active_window {
                         if let Some(win) = windows.get_mut(id) {

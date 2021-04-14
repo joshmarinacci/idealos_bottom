@@ -17,7 +17,7 @@ let mouse = {
     }
 }
 let keyboard = {
-    keycode:-1,
+    keyname:""
 }
 let font = null
 let root = null
@@ -102,13 +102,52 @@ class TextBox {
         this.text = opts.text || "hi"
         this.focused = false
         this.padding = new Insets(5)
+        this.cursor = 2;
     }
     layout(gfx) {
+        if(mouse.inside(this.x,this.y,this.width,this.height) && mouse.down) {
+            this.focused = true;
+        }
 
+        if(this.focused) {
+            if (keyboard.keyname === 'Backspace') {
+                if(this.text.length > 0) {
+                    this.text = this.text.substring(0, this.text.length - 1)
+                    let before = this.text.substring(0,this.cursor)
+                    let after = this.text.substring(this.cursor)
+                    this.text = before.substring(0,before.length-1) + after
+                    this.cursor = Math.max(this.cursor-1,0)
+                }
+            }
+            if (keyboard.keyname === 'Space') {
+                this.text = this.text + " "
+                this.cursor += 1
+            }
+            if (keyboard.keyname === 'Left') {
+                this.cursor = Math.max(this.cursor - 1,0)
+            }
+            if (keyboard.keyname === 'Right') {
+                this.cursor = Math.min(this.cursor+1, this.text.length)
+            }
+            if(keyboard.keyname.length === 1) {
+                // app.log(`keycode = ${keyboard.keyname} = ${keyboard.keyname.charCodeAt(0)}`)
+                let ch = keyboard.keyname.charCodeAt(0)
+                if(ch >= 65 && ch <= 90) {
+                    this.text += String.fromCharCode(ch).toLowerCase()
+                    this.cursor += 1
+                }
+            }
+            keyboard.keyname = ""
+        }
     }
     redraw(gfx) {
-        gfx.rect(this.x, this.y, this.width, this.height, 'yellow')
+        gfx.rect(this.x, this.y, this.width, this.height, this.focused?'yellow':'blue')
         gfx.text(this.padding.left+this.x,this.y,this.text,'black')
+        if(this.focused) {
+            let before = this.text.substring(0,this.cursor)
+            let before_metrics = gfx.text_size(before);
+            gfx.rect(this.x+this.padding.left+before_metrics.width,this.y,1,this.height,'black')
+        }
     }
 
 }
@@ -117,7 +156,7 @@ function build_gui() {
     root = new Panel({width,height,children:[
             new Label({text:"label",x:0, width:20}),
             new Button({text:'button',x:0, y:30, width:30, height:15}),
-            new TextBox({text:"emptytext",y:50, width:60, height: 15}),
+            new TextBox({text:"hi",y:50, width:60, height: 15}),
         ]})
 }
 
@@ -164,7 +203,7 @@ app.on(SCHEMAS.WINDOW.REFRESH.NAME, ()=>{
 })
 app.on(SCHEMAS.KEYBOARD.DOWN.NAME, (e)=>{
     console.log("keyboard pressed in app",e)
-    keyboard.keycode = e.payload.keycode;
+    keyboard.keyname = e.payload.keyname;
     redraw();
 })
 
