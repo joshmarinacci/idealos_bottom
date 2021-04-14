@@ -27,6 +27,9 @@ class Panel {
         this.height = opts.height || 10
         this.children = opts.children || []
     }
+    layout(gfx) {
+        this.children.forEach(ch => ch.layout(gfx))
+    }
     redraw(gfx) {
         gfx.rect(this.x,this.y,this.width,this.height,'white')
         this.children.forEach(ch => ch.redraw(gfx))
@@ -41,11 +44,26 @@ class Label {
         this.height = opts.height || 10
         this.text = opts.text || "hi"
     }
+    layout(gfx) {
+        let met = gfx.text_size(this.text)
+        this.width = met.width;
+        this.height = met.height;
+    }
     redraw(gfx) {
-        // gfx.rect(this.x,this.y,40,20,'green')
+        gfx.rect(this.x,this.y,this.width,this.height,'green')
         gfx.text(this.x,this.y,this.text,'black')
     }
 }
+
+class Insets {
+    constructor(m) {
+        this.left = m;
+        this.right = m;
+        this.top = m;
+        this.bottom = m;
+    }
+}
+
 class Button {
     constructor(opts) {
         this.x = opts.x || 0
@@ -54,16 +72,20 @@ class Button {
         this.height = opts.height || 10
         this.text = opts.text || "hi"
         this.pressed = false
+        this.padding = new Insets(5)
+    }
+    layout(gfx) {
+        let met = gfx.text_size(this.text)
+        this.width = this.padding.left + met.width + this.padding.right;
     }
     redraw(gfx) {
-        console.log("mouse is",mouse)
         this.pressed = mouse.inside(this.x,this.y,this.width,this.height) && mouse.down;
         if(this.pressed) {
             gfx.rect(this.x, this.y, this.width, this.height, 'black')
-            gfx.text(this.x,this.y,this.text,'white')
+            gfx.text(this.padding.left+this.x,this.y,this.text,'white')
         } else {
             gfx.rect(this.x, this.y, this.width, this.height, 'blue')
-            gfx.text(this.x,this.y,this.text,'white')
+            gfx.text(this.padding.left+this.x,this.y,this.text,'white')
         }
     }
 }
@@ -87,13 +109,17 @@ async function init() {
 function redraw() {
     let gfx = {
         rect:(x,y,width,height,color) => {
-            app.send(make_message(SCHEMAS.DRAW.RECT, {x, y, width, height, color}))
+            return app.send(make_message(SCHEMAS.DRAW.RECT, {x, y, width, height, color}))
         },
         text:(x,y,text,color) => {
-            font.draw_text(app,x,y,text,color);
+            return font.draw_text(app,x,y,text,color);
+        },
+        text_size:(text) => {
+            return font.measure_text(app,text);
         }
     }
     app.log("redrawing gui test")
+    root.layout(gfx)
     root.redraw(gfx)
 }
 

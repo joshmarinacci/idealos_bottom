@@ -103,6 +103,27 @@ class PixelFontImpl {
         this.info = metrics
     }
 
+    measure_text(app,text) {
+        let line_height = 10;
+        let dx = 0
+        let dy = 0
+
+        text.split("\n").forEach(line => {
+            for(let n=0; n<line.length; n++) {
+                let ch = line.charCodeAt(n)
+                let met = this.info.metrics[ch]
+                if(met && met.w > 0) {
+                    dx += met.w;
+                    dx += 1;
+                }
+            }
+            dy += 10
+        })
+        return {
+            width:dx,
+            height:dy,
+        }
+    }
     draw_text(app, x, y, text, color) {
         // app.log("image is",this.bitmap)
         // app.log("metrics is",this.info.metrics)
