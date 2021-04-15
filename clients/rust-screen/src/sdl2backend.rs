@@ -223,7 +223,7 @@ impl<'a> SDL2Backend<'a> {
                 // println!("drawing window at {:?}",dst);
             }
         }
-        self.font.draw_text_at("hi", 10,10,&Color::GREEN, &mut self.canvas, SCALEI);
+        self.font.draw_text_at("IDEALOS", 40,40,&Color::GREEN, &mut self.canvas, SCALEI);
         self.canvas.present();
     }
     fn process_keydown(&self, keycode: Option<Keycode>, windows:&mut HashMap<String,Window>, output: &Sender<OwnedMessage>) {

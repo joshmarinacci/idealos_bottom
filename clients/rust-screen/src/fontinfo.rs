@@ -27,25 +27,33 @@ impl FontInfo<'_> {
 
         for ch in text.chars() {
             let arr = self.metrics.as_object().unwrap().get("metrics").unwrap().as_array().unwrap();
-            let met_res = arr[ch as usize].as_object();
-            if let Some(met) = met_res {
+            if (ch as usize) < arr.len() {
+                let met_res = arr[ch as usize].as_object();
+                if let Some(met) = met_res {
 
-                // println!("char is {} {:?}",ch,met);
-                let sx: i32 = met.get("x").unwrap().as_u64().unwrap() as i32;
-                let sy: i32 = met.get("y").unwrap().as_u64().unwrap() as i32;
-                let sw: u32 = met.get("w").unwrap().as_u64().unwrap() as u32;
-                let sh: u32 = met.get("h").unwrap().as_u64().unwrap() as u32;
+                    // println!("char is {} {:?}",ch,met);
+                    let sx: i32 = met.get("x").unwrap().as_u64().unwrap() as i32;
+                    let sy: i32 = met.get("y").unwrap().as_u64().unwrap() as i32;
+                    let sw: u32 = met.get("w").unwrap().as_u64().unwrap() as u32;
+                    let sh: u32 = met.get("h").unwrap().as_u64().unwrap() as u32;
 
-                let src = Rect::new(sx, sy, sw, sh);
-                let dst = Rect::new(
-                    dx * scale_i,
-                    dy * scale_i,
-                    sw * scale_u,
-                    sh * scale_u);
-                canvas.copy(&self.bitmap, src, dst);
-                dx += sw as i32;
-                dx += 1;
+                    let src = Rect::new(sx, sy, sw, sh);
+                    let dst = Rect::new(
+                        dx * scale_i,
+                        dy * scale_i,
+                        sw * scale_u,
+                        sh * scale_u);
+                    canvas.copy(&self.bitmap, src, dst);
+                    dx += sw as i32;
+                    dx += 1;
+                    continue;
+                }
             }
+            let missing = Rect::new(dx*scale_i,dy*scale_i,10*scale_u,10*scale_u);
+            canvas.set_draw_color(Color::BLACK);
+            canvas.draw_rect(missing);
+            dx += 11;
+            continue;
         }
     }
 }

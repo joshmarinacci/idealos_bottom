@@ -86,11 +86,11 @@ pub fn main() -> Result<(),String> {
         let mut canvas = canvas_builder.build().map_err(|e| e.to_string())?;
         let creator = canvas.texture_creator();
 
-    let png_path =  "../../src/clients/fonts/font.png";
+    let png_path =  "../../src/clients/fonts/idealos_font@1.png";
     let fnt_tex = creator.load_texture(png_path)?;
     let info = fnt_tex.query();
     println!("font texture is {}x{}",info.width, info.height);
-    let metrics = load_json("../../src/clients/fonts/font.metrics.json").unwrap();
+    let metrics = load_json("../../src/clients/fonts/idealos_font@1.json").unwrap();
     let mut backend = SDL2Backend {
             sdl_context: &sdl_context,
             active_window: None,
