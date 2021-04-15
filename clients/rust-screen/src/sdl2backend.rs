@@ -21,7 +21,7 @@ use std::cell::RefCell;
 use sdl2::rect::Rect;
 use sdl2::audio::AudioFormat::S8;
 use Event::MouseButtonDown;
-use sdl2::mouse::MouseButton;
+use sdl2::mouse::{MouseButton, MouseState};
 use std::cmp::{max, min};
 use sdl2::controller::Button::B;
 use colors_transform::{Rgb, Color as CTColor};
@@ -29,7 +29,7 @@ use colors_transform::{Rgb, Color as CTColor};
 
 const SCALE: u32 = 5;
 const SCALEI: i32 = SCALE as i32;
-const BORDER: i32 = 1;
+const BORDER: i32 = 5;
 
 pub struct SDL2Backend<'a> {
     pub active_window:Option<String>,
@@ -37,6 +37,8 @@ pub struct SDL2Backend<'a> {
     pub canvas: WindowCanvas,
     pub creator: &'a TextureCreator<WindowContext>,
     pub window_buffers:HashMap<String,Texture<'a>>,
+    pub dragging:bool,
+    pub dragtarget:Option<String>,
 }
 
 impl<'a> SDL2Backend<'a> {
@@ -196,6 +198,7 @@ impl<'a> SDL2Backend<'a> {
                     _ => {}
                 }
             }
+            self.process_mousedrag(&event_pump.mouse_state(), windows);
 
             self.process_render_messages(windows,
                                          input,
@@ -301,13 +304,19 @@ impl<'a> SDL2Backend<'a> {
                         };
                         output.send(OwnedMessage::Text(json!(msg).to_string()));
                     }
+                    if win.border_contains(&pt, BORDER) {
+                        println!("clicked on the border");
+                        self.dragging = true;
+                        self.dragtarget = Some(win.id.clone());
+                    }
                 }
             }
             _ => {}
         };
 
     }
-    fn process_mouseup(&self, x: i32, y: i32, mouse_btn: MouseButton, windows: &mut HashMap<String, Window>, output: &Sender<OwnedMessage>) {
+    fn process_mouseup(&mut self, x: i32, y: i32, mouse_btn: MouseButton, windows: &mut HashMap<String, Window>, output: &Sender<OwnedMessage>) {
+        self.dragging = false;
         if let MouseButton::Left = mouse_btn {
             let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
             if let Some(id) = &self.active_window {
@@ -329,6 +338,16 @@ impl<'a> SDL2Backend<'a> {
             Color::RGBA(0, 255, 255, 255)
         } else {
             Color::RGBA(255, 255, 0, 255)
+        }
+    }
+    fn process_mousedrag(&self, mouse_state:&MouseState, windows:&mut HashMap<String,Window>) -> () {
+        if(!self.dragging) { return };
+        if let Some(winid) = &self.dragtarget {
+            if let Some(win) = windows.get_mut(winid) {
+                // println!("dragging {} {} with {:?}", mouse_state.x(), mouse_state.y(), win.id);
+                win.x = mouse_state.x()/SCALEI;
+                win.y = mouse_state.y()/SCALEI;
+            }
         }
     }
 }

@@ -84,7 +84,9 @@ pub fn main() -> Result<(),String> {
             active_window: None,
             canvas:canvas,
             creator: &creator,
-            window_buffers: Default::default()
+            window_buffers: Default::default(),
+            dragging: false,
+            dragtarget: None
         };
         // let mut backend = SDL2Backend::make(canvas,&creator)?;
         backend.start_loop(

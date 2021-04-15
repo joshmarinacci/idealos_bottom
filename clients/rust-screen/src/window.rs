@@ -48,4 +48,11 @@ impl Window {
         if pt.y > (self.y + self.height) { return false; }
         return true
     }
+    pub fn border_contains(&self, pt:&Point, border:i32) -> bool {
+        if pt.x < self.x-border { return false; }
+        if pt.x > (self.x + self.width+border) { return false; }
+        if pt.y < self.y-border { return false; }
+        if pt.y > (self.y + self.height+border) { return false; }
+        return true
+    }
 }
