@@ -1,39 +1,51 @@
-use std::{io, error};
 use std::fs::File;
 use std::io::BufReader;
 
-use image::io::Reader as ImageReader;
-use image::{DynamicImage, ImageError, GenericImageView};
 use std::error::Error;
-use std::io::Error as IOError;
-use serde::ser::StdError;
-use raylib::text::Font;
+// use crate::sdl2backend::SDL2Backend;
+// use sdl2::pixels::PixelFormatEnum;
+use sdl2::image::LoadTexture;
+use sdl2::render::{Texture, TextureCreator, Canvas, WindowCanvas};
+use sdl2::video::WindowContext;
+use sdl2::pixels::Color;
+use sdl2::rect::Rect;
 
-pub struct FontInfo {
-    pub bitmap: DynamicImage,
+pub struct FontInfo<'a> {
+    pub bitmap: Texture<'a>,
     pub metrics: serde_json::Value
 }
 
-impl FontInfo {
-    pub fn load_font(png_path:&str,json_path:&str) -> Result<FontInfo, Box<dyn Error>> {
-        println!("loading a font from {} and {}",png_path,json_path);
-        let bitmap = FontInfo::load_img(png_path)?;
-        let metrics = FontInfo::load_json(json_path)?;
-        return Ok(FontInfo {
-            bitmap,
-            metrics
-        })
+impl FontInfo<'_> {
+    pub fn ascent(&self) -> i64 {
+        return self.metrics.as_object().unwrap().get("ascent").unwrap().as_i64().unwrap();
     }
-    pub fn load_json(json_path:&str) -> Result<serde_json::Value, Box<dyn Error>> {
-        let file = File::open(json_path)?;
-        let reader = BufReader::new(file);
-        let metrics:serde_json::Value =  serde_json::from_reader(reader)?;
-        println!("metrics are object? {:?}",metrics.is_object());
-        return Ok(metrics)
-    }
-    pub fn load_img(png_path:&str) -> Result<DynamicImage, Box<dyn Error>>{
-        let bitmap = ImageReader::open(png_path)?.decode()?;
-        println!("image is {}x{}",bitmap.width(), bitmap.height());
-        return Ok(bitmap);
+
+    pub fn draw_text_at(&self, text: &str, x:i32, y:i32, color:&Color, canvas: &mut WindowCanvas, scale_i:i32) {
+        let mut dx:i32 = x;
+        let mut dy:i32 = y;
+        let scale_u:u32 = scale_i as u32;
+
+        for ch in text.chars() {
+            let arr = self.metrics.as_object().unwrap().get("metrics").unwrap().as_array().unwrap();
+            let met_res = arr[ch as usize].as_object();
+            if let Some(met) = met_res {
+
+                // println!("char is {} {:?}",ch,met);
+                let sx: i32 = met.get("x").unwrap().as_u64().unwrap() as i32;
+                let sy: i32 = met.get("y").unwrap().as_u64().unwrap() as i32;
+                let sw: u32 = met.get("w").unwrap().as_u64().unwrap() as u32;
+                let sh: u32 = met.get("h").unwrap().as_u64().unwrap() as u32;
+
+                let src = Rect::new(sx, sy, sw, sh);
+                let dst = Rect::new(
+                    dx * scale_i,
+                    dy * scale_i,
+                    sw * scale_u,
+                    sh * scale_u);
+                canvas.copy(&self.bitmap, src, dst);
+                dx += sw as i32;
+                dx += 1;
+            }
+        }
     }
 }

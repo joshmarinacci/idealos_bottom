@@ -6,7 +6,6 @@ use serde_json::{json};
 
 use crate::window::{Window, Point, Insets};
 use crate::messages::{RenderMessage, MouseDownMessage, MouseUpMessage, KeyboardDownMessage};
-use crate::backend::Backend;
 use crate::fontinfo::FontInfo;
 
 
@@ -17,16 +16,9 @@ use sdl2::render::{WindowCanvas, Texture, TextureCreator};
 use sdl2::Sdl;
 use crate::common::send_refresh_all_windows_request;
 use sdl2::video::WindowContext;
-use sdl2::video::Window as SDLWindow;
-use std::cell::RefCell;
 use sdl2::rect::Rect;
-use sdl2::audio::AudioFormat::S8;
-use Event::MouseButtonDown;
 use sdl2::mouse::{MouseButton, MouseState};
-use std::cmp::{max, min};
-use sdl2::controller::Button::B;
 use colors_transform::{Rgb, Color as CTColor};
-use std::io;
 
 
 const SCALE: u32 = 5;
@@ -46,17 +38,9 @@ pub struct SDL2Backend<'a> {
     pub window_buffers:HashMap<String,Texture<'a>>,
     pub dragging:bool,
     pub dragtarget:Option<String>,
-    pub font:Option<FontInfo>
+    pub font:FontInfo<'a>,
 }
 
-impl<'a> SDL2Backend<'a> {
-    // pub fn load_font(png_path:&str,json_path:&str) -> Result<FontInfo, Box<dyn Error>> {
-
-    pub(crate) fn init_fonts(&mut self) -> Result<(),Box<dyn std::error::Error>> {
-        self.font = Some(FontInfo::load_font(&"../../src/clients/fonts/font.png", "../../src/clients/fonts/font.metrics.json")?);
-        Ok(())
-    }
-}
 
 impl<'a> SDL2Backend<'a> {
     fn process_render_messages(&mut self,
@@ -152,8 +136,8 @@ impl<'a> SDL2Backend<'a> {
     }
     fn init_window(&mut self, win: &Window) {
         let mut tex = self.creator.create_texture_target(PixelFormatEnum::RGBA8888,
-                                                         (win.width as u32),
-                                                         (win.height as u32)
+                                                         win.width as u32,
+                                                         win.height as u32
                                                          // 256,256
         )
             .map_err(|e|e.to_string()).unwrap();
@@ -178,6 +162,7 @@ impl<'a> SDL2Backend<'a> {
                       output: &Sender<OwnedMessage>
 ) -> Result<(),String> {
 
+        println!("font info. ascent = {}",self.font.ascent());
         let mut event_pump = self.sdl_context.event_pump()?;
 
         'done:loop {
@@ -231,9 +216,14 @@ impl<'a> SDL2Backend<'a> {
                                          (win.height as u32 * SCALE as u32) as u32
                 ));
                 self.canvas.copy(tex,None,dst);
+                self.font.draw_text_at(&*win.id,
+                                       win.x,
+                                       win.y-8,
+                                       &Color::GREEN, &mut self.canvas, SCALEI);
                 // println!("drawing window at {:?}",dst);
             }
         }
+        self.font.draw_text_at("hi", 10,10,&Color::GREEN, &mut self.canvas, SCALEI);
         self.canvas.present();
     }
     fn process_keydown(&self, keycode: Option<Keycode>, windows:&mut HashMap<String,Window>, output: &Sender<OwnedMessage>) {
@@ -341,7 +331,7 @@ impl<'a> SDL2Backend<'a> {
         }
     }
     fn process_mousedrag(&self, mouse_state:&MouseState, windows:&mut HashMap<String,Window>) -> () {
-        if(!self.dragging) { return };
+        if !self.dragging { return };
         if let Some(winid) = &self.dragtarget {
             if let Some(win) = windows.get_mut(winid) {
                 // println!("dragging {} {} with {:?}", mouse_state.x(), mouse_state.y(), win.id);
