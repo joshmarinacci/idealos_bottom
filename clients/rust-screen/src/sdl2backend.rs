@@ -7,6 +7,7 @@ use serde_json::{json};
 use crate::window::{Window, Point, Insets};
 use crate::messages::{RenderMessage, MouseDownMessage, MouseUpMessage, KeyboardDownMessage};
 use crate::backend::Backend;
+use crate::fontinfo::FontInfo;
 
 
 use sdl2::event::Event;
@@ -25,6 +26,7 @@ use sdl2::mouse::{MouseButton, MouseState};
 use std::cmp::{max, min};
 use sdl2::controller::Button::B;
 use colors_transform::{Rgb, Color as CTColor};
+use std::io;
 
 
 const SCALE: u32 = 5;
@@ -44,6 +46,16 @@ pub struct SDL2Backend<'a> {
     pub window_buffers:HashMap<String,Texture<'a>>,
     pub dragging:bool,
     pub dragtarget:Option<String>,
+    pub font:Option<FontInfo>
+}
+
+impl<'a> SDL2Backend<'a> {
+    // pub fn load_font(png_path:&str,json_path:&str) -> Result<FontInfo, Box<dyn Error>> {
+
+    pub(crate) fn init_fonts(&mut self) -> Result<(),Box<dyn std::error::Error>> {
+        self.font = Some(FontInfo::load_font(&"../../src/clients/fonts/font.png", "../../src/clients/fonts/font.metrics.json")?);
+        Ok(())
+    }
 }
 
 impl<'a> SDL2Backend<'a> {

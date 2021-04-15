@@ -20,6 +20,7 @@ mod outgoing;
 mod backend;
 mod sdl2backend;
 mod common;
+mod fontinfo;
 
 
 pub fn main() -> Result<(),String> {
@@ -86,8 +87,10 @@ pub fn main() -> Result<(),String> {
             creator: &creator,
             window_buffers: Default::default(),
             dragging: false,
-            dragtarget: None
+            dragtarget: None,
+            font: None,
         };
+        backend.init_fonts();
         // let mut backend = SDL2Backend::make(canvas,&creator)?;
         backend.start_loop(
             &mut windows,
