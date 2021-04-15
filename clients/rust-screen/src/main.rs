@@ -70,7 +70,7 @@ pub fn main() -> Result<(),String> {
         let sdl_context = sdl2::init()?;
         let video_subsystem = sdl_context.video()?;
         let window = video_subsystem
-            .window("rust-sdl2 demo: Video", 800, 600)
+            .window("rust-sdl2 demo: Video", 1024, 768)
             .position_centered()
             .opengl()
             .build()

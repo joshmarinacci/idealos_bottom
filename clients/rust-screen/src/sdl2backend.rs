@@ -205,7 +205,7 @@ impl<'a> SDL2Backend<'a> {
                                          output,
             );
             self.process_render_drawing(windows);
-            ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 30));
+            ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
         }
         println!("SDL thread is ending");
 
@@ -305,7 +305,7 @@ impl<'a> SDL2Backend<'a> {
                         output.send(OwnedMessage::Text(json!(msg).to_string()));
                     }
                     if win.border_contains(&pt, BORDER) {
-                        println!("clicked on the border");
+                        // println!("clicked on the border");
                         self.dragging = true;
                         self.dragtarget = Some(win.id.clone());
                     }
