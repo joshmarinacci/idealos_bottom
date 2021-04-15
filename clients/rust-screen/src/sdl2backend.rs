@@ -42,26 +42,10 @@ pub struct SDL2Backend<'a> {
 }
 
 impl<'a> SDL2Backend<'a> {
-    // pub fn make(canvas:WindowCanvas, creator:&'a TextureCreator<WindowContext>) -> Result<SDL2Backend<'a>,String> {
-    //     // let tex = creator.create_texture_target(PixelFormatEnum::RGBA8888, 20,20)
-    //     //     .map_err(|e|e.to_string()).unwrap();
-    //     Ok(SDL2Backend {
-    //         // window,
-    //         // sdl_context,
-    //         // canvas: canvas,
-    //         active_window: Option::None,
-    //         creator: &creator,
-    //         // window_buffers:tex,
-    //         window_buffers: Default::default()
-    //     })
-    // }
-
     fn process_render_messages(&mut self,
                                windows:&mut HashMap<String, Window>,
                                input: &Receiver<RenderMessage>,
                                output: &Sender<OwnedMessage>,
-                               // creator:&TextureCreator<WindowContext>,
-                               // window_buffers:&mut HashMap<String,Texture>
     ) {
         'main: loop {
             match input.try_recv() {
@@ -171,8 +155,6 @@ impl<'a> SDL2Backend<'a> {
         //remove from window_buffers
         self.window_buffers.remove(win.id.as_str());
     }
-
-
     pub fn start_loop(&mut self,
                       windows: &mut HashMap<String, Window>,
                       input: &Receiver<RenderMessage>,
