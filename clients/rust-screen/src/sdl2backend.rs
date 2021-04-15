@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use websocket::OwnedMessage;
 use serde_json::{json};
 
-use crate::window::{Window, Point};
+use crate::window::{Window, Point, Insets};
 use crate::messages::{RenderMessage, MouseDownMessage, MouseUpMessage, KeyboardDownMessage};
 use crate::backend::Backend;
 
@@ -29,7 +29,12 @@ use colors_transform::{Rgb, Color as CTColor};
 
 const SCALE: u32 = 5;
 const SCALEI: i32 = SCALE as i32;
-const BORDER: i32 = 5;
+const BORDER:Insets = Insets {
+    left: 3,
+    right: 3,
+    top: 10,
+    bottom: 3
+};
 
 pub struct SDL2Backend<'a> {
     pub active_window:Option<String>,
@@ -186,14 +191,14 @@ impl<'a> SDL2Backend<'a> {
                                          input,
                                          output,
             );
-            self.process_render_drawing(windows);
+            self.draw_windows(windows);
             ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
         }
         println!("SDL thread is ending");
 
         Ok(())
     }
-    fn process_render_drawing(&mut self, windows: &mut HashMap<String, Window>) {
+    fn draw_windows(&mut self, windows: &mut HashMap<String, Window>) {
         self.canvas.set_draw_color(Color::RGBA(255,0,255,255));
         self.canvas.clear();
         //clear background to white
@@ -203,10 +208,10 @@ impl<'a> SDL2Backend<'a> {
                 //draw background / border
                 self.canvas.set_draw_color(self.calc_window_border_color(win));
                 self.canvas.fill_rect(Rect::new(
-                    ((win.x-BORDER)*(SCALE as i32)) as i32,
-                    ((win.y-BORDER)*(SCALE as i32)) as i32,
-                    (win.width+BORDER+BORDER)as u32*SCALE as u32,
-                    (win.height+BORDER+BORDER)as u32*SCALE as u32));
+                    ((win.x-BORDER.left)*(SCALE as i32)) as i32,
+                    ((win.y-BORDER.top)*(SCALE as i32)) as i32,
+                    (BORDER.left+win.width+BORDER.right)as u32*SCALE as u32,
+                    (BORDER.top+win.height+BORDER.bottom)as u32*SCALE as u32));
                 //draw window texture
                 let dst = Some(Rect::new((win.x as u32*SCALE) as i32,
                                          (win.y as u32*SCALE) as i32,
@@ -285,8 +290,9 @@ impl<'a> SDL2Backend<'a> {
                             target: win.owner.clone()
                         };
                         output.send(OwnedMessage::Text(json!(msg).to_string()));
+                        continue;
                     }
-                    if win.border_contains(&pt, BORDER) {
+                    if win.border_contains(&pt, &BORDER) {
                         // println!("clicked on the border");
                         self.dragging = true;
                         self.dragtarget = Some(win.id.clone());

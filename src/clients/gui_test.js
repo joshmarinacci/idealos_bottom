@@ -202,7 +202,7 @@ app.on(SCHEMAS.WINDOW.REFRESH.NAME, ()=>{
     redraw()
 })
 app.on(SCHEMAS.KEYBOARD.DOWN.NAME, (e)=>{
-    console.log("keyboard pressed in app",e)
+    // console.log("keyboard pressed in app",e)
     keyboard.keyname = e.payload.keyname;
     redraw();
 })
