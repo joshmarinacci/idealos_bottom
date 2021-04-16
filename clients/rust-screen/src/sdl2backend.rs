@@ -160,7 +160,7 @@ impl<'a> SDL2Backend<'a> {
                       windows: &mut HashMap<String, Window>,
                       input: &Receiver<RenderMessage>,
                       output: &Sender<OwnedMessage>
-) -> Result<(),String> {
+        ) -> Result<(),String> {
 
         println!("font info. ascent = {}",self.font.ascent());
         let mut event_pump = self.sdl_context.event_pump()?;
@@ -223,7 +223,7 @@ impl<'a> SDL2Backend<'a> {
                 // println!("drawing window at {:?}",dst);
             }
         }
-        self.font.draw_text_at("IDEALOS", 40,40,&Color::GREEN, &mut self.canvas, SCALEI);
+        self.font.draw_text_at("idealos", 40,40,&Color::GREEN, &mut self.canvas, SCALEI);
         self.canvas.present();
     }
     fn process_keydown(&self, keycode: Option<Keycode>, windows:&mut HashMap<String,Window>, output: &Sender<OwnedMessage>) {

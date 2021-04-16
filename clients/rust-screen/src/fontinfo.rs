@@ -36,11 +36,12 @@ impl FontInfo<'_> {
                     let sy: i32 = met.get("y").unwrap().as_u64().unwrap() as i32;
                     let sw: u32 = met.get("w").unwrap().as_u64().unwrap() as u32;
                     let sh: u32 = met.get("h").unwrap().as_u64().unwrap() as u32;
+                    let bl: u32 = met.get("baseline").unwrap().as_u64().unwrap() as u32;
 
                     let src = Rect::new(sx, sy, sw, sh);
                     let dst = Rect::new(
                         dx * scale_i,
-                        dy * scale_i,
+                        (y + (bl as i32)) * scale_i as i32,
                         sw * scale_u,
                         sh * scale_u);
                     canvas.copy(&self.bitmap, src, dst);
