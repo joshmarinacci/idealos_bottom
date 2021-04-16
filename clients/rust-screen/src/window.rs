@@ -48,4 +48,18 @@ impl Window {
         if pt.y > (self.y + self.height) { return false; }
         return true
     }
+    pub fn border_contains(&self, pt:&Point, border:&Insets) -> bool {
+        if pt.x < self.x-border.left { return false; }
+        if pt.x > (self.x + self.width+border.right) { return false; }
+        if pt.y < self.y-border.top { return false; }
+        if pt.y > (self.y + self.height+border.bottom) { return false; }
+        return true
+    }
+}
+
+pub struct Insets {
+    pub left:i32,
+    pub right:i32,
+    pub top:i32,
+    pub bottom:i32,
 }

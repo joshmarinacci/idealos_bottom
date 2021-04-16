@@ -12,6 +12,11 @@ use crate::incoming::process_incoming;
 use crate::outgoing::process_outgoing;
 use crate::backend::Backend;
 use crate::sdl2backend::SDL2Backend;
+use crate::fontinfo::FontInfo;
+use sdl2::image::LoadTexture;
+use std::fs::File;
+use std::io::BufReader;
+use std::error::Error;
 
 mod messages;
 mod window;
@@ -20,6 +25,7 @@ mod outgoing;
 mod backend;
 mod sdl2backend;
 mod common;
+mod fontinfo;
 
 
 pub fn main() -> Result<(),String> {
@@ -70,7 +76,7 @@ pub fn main() -> Result<(),String> {
         let sdl_context = sdl2::init()?;
         let video_subsystem = sdl_context.video()?;
         let window = video_subsystem
-            .window("rust-sdl2 demo: Video", 800, 600)
+            .window("rust-sdl2 demo: Video", 1024, 768)
             .position_centered()
             .opengl()
             .build()
@@ -79,14 +85,25 @@ pub fn main() -> Result<(),String> {
         let canvas_builder = window.into_canvas();
         let mut canvas = canvas_builder.build().map_err(|e| e.to_string())?;
         let creator = canvas.texture_creator();
-        let mut backend = SDL2Backend {
+
+    let png_path =  "../../src/clients/fonts/idealos_font@1.png";
+    let fnt_tex = creator.load_texture(png_path)?;
+    let info = fnt_tex.query();
+    println!("font texture is {}x{}",info.width, info.height);
+    let metrics = load_json("../../src/clients/fonts/idealos_font@1.json").unwrap();
+    let mut backend = SDL2Backend {
             sdl_context: &sdl_context,
             active_window: None,
             canvas:canvas,
             creator: &creator,
-            window_buffers: Default::default()
+            window_buffers: Default::default(),
+            dragging: false,
+            dragtarget: None,
+            font: FontInfo {
+                bitmap: fnt_tex,
+                metrics: metrics
+            },
         };
-        // let mut backend = SDL2Backend::make(canvas,&creator)?;
         backend.start_loop(
             &mut windows,
             &render_loop_receive,
@@ -104,3 +121,12 @@ pub fn main() -> Result<(),String> {
     Ok(())
 }
 
+
+
+pub fn load_json(json_path:&str) -> Result<serde_json::Value, Box<dyn Error>> {
+    let file = File::open(json_path)?;
+    let reader = BufReader::new(file);
+    let metrics:serde_json::Value =  serde_json::from_reader(reader)?;
+    println!("metrics are object? {:?}",metrics.is_object());
+    return Ok(metrics)
+}

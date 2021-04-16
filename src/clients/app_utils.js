@@ -17,6 +17,7 @@ export class CommonApp {
         })
         this.ws.on("message",(data)=>{
             let msg = JSON.parse(data)
+            // console.log("incoming message",msg);
             if(message_match(SCHEMAS.WINDOW.OPEN_RESPONSE,msg)) {
                 this.win_id = msg.window
                 this.fireLater('start',{})
@@ -54,7 +55,6 @@ export class CommonApp {
     send(msg) {
         msg.window = this.win_id
         msg.app = this.appid
-        // this.log("sending",msg)
         this.ws.send(JSON.stringify(msg))
     }
 }
@@ -71,7 +71,6 @@ class BufferImage {
     }
 
     set(x, y, r,g,b,a) {
-        // console.log('setting at',x,y,val)
         if(x<0) return;
         if(y<0) return;
         let n = (y*this.width+x)*4;
@@ -80,9 +79,27 @@ class BufferImage {
         this.pixels[n+1] = g
         this.pixels[n+2] = b
         this.pixels[n+3] = a
-        // console.log("setting value",x,y,r,g,b,a)
     }
 }
+
+const color_map = {
+    'black': [0,   0,   0,255],
+    'red':   [255, 0,   0,255],
+    'green': [0, 255,   0,255],
+    'blue':  [0,    0,255,255],
+    'white': [255,255,255,255],
+}
+
+function color_to_rgba(color) {
+    if(color_map[color]) return color_map[color]
+    return [255,255,0,255]
+}
+
+const KEY_CODES = {
+    SPACE:32,
+}
+const space_width = 3;
+const line_height = 10;
 
 class PixelFontImpl {
     constructor(img, metrics) {
@@ -90,29 +107,51 @@ class PixelFontImpl {
         this.info = metrics
     }
 
-    draw_text(app, x, y, text, color) {
-        app.log('drawing text ',text,'at',x,y)
-        // app.log("image is",this.bitmap)
-        // app.log("metrics is",this.info.metrics)
+    measure_text(app,text) {
         let dx = 0
         let dy = 0
-        let w = 40
-        let h = 20
-        let img = new BufferImage(w,h)
-        let line_height = 10;
+
         text.split("\n").forEach(line => {
-            // app.log("line",line)
-            // app.log("dy",dy)
             for(let n=0; n<line.length; n++) {
                 let ch = line.charCodeAt(n)
                 let met = this.info.metrics[ch]
-                // app.log("drawing char",ch,met)
+                if(ch === KEY_CODES.SPACE) {
+                    dx += space_width
+                }
+                if(met && met.w > 0) {
+                    dx += met.w;
+                    dx += 1;
+                }
+            }
+            dy += line_height
+        })
+        return {
+            width:dx,
+            height:dy,
+        }
+    }
+    draw_text(app, x, y, text, color) {
+        let rgba = color_to_rgba(color)
+        let full_metrics = this.measure_text(app,text);
+        let dx = 0
+        let dy = 0
+        let w = full_metrics.width;
+        let h = full_metrics.height;
+        let img = new BufferImage(w,h)
+        text.split("\n").forEach(line => {
+
+            for(let n=0; n<line.length; n++) {
+                let ch = line.charCodeAt(n)
+                let met = this.info.metrics[ch]
+                if(ch === KEY_CODES.SPACE) {
+                    dx += space_width
+                }
                 if(met && met.w > 0) {
                     for(let i=0; i<met.w; i++) {
                         for(let j=0; j<met.h; j++) {
                             let color = this.bitmap.getPixelRGBA(i+met.x,j+met.y)
                             if(color > 0) {
-                                img.set(dx+i, dy+j+line_height-met.h, 0,0,0,255)
+                                img.set(dx+i, dy+j+line_height-met.h, ...rgba)
                             }
                         }
                     }
@@ -120,12 +159,8 @@ class PixelFontImpl {
                     dx += 1
                 }
             }
-            dy += 10
+            dy += line_height
         })
-        //draw diagonal
-        for(let i=0; i<Math.min(w,h); i++) {
-            img.set(i, i, 128,0,0,255)
-        }
         app.send(make_message(SCHEMAS.DRAW.IMAGE,{x:x,y:y,width:w,height:h,pixels:img.to_array()}))
     }
 }
