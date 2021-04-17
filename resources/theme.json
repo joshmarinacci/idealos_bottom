@@ -15,6 +15,10 @@
     "background_color": "black",
     "text_color": "white"
   },
+  "button:selected": {
+    "background_color": "white",
+    "text_color": "black"
+  },
   "textbox": {
     "background_color": "white",
     "border_color": "gray",
