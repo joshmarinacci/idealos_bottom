@@ -66,43 +66,7 @@ function log(...args) {
     console.log(...args)
 }
 
-describe('basic tests',function() {
-    // it('starts and stops', async function () {
-    //     //start the server
-    //     let server = await start_message_server()
-    //     console.log("doing the ws stuff")
-    //
-    //     let addr = `ws://${hostname}:${websocket_port}`
-    //
-    //     //open client
-    //     let ws = new WebSocket(addr);
-    //     ws.on('open', () => {
-    //         console.log("test opened");
-    //         ws.send(JSON.stringify(make_message(SCHEMAS.TEST.START, {sender: 'TEST'})))
-    //         ws.send(JSON.stringify(make_message(SCHEMAS.RESOURCE.GET, {
-    //             sender: 'TEST',
-    //             'resource': 'theme'
-    //         })))
-    //     })
-    //     ws.on("message", (data) => {
-    //         let msg = JSON.parse(data)
-    //         console.log("got a response", msg)
-    //         if (msg.type === SCHEMAS.GENERAL.CONNECTED.NAME) {
-    //             // console.log("got the changed message back. shut it down")
-    //             // stop_message_server(server)
-    //             //
-    //         }
-    //         if (msg.type === SCHEMAS.RESOURCE.INVALID.NAME) {
-    //             console.log("got the invalid back. awesome!")
-    //             stop_message_server(server)
-    //         }
-    //         if (msg.type === SCHEMAS.RESOURCE.CHANGED) {
-    //             console.log("got the changed message back. shut it down")
-    //             stop_message_server(server)
-    //         }
-    //     })
-    // })
-
+describe('resource tests',function() {
     it('checks for an invalid resource', async function() {
         let info = await connect_and_wait()
         send_message(info, make_message(SCHEMAS.RESOURCE.GET, {sender:'TEST','resource':'themes'}))

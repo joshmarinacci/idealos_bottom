@@ -2,12 +2,11 @@ import WS from "ws"
 import fs from "fs"
 import http from "http"
 import path from "path"
-import {
-    make_message, message_match,
-    SCHEMAS,
-} from '../canvas/messages.js'
+import {make_message, message_match, SCHEMAS} from '../canvas/messages.js'
 import {WindowTracker} from './windows.js'
 import {AppTracker} from './apps.js'
+import {ResourceManager} from './resources.js'
+
 export const hostname = '127.0.0.1'
 export const webserver_port = 3000
 export const websocket_port = 8081
@@ -28,6 +27,8 @@ const CLIENT_TYPES = {
     DEBUG:'DEBUG',
     TEST:'TEST',
 }
+
+let resources = new ResourceManager(log, respond)
 
 function handle_start_message(ws,msg) {
     connections[CLIENT_TYPES.SCREEN] = ws
@@ -117,33 +118,6 @@ function start_app(msg) {
 }
 
 
-const RESOURCES = {
-    'test':{
-        path:'test.json',
-        mime:'text/json',
-    },
-    'theme':{
-        path:'theme.json',
-        mime:'text/json'
-    }
-}
-async function get_resource(msg) {
-    log("get resource", msg)
-    if (!RESOURCES.hasOwnProperty(msg.resource)) return respond(msg, make_message(SCHEMAS.RESOURCE.INVALID, {resource:msg.resource}));
-    let resource = RESOURCES[msg.resource]
-    let pth = path.join('resources',resource.path)
-    log("reading resource", msg.resource, 'at', pth)
-    try {
-        let data = await fs.promises.readFile(pth)
-        respond(msg, make_message(SCHEMAS.RESOURCE.CHANGED, {data: data, resource:msg.resource, mimetype:resource.mime}))
-    } catch (e) {
-        log(e)
-        console.log("cot the error")
-        log('sending to ',msg.sender)
-        respond(msg, make_message(SCHEMAS.RESOURCE.INVALID, {resource:msg.resource}))
-    }
-}
-
 function respond(msg,resp) {
     resp.target = msg.sender
     forward_to_target(resp)
@@ -184,8 +158,8 @@ export function start_message_server() {
 
                 if (message_match(SCHEMAS.TEST.START, msg)) return start_test(ws, msg)
 
-                if (message_match(SCHEMAS.RESOURCE.GET, msg)) return get_resource(msg)
-                if (message_match(SCHEMAS.RESOURCE.SET, msg)) return set_resource(msg)
+                if (message_match(SCHEMAS.RESOURCE.GET, msg)) return resources.get_resource(msg)
+                // if (message_match(SCHEMAS.RESOURCE.SET, msg)) return resources.set_resource(msg)
 
                 log("unknown incoming message", msg)
             } catch (e) {
