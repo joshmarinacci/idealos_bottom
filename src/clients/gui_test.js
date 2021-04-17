@@ -22,6 +22,17 @@ let keyboard = {
 let font = null
 let root = null
 
+let theme = {
+    panel:{
+        background_color:'green'
+    }
+}
+
+function theme_bg_color(panel, def) {
+    if(theme && theme.panel && theme.panel.background_color) return theme.panel.background_color
+    return def
+}
+
 class Panel {
     constructor(opts) {
         this.x = opts.x || 0
@@ -34,7 +45,7 @@ class Panel {
         this.children.forEach(ch => ch.layout(gfx))
     }
     redraw(gfx) {
-        gfx.rect(this.x,this.y,this.width,this.height,'white')
+        gfx.rect(this.x,this.y,this.width,this.height,theme_bg_color('panel','red'))
         this.children.forEach(ch => ch.redraw(gfx))
     }
 }
@@ -165,6 +176,7 @@ async function init() {
         font = await PixelFont.load("src/clients/fonts/font.png", "src/clients/fonts/font.metrics.json")
         build_gui()
         redraw()
+        app.send(make_message(SCHEMAS.RESOURCE.GET,{'resource':'theme','sender':app.appid}))
     } catch (e) {
         app.log(e)
     }
@@ -206,15 +218,15 @@ app.on(SCHEMAS.KEYBOARD.DOWN.NAME, (e)=>{
     keyboard.keyname = e.payload.keyname;
     redraw();
 })
-
-// const draw_rect = (x,y,width,height,color) => app.send(make_message(SCHEMAS.DRAW.RECT, {x, y, width, height, color}))
-// const label = (x,y,text,color) => draw_text(x,y,text,color)
-// const button = (x,y,width,height,text) => {
-//     let bg = 'blue'
-//     if(mouse.inside(x,y,width,height) && mouse.down) bg = 'red'
-//     draw_rect(x,y,width,height,bg)
-//     draw_text(x,y,text,'black')
-// }
+app.on(SCHEMAS.RESOURCE.CHANGED.NAME, (e)=>{
+    // console.log("resource changed",e.payload.data)
+    if(e.payload.resource === 'theme') {
+        let new_theme = JSON.parse(String.fromCharCode(...e.payload.data.data))
+        console.log("the new theme is", new_theme)
+        theme = new_theme
+        redraw()
+    }
+})
 
 app.on('start',()=>init())
 

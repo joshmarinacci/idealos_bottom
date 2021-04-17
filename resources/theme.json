@@ -1,3 +1,6 @@
 {
-  "type": "theme"
+  "type": "theme",
+  "panel": {
+    "background_color":"blue"
+  }
 }
