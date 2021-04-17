@@ -6,7 +6,8 @@ let app = new CommonApp(process.argv,100,100)
 async function init() {
     try {
         //load font
-        app.font = await PixelFont.load("src/clients/fonts/idealos_font@1.png", "src/clients/fonts/idealos_font@1.json")
+        // app.font = await PixelFont.load("src/clients/fonts/idealos_font@1.png", "src/clients/fonts/idealos_font@1.json")
+        app.font = await PixelFont.load("src/clients/fonts/font.png", "src/clients/fonts/font.metrics.json")
 
         //create gui components
         app.win.root = new VBox({
