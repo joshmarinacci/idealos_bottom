@@ -242,7 +242,7 @@ export class Button extends Component {
 export class TextBox extends Component {
     constructor(opts) {
         super(opts)
-        this.text = opts.text || "hi"
+        this.text = opts.text || "textbox"
         this.padding = new Insets(5)
         this.cursor = 2
     }
@@ -278,6 +278,9 @@ export class TextBox extends Component {
                     this.text += String.fromCharCode(ch).toLowerCase()
                     this.cursor += 1
                 }
+            }
+            if (keyboard.keyname === 'Return') {
+                this.fire('action',{target:this})
             }
             keyboard.keyname = ""
         }

@@ -16,11 +16,15 @@ async function init() {
                 new Label({text:"label",x:0, width:20}),
                 new Button({text:'button',x:0, y:15, width:30, height:15, id:'button'}),
                 new Label({text:'label',x:50, y:15, id:'button-target'}),
-                new TextBox({text:"hi",y:50, width:60, height: 15}),
+                new TextBox({text:"hi",y:50, width:60, height: 15, id:'textbox'}),
             ]})
         //attach actions
         app.win.root.find({id:'button'}).on('action',()=>{
             app.win.root.find({id:'button-target'}).text = 'clicked!'
+            app.win.redraw()
+        })
+        app.win.root.find({id:'textbox'}).on('action',()=>{
+            app.win.root.find({id:'button-target'}).text = 'committed'
             app.win.redraw()
         })
         //redraw
