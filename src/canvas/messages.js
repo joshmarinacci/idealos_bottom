@@ -78,7 +78,7 @@ let schemas = {
     RESOURCE:{
         GET:['resource','sender'],
         SET:['resource','data'],
-        CHANGED:['resource','data'],
+        CHANGED:['resource','data','mimetype'],
         INVALID:['resource'],
     }
 }
@@ -114,6 +114,7 @@ export function make_message(sch,opts) {
     }
     sch.props.forEach(key => {
         if(!opts.hasOwnProperty(key)) throw new Error(`message missing option ${key}`)
+        if(typeof opts[key] === 'undefined') throw new Error(`message key ${key} = undefined!`)
     })
     Object.keys(opts).forEach(key => {
         if(sch.props.indexOf(key) < 0) throw new Error(`message has extra key '${key}' compared to ${JSON.stringify(sch)}`)

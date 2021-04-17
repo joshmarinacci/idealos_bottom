@@ -118,16 +118,24 @@ function start_app(msg) {
 
 
 const RESOURCES = {
-    'theme':'theme.json'
+    'test':{
+        path:'test.json',
+        mime:'text/json',
+    },
+    'theme':{
+        path:'theme.json',
+        mime:'text/json'
+    }
 }
 async function get_resource(msg) {
     log("get resource", msg)
-    if (!RESOURCES.hasOwnProperty(msg.resource)) respond(msg, make_message(SCHEMAS.RESOURCE.INVALID, {resource:msg.resource}));
-    let path = RESOURCES[msg.resource]
-    log("reading resource", msg.resource, 'at', path)
+    if (!RESOURCES.hasOwnProperty(msg.resource)) return respond(msg, make_message(SCHEMAS.RESOURCE.INVALID, {resource:msg.resource}));
+    let resource = RESOURCES[msg.resource]
+    let pth = path.join('resources',resource.path)
+    log("reading resource", msg.resource, 'at', pth)
     try {
-        let data = await fs.promises.readFile(path)
-        respond(msg, make_message(SCHEMAS.RESOURCE.CHANGED, {data: data, resource:msg.resource}))
+        let data = await fs.promises.readFile(pth)
+        respond(msg, make_message(SCHEMAS.RESOURCE.CHANGED, {data: data, resource:msg.resource, mimetype:resource.mime}))
     } catch (e) {
         log(e)
         console.log("cot the error")

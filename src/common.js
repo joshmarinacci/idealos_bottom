@@ -1,0 +1,1 @@
+// fetch_resource('name')
