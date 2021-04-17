@@ -171,7 +171,30 @@ export function start_message_server() {
         })
         ws.send(JSON.stringify(make_message(SCHEMAS.GENERAL.CONNECTED,{})))
     })
-    return server
+    async function do_start_app(opts) {
+    }
+
+
+    return {
+        wsserver:server,
+        screen_connected: () => {
+            log("waiting for the screen to connect. please refresh the page")
+            return new Promise((res,rej)=>{
+                let id = setInterval(()=>{
+                    if(connections[CLIENT_TYPES.SCREEN]) {
+                        log("screen attached")
+                        clearInterval(id)
+                        res()
+                    }
+                },500)
+            })
+        },
+        start_app:async (opts) => {
+            let app = at.create_app(opts)
+            await sleep(250)
+            at.start(app.id)
+        },
+    }
 }
 export function stop_message_server(server) {
     log('stopping the server');
@@ -205,11 +228,6 @@ function start_web_server() {
     })
 }
 
-async function do_start_app(opts) {
-    let app = at.create_app(opts)
-    await sleep(250)
-    at.start(app.id)
-}
 
 // await start_message_server()
 // await start_web_server()
