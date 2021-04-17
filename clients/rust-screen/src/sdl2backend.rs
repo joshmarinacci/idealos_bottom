@@ -230,7 +230,7 @@ impl<'a> SDL2Backend<'a> {
                 self.canvas.copy(tex,None,dst);
             }
         }
-        self.font.draw_text_at("idealos", 40,40,&Color::GREEN, &mut self.canvas, SCALEI);
+        self.font.draw_text_at("idealos", 150,0,&Color::GREEN, &mut self.canvas, SCALEI);
         self.canvas.present();
     }
     fn process_keydown(&self, keycode: Option<Keycode>, windows:&mut HashMap<String,Window>, output: &Sender<OwnedMessage>) {
