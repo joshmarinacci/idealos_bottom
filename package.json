@@ -6,9 +6,9 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/server/server.js",
+    "start-server": "node src/server/start.js",
     "raylib": "node src/raylib/raylib_screen.js",
-    "rust": "cd cargo clients/rust-screen && cargo run",
+    "rust": "cd clients/rust-screen && cargo run",
     "docs": "node tools/make_docs.js"
   },
   "keywords": [],
