@@ -6,6 +6,7 @@ import {make_message, message_match, SCHEMAS} from '../canvas/messages.js'
 import {WindowTracker} from './windows.js'
 import {AppTracker} from './apps.js'
 import {ResourceManager} from './resources.js'
+import {sleep} from '../common.js'
 
 export const hostname = '127.0.0.1'
 export const webserver_port = 3000
@@ -15,7 +16,6 @@ function log(...args) {
     console.log(...args)
     forward_to_debug(make_message(SCHEMAS.DEBUG.LOG,{data:args}))
 }
-const sleep = (dur) => new Promise((res,rej) => setTimeout(res,dur))
 
 const connections = {}
 const wids = new WindowTracker()
