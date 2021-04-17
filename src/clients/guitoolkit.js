@@ -51,6 +51,7 @@ export class Window {
         })
     }
     input() {
+        if(!this.root) return
         let mouse_event = {
             x:this.mouse.x,
             y:this.mouse.y,
@@ -72,6 +73,7 @@ export class Window {
         if(!handled) this.set_focused(null)
     }
     redraw() {
+        if(!this.root) return
         let gfx = new Gfx(this.app,this)
         this.root.layout(gfx)
         this.root.redraw(gfx)
