@@ -1,6 +1,18 @@
 {
   "type": "theme",
   "panel": {
-    "background_color":"blue"
+    "background_color":"white"
+  },
+  "label": {
+    "background_color": "white",
+    "text_color": "black"
+  },
+  "button": {
+    "background_color": "blue",
+    "text_color": "white"
+  },
+  "button:pressed": {
+    "background_color": "black",
+    "text_color": "white"
   }
 }

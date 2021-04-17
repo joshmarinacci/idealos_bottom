@@ -29,7 +29,11 @@ let theme = {
 }
 
 function theme_bg_color(panel, def) {
-    if(theme && theme.panel && theme.panel.background_color) return theme.panel.background_color
+    if(theme && theme[panel] && theme[panel].background_color) return theme[panel].background_color
+    return def
+}
+function theme_text_color(panel, def) {
+    if(theme && theme[panel] && theme[panel].text_color) return theme[panel].text_color
     return def
 }
 
@@ -45,7 +49,7 @@ class Panel {
         this.children.forEach(ch => ch.layout(gfx))
     }
     redraw(gfx) {
-        gfx.rect(this.x,this.y,this.width,this.height,theme_bg_color('panel','red'))
+        gfx.rect(this.x,this.y,this.width,this.height,theme_bg_color('panel','white'))
         this.children.forEach(ch => ch.redraw(gfx))
     }
 }
@@ -56,7 +60,7 @@ class Label {
         this.y = opts.y || 0
         this.width = opts.width || 10
         this.height = opts.height || 10
-        this.text = opts.text || "hi"
+        this.text = opts.text || "label"
     }
     layout(gfx) {
         let met = gfx.text_size(this.text)
@@ -64,8 +68,10 @@ class Label {
         this.height = met.height;
     }
     redraw(gfx) {
-        gfx.rect(this.x,this.y,this.width,this.height,'green')
-        gfx.text(this.x,this.y,this.text,'black')
+        gfx.rect(this.x,this.y,this.width,this.height,
+            theme_bg_color('label','green'))
+        gfx.text(this.x,this.y,this.text,
+            theme_text_color('label','yellow'))
     }
 }
 
@@ -78,13 +84,15 @@ class Insets {
     }
 }
 
+const MAGENTA = 'magenta'
+
 class Button {
     constructor(opts) {
         this.x = opts.x || 0
         this.y = opts.y || 0
         this.width = opts.width || 10
         this.height = opts.height || 10
-        this.text = opts.text || "hi"
+        this.text = opts.text || "button"
         this.pressed = false
         this.padding = new Insets(5)
     }
@@ -95,11 +103,13 @@ class Button {
     redraw(gfx) {
         this.pressed = mouse.inside(this.x,this.y,this.width,this.height) && mouse.down;
         if(this.pressed) {
-            gfx.rect(this.x, this.y, this.width, this.height, 'black')
-            gfx.text(this.padding.left+this.x,this.y,this.text,'white')
+            gfx.rect(this.x, this.y, this.width, this.height, theme_bg_color('button:pressed',MAGENTA))
+            gfx.text(this.padding.left+this.x,this.y,this.text,theme_text_color('button:pressed',MAGENTA))
         } else {
-            gfx.rect(this.x, this.y, this.width, this.height, 'blue')
-            gfx.text(this.padding.left+this.x,this.y,this.text,'white')
+            gfx.rect(this.x, this.y, this.width, this.height,
+                theme_bg_color('button','magenta'))
+            gfx.text(this.padding.left+this.x,this.y,this.text,
+                theme_text_color('button','magenta'))
         }
     }
 }
