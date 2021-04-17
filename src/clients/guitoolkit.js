@@ -6,6 +6,7 @@ export class Window {
         this.width = width
         this.height = height
         this.root = null
+        this.focused = null
         this.mouse = {
             x: -1,
             y: -1,
@@ -50,18 +51,27 @@ export class Window {
         })
     }
     input() {
-        this.root.input(this.mouse,this.keyboard)
+        let handled = this.root.input(this.mouse,this.keyboard,this)
+        if(!handled) this.set_focused(null)
     }
     redraw() {
-        let gfx = new Gfx(this.app)
+        let gfx = new Gfx(this.app,this)
         this.root.layout(gfx)
         this.root.redraw(gfx)
+    }
+    is_focused(el) {
+        if(this.focused && this.focused === el) return true
+        return false
+    }
+    set_focused(el) {
+        this.focused = el
     }
 }
 
 class Gfx {
-    constructor(app) {
+    constructor(app,win) {
         this.app = app
+        this.win = win
     }
     rect(x,y,width,height,color) {
         return this.app.send(make_message(SCHEMAS.DRAW.RECT, {x, y, width, height, color}))
@@ -109,7 +119,8 @@ class Component {
         this.listeners[type].forEach(cb => cb(payload))
     }
 
-    input(mouse, keyboard) {
+    input(mouse, keyboard, win) {
+        return false
     }
 
     layout(gfx) {
@@ -126,8 +137,12 @@ class Container extends Component {
         this.children = opts.children || []
     }
 
-    input(mouse, keyboard) {
-        this.children.forEach(ch => ch.input(mouse, keyboard))
+    input(mouse, keyboard, win) {
+        for(let ch of this.children) {
+            let handled = ch.input(mouse,keyboard, win)
+            if(handled) return true
+        }
+        return false
     }
 
     layout(gfx) {
@@ -197,10 +212,10 @@ export class Button extends Component {
     }
 
     input(mouse, keyboard) {
-        this.pressed = mouse.inside(this.x, this.y, this.width, this.height) && mouse.down
-        if (this.pressed) {
-            this.fire('action', {})
-        }
+        if(!mouse.inside(this.x,this.y,this.width,this.height)) return false
+        this.pressed = mouse.down
+        if (this.pressed) this.fire('action', {})
+        return true
     }
 
     layout(gfx) {
@@ -228,16 +243,15 @@ export class TextBox extends Component {
     constructor(opts) {
         super(opts)
         this.text = opts.text || "hi"
-        this.focused = false
         this.padding = new Insets(5)
         this.cursor = 2
     }
 
-    input(mouse, keyboard) {
-        if (mouse.inside(this.x, this.y, this.width, this.height) && mouse.down) {
-            this.focused = true
-        }
-        if (this.focused) {
+    input(mouse, keyboard, win) {
+        if(!mouse.inside(this.x, this.y, this.width, this.height)) return false
+        if(mouse.down) win.set_focused(this)
+        if(!win.is_focused(this)) return false
+        if (win.is_focused(this)) {
             if (keyboard.keyname === 'Backspace') {
                 if (this.text.length > 0) {
                     this.text = this.text.substring(0, this.text.length - 1)
@@ -267,15 +281,16 @@ export class TextBox extends Component {
             }
             keyboard.keyname = ""
         }
+        return true
     }
 
     redraw(gfx) {
         let name = "textbox"
-        if (this.focused) name = "textbox:focused"
+        if (gfx.win.is_focused(this)) name = "textbox:focused"
         gfx.rect(this.x, this.y, this.width, this.height, gfx.theme_border_color(name, MAGENTA))
         gfx.rect(this.x + 1, this.y + 1, this.width - 2, this.height - 2, gfx.theme_bg_color(name, MAGENTA))
         gfx.text(this.padding.left + this.x, this.y, this.text, gfx.theme_text_color(name, MAGENTA))
-        if (this.focused) {
+        if (gfx.win.is_focused(this)) {
             let before = this.text.substring(0, this.cursor)
             let before_metrics = gfx.text_size(before)
             gfx.rect(this.x + this.padding.left + before_metrics.width, this.y + 2, 1, this.height - 4, gfx.theme_text_color(name, MAGENTA))
