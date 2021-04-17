@@ -162,7 +162,6 @@ impl<'a> SDL2Backend<'a> {
                       output: &Sender<OwnedMessage>
         ) -> Result<(),String> {
 
-        println!("font info. ascent = {}",self.font.ascent());
         let mut event_pump = self.sdl_context.event_pump()?;
 
         'done:loop {
@@ -235,37 +234,7 @@ impl<'a> SDL2Backend<'a> {
     }
     fn process_keydown(&self, keycode: Option<Keycode>, windows:&mut HashMap<String,Window>, output: &Sender<OwnedMessage>) {
         if let Some(keycode) = keycode {
-            // println!("keycode pressed {}",keycode);
             match keycode {
-                /*
-                Keycode::Right => {
-                    if let Some(id) = &self.active_window {
-                        if let Some(win) = windows.get_mut(id) {
-                            win.x = min(    win.x+5,100);
-                        }
-                    }
-                }
-                Keycode::Left => {
-                    if let Some(id) = &self.active_window {
-                        if let Some(win) = windows.get_mut(id) {
-                            win.x = max(win.x-5,BORDER);
-                        }
-                    }
-                }
-                Keycode::Up => {
-                    if let Some(id) = &self.active_window {
-                        if let Some(win) = windows.get_mut(id) {
-                            win.y = max(win.y-5,BORDER);
-                        }
-                    }
-                }
-                Keycode::Down => {
-                    if let Some(id) = &self.active_window {
-                        if let Some(win) = windows.get_mut(id) {
-                            win.y = min(win.y+5,100);
-                        }
-                    }
-                }*/
                 Keycode => {
                     if let Some(id) = &self.active_window {
                         if let Some(win) = windows.get_mut(id) {

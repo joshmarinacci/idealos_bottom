@@ -17,6 +17,11 @@ use sdl2::image::LoadTexture;
 use std::fs::File;
 use std::io::BufReader;
 use std::error::Error;
+use sdl2::pixels::PixelFormatEnum;
+use image::io::Reader as ImageReader;
+use sdl2::render::{BlendMode, TextureCreator, Texture};
+use image::RgbaImage;
+use sdl2::video::WindowContext;
 
 mod messages;
 mod window;
@@ -87,9 +92,12 @@ pub fn main() -> Result<(),String> {
         let creator = canvas.texture_creator();
 
     let png_path =  "../../src/clients/fonts/idealos_font@1.png";
-    let fnt_tex = creator.load_texture(png_path)?;
-    let info = fnt_tex.query();
-    println!("font texture is {}x{}",info.width, info.height);
+    let rust_img = ImageReader::open(png_path).map_err(|e|e.to_string())?
+        .decode().map_err(|e|e.to_string())?
+        .into_rgba8()
+        ;
+    let fnt_tex2 = image_to_texture_with_transparent_color(&rust_img, &creator)?;
+
     let metrics = load_json("../../src/clients/fonts/idealos_font@1.json").unwrap();
     let mut backend = SDL2Backend {
             sdl_context: &sdl_context,
@@ -100,7 +108,7 @@ pub fn main() -> Result<(),String> {
             dragging: false,
             dragtarget: None,
             font: FontInfo {
-                bitmap: fnt_tex,
+                bitmap: fnt_tex2,
                 metrics: metrics
             },
         };
@@ -129,4 +137,31 @@ pub fn load_json(json_path:&str) -> Result<serde_json::Value, Box<dyn Error>> {
     let metrics:serde_json::Value =  serde_json::from_reader(reader)?;
     println!("metrics are object? {:?}",metrics.is_object());
     return Ok(metrics)
+}
+pub fn image_to_texture_with_transparent_color<'a>(rust_img:&RgbaImage, creator:&'a TextureCreator<WindowContext>) -> Result<Texture<'a>, String>{
+    let mut fnt_tex2 = creator.create_texture_streaming(PixelFormatEnum::RGBA8888,
+                                                        rust_img.width(),
+                                                        rust_img.height())
+        .map_err(|e| e.to_string())?;
+    //copy the source texture, setting alpha if it's the magic bg color
+    fnt_tex2.with_lock(None, |buffer: &mut [u8], pitch: usize| {
+        for y in 0..rust_img.width() {
+            for x in 0..rust_img.height() {
+                let ux = x as usize;
+                let uy = y as usize;
+                let offset = uy * pitch + ux * 4;
+                let pixel = rust_img.get_pixel(x,y);
+                // println!("rgb {} {} {} {}",pixel[0], pixel[1],pixel[2], pixel[3]);
+                let mut alpha = 255;
+                if pixel[0] == 255 && pixel[1] == 241 && pixel[2]==232 { alpha = 0; }
+                buffer[offset] = alpha;
+                buffer[offset + 1] = pixel[2];
+                buffer[offset + 2] = pixel[1];
+                buffer[offset + 3] = pixel[0];
+            }
+        }
+    })?;
+
+    fnt_tex2.set_blend_mode(BlendMode::Blend);
+    Ok(fnt_tex2)
 }
