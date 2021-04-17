@@ -49,6 +49,9 @@ class Panel {
         this.height = opts.height || 10
         this.children = opts.children || []
     }
+    input(mouse,keyboard) {
+        this.children.forEach(ch => ch.input(mouse,keyboard))
+    }
     layout(gfx) {
         this.children.forEach(ch => ch.layout(gfx))
     }
@@ -60,11 +63,15 @@ class Panel {
 
 class Label {
     constructor(opts) {
+        this.id = opts.id || ""
         this.x = opts.x || 0
         this.y = opts.y || 0
         this.width = opts.width || 10
         this.height = opts.height || 10
         this.text = opts.text || "label"
+    }
+    input(mouse,keyboard) {
+
     }
     layout(gfx) {
         let met = gfx.text_size(this.text)
@@ -92,6 +99,7 @@ const MAGENTA = 'magenta'
 
 class Button {
     constructor(opts) {
+        this.id = opts.id || ""
         this.x = opts.x || 0
         this.y = opts.y || 0
         this.width = opts.width || 10
@@ -99,13 +107,23 @@ class Button {
         this.text = opts.text || "button"
         this.pressed = false
         this.padding = new Insets(5)
+        this.listeners = {}
+    }
+    on(type,cb) {
+        if(!this.listeners[type]) this.listeners[type] = []
+        this.listeners[type].push(cb)
+    }
+    input(mouse,keyboard) {
+        this.pressed = mouse.inside(this.x,this.y,this.width,this.height) && mouse.down;
+        if(this.pressed) {
+            this.fire('action',{})
+        }
     }
     layout(gfx) {
         let met = gfx.text_size(this.text)
         this.width = this.padding.left + met.width + this.padding.right;
     }
     redraw(gfx) {
-        this.pressed = mouse.inside(this.x,this.y,this.width,this.height) && mouse.down;
         if(this.pressed) {
             gfx.rect(this.x, this.y, this.width, this.height,
                 theme_bg_color('button:pressed',MAGENTA))
@@ -117,6 +135,11 @@ class Button {
             gfx.text(this.padding.left+this.x,this.y,this.text,
                 theme_text_color('button','magenta'))
         }
+    }
+
+    fire(type, payload) {
+        if(!this.listeners[type]) this.listeners[type] = []
+        this.listeners[type].forEach(cb => cb(payload))
     }
 }
 
@@ -131,11 +154,10 @@ class TextBox {
         this.padding = new Insets(5)
         this.cursor = 2;
     }
-    layout(gfx) {
+    input(mouse,keyboard) {
         if(mouse.inside(this.x,this.y,this.width,this.height) && mouse.down) {
             this.focused = true;
         }
-
         if(this.focused) {
             if (keyboard.keyname === 'Backspace') {
                 if(this.text.length > 0) {
@@ -167,6 +189,8 @@ class TextBox {
             keyboard.keyname = ""
         }
     }
+    layout(gfx) {
+    }
     redraw(gfx) {
         let name = "textbox"
         if(this.focused) name = "textbox:focused"
@@ -182,12 +206,30 @@ class TextBox {
 
 }
 
+function find(root, query) {
+    if(root.id && root.id === query.id) {
+        return root
+    }
+    if(root.children) {
+        for(let ch of root.children) {
+            let ans = find(ch,query)
+            if(ans) return ans
+        }
+    }
+    return null
+}
+
 function build_gui() {
     root = new Panel({width,height,children:[
             new Label({text:"label",x:0, width:20}),
-            new Button({text:'button',x:0, y:30, width:30, height:15}),
+            new Button({text:'button',x:0, y:15, width:30, height:15, id:'button'}),
+            new Label({text:'label',x:50, y:15, id:'button-target'}),
             new TextBox({text:"hi",y:50, width:60, height: 15}),
         ]})
+    find(root,{id:'button'}).on('action',()=>{
+        find(root,{id:'button-target'}).text = 'clicked!'
+        redraw()
+    })
 }
 
 async function init() {
@@ -216,6 +258,9 @@ function redraw() {
     root.layout(gfx)
     root.redraw(gfx)
 }
+function input() {
+    root.input(mouse,keyboard)
+}
 
 
 
@@ -223,10 +268,12 @@ app.on(SCHEMAS.MOUSE.DOWN.NAME,(e)=>{
     mouse.x = e.payload.x
     mouse.y = e.payload.y
     mouse.down = true
+    input()
     redraw()
 })
 app.on(SCHEMAS.MOUSE.UP.NAME,()=>{
     mouse.down = false
+    input()
     redraw()
 })
 app.on(SCHEMAS.WINDOW.REFRESH.NAME, ()=>{
@@ -235,13 +282,14 @@ app.on(SCHEMAS.WINDOW.REFRESH.NAME, ()=>{
 app.on(SCHEMAS.KEYBOARD.DOWN.NAME, (e)=>{
     // console.log("keyboard pressed in app",e)
     keyboard.keyname = e.payload.keyname;
+    input()
     redraw();
 })
 app.on(SCHEMAS.RESOURCE.CHANGED.NAME, (e)=>{
     // console.log("resource changed",e.payload.data)
     if(e.payload.resource === 'theme') {
         let new_theme = JSON.parse(String.fromCharCode(...e.payload.data.data))
-        console.log("the new theme is", new_theme)
+        // console.log("the new theme is", new_theme)
         theme = new_theme
         redraw()
     }
