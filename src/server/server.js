@@ -198,7 +198,7 @@ export function start_message_server() {
 }
 export function stop_message_server(server) {
     log('stopping the server');
-    server.close()
+    server.wsserver.close()
 }
 function start_web_server() {
     return new Promise((res,rej)=>{
