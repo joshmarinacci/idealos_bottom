@@ -1,6 +1,6 @@
 import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp, PixelFont} from './app_utils.js'
-import {Button, Label, Panel, TextBox, ToggleButton} from './guitoolkit.js'
+import {Button, HBox, Label, Panel, TextBox, ToggleButton, VBox} from './guitoolkit.js'
 let app = new CommonApp(process.argv,100,100)
 
 async function init() {
@@ -9,27 +9,33 @@ async function init() {
         app.font = await PixelFont.load("src/clients/fonts/font.png", "src/clients/fonts/font.metrics.json")
 
         //create gui components
-        app.win.root = new Panel({
+        app.win.root = new VBox({
             width:app.win.width,
             height:app.win.height,
             children:[
-                new Label({text:"label",x:0, width:20}),
-                new Button({text:'button',x:0, y:15, width:30, height:15, id:'button'}),
-                new Label({text:'label',x:50, y:15, id:'button-target'}),
-                new TextBox({text:"hi",y:50, width:50, height: 15, id:'textbox'}),
-
-                new ToggleButton({text:'A',x:0,y:70, width:15, height:15}),
-                new ToggleButton({text:'B',x:20,y:70, width:15, height:15}),
+                new Label({text:"label 1"}),
+                // new Label({text:"label 2"}),
+                // new Label({text:"label 3"}),
+                new Button({text:'button',width:30, height:15}),
+                new HBox({children:[
+                    new Button({text:'button',width:30, height:15, id:'button'}),
+                    new Label({text:'label',id:'button-target'}),
+                ]}),
+                // new TextBox({text:"hi",width:50, height: 15, id:'textbox'}),
+                // new HBox({children:[
+                //     new ToggleButton({text:'A', width:15, height:15}),
+                //     new ToggleButton({text:'B', width:15, height:15}),
+                // ]})
             ]})
         //attach actions
-        app.win.root.find({id:'button'}).on('action',()=>{
-            app.win.root.find({id:'button-target'}).text = 'clicked!'
-            app.win.redraw()
-        })
-        app.win.root.find({id:'textbox'}).on('action',()=>{
-            app.win.root.find({id:'button-target'}).text = 'committed'
-            app.win.redraw()
-        })
+        // app.win.root.find({id:'button'}).on('action',()=>{
+        //     app.win.root.find({id:'button-target'}).text = 'clicked!'
+        //     app.win.redraw()
+        // })
+        // app.win.root.find({id:'textbox'}).on('action',()=>{
+        //     app.win.root.find({id:'button-target'}).text = 'committed'
+        //     app.win.redraw()
+        // })
         //redraw
         app.win.redraw()
         //get the latest version of the theme

@@ -51,7 +51,24 @@ export class Window {
         })
     }
     input() {
-        let handled = this.root.input(this.mouse,this.keyboard,this)
+        let mouse_event = {
+            x:this.mouse.x,
+            y:this.mouse.y,
+            translate:function(x,y) {
+                this.x += x;
+                this.y += y;
+            },
+            down:this.mouse.down,
+            inside:function(x,y, w, h) {
+                if (this.x < x) return false
+                if (this.y < y) return false
+                if (this.x > x + w) return false
+                if (this.y > y + h) return false
+                return true
+            }
+        }
+
+        let handled = this.root.input(mouse_event,this.keyboard,this)
         if(!handled) this.set_focused(null)
     }
     redraw() {
@@ -72,13 +89,19 @@ class Gfx {
     constructor(app,win) {
         this.app = app
         this.win = win
+        this.tx = 0
+        this.ty = 0
+    }
+    translate(x,y) {
+        this.tx += x
+        this.ty += y
     }
     rect(x,y,width,height,color) {
-        return this.app.send(make_message(SCHEMAS.DRAW.RECT, {x, y, width, height, color}))
+        return this.app.send(make_message(SCHEMAS.DRAW.RECT, {x:this.tx+x, y:this.ty+y, width, height, color}))
     }
 
     text(x,y,text,color) {
-        return this.app.font.draw_text(this.app,x,y,text,color);
+        return this.app.font.draw_text(this.app,this.tx+x,this.ty+y,text,color);
     }
     text_size(text) {
         return this.app.font.measure_text(this.app,text);
@@ -138,15 +161,23 @@ class Container extends Component {
     }
 
     input(mouse, keyboard, win) {
+        mouse.translate(-this.x,-this.y)
         for(let ch of this.children) {
             let handled = ch.input(mouse,keyboard, win)
             if(handled) return true
         }
+        mouse.translate(this.x,this.y)
         return false
     }
 
     layout(gfx) {
         this.children.forEach(ch => ch.layout(gfx))
+    }
+
+    redraw(gfx) {
+        gfx.translate(this.x,this.y)
+        this.children.forEach(ch => ch.redraw(gfx))
+        gfx.translate(-this.x,-this.y)
     }
 
     find(query) {
@@ -212,7 +243,9 @@ export class Button extends Component {
     }
 
     input(mouse, keyboard) {
+        console.log("checking at",this.y, 'mous',mouse.y)
         if(!mouse.inside(this.x,this.y,this.width,this.height)) return false
+        console.log("inside button. mouse down is",mouse.down)
         this.pressed = mouse.down
         if (this.pressed) this.fire('action', {})
         return true
@@ -333,6 +366,36 @@ export class TextBox extends Component {
             let before_metrics = gfx.text_size(before)
             gfx.rect(this.x + this.padding.left + before_metrics.width, this.y + 2, 1, this.height - 4, gfx.theme_text_color(name, MAGENTA))
         }
+    }
+
+}
+
+export class VBox extends Container {
+    constructor(opts) {
+        super(opts);
+    }
+    layout(gfx) {
+        this.children.forEach(ch => ch.layout(gfx))
+        let y = 0
+        this.children.forEach(ch => {
+            ch.x = 0
+            ch.y = y
+            y += ch.height
+        })
+    }
+}
+export class HBox extends Container {
+    constructor(opts) {
+        super(opts);
+    }
+    layout(gfx) {
+        this.children.forEach(ch => ch.layout(gfx))
+        let x = 0
+        this.children.forEach(ch => {
+            ch.x = x
+            ch.y = 0
+            x += ch.width
+        })
     }
 
 }
