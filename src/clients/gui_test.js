@@ -32,6 +32,10 @@ function theme_bg_color(panel, def) {
     if(theme && theme[panel] && theme[panel].background_color) return theme[panel].background_color
     return def
 }
+function theme_border_color(panel, def) {
+    if(theme && theme[panel] && theme[panel].border_color) return theme[panel].border_color
+    return def
+}
 function theme_text_color(panel, def) {
     if(theme && theme[panel] && theme[panel].text_color) return theme[panel].text_color
     return def
@@ -103,8 +107,10 @@ class Button {
     redraw(gfx) {
         this.pressed = mouse.inside(this.x,this.y,this.width,this.height) && mouse.down;
         if(this.pressed) {
-            gfx.rect(this.x, this.y, this.width, this.height, theme_bg_color('button:pressed',MAGENTA))
-            gfx.text(this.padding.left+this.x,this.y,this.text,theme_text_color('button:pressed',MAGENTA))
+            gfx.rect(this.x, this.y, this.width, this.height,
+                theme_bg_color('button:pressed',MAGENTA))
+            gfx.text(this.padding.left+this.x,this.y,this.text,
+                theme_text_color('button:pressed',MAGENTA))
         } else {
             gfx.rect(this.x, this.y, this.width, this.height,
                 theme_bg_color('button','magenta'))
@@ -162,12 +168,15 @@ class TextBox {
         }
     }
     redraw(gfx) {
-        gfx.rect(this.x, this.y, this.width, this.height, this.focused?'yellow':'blue')
-        gfx.text(this.padding.left+this.x,this.y,this.text,'black')
+        let name = "textbox"
+        if(this.focused) name = "textbox:focused"
+        gfx.rect(this.x, this.y, this.width, this.height, theme_border_color(name,MAGENTA))
+        gfx.rect(this.x+1, this.y+1, this.width-2, this.height-2, theme_bg_color(name,MAGENTA))
+        gfx.text(this.padding.left+this.x,this.y,this.text,theme_text_color(name,MAGENTA))
         if(this.focused) {
             let before = this.text.substring(0,this.cursor)
             let before_metrics = gfx.text_size(before);
-            gfx.rect(this.x+this.padding.left+before_metrics.width,this.y,1,this.height,'black')
+            gfx.rect(this.x+this.padding.left+before_metrics.width,this.y+2,1,this.height-4,theme_text_color(name,MAGENTA))
         }
     }
 

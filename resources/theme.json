@@ -14,5 +14,15 @@
   "button:pressed": {
     "background_color": "black",
     "text_color": "white"
+  },
+  "textbox": {
+    "background_color": "white",
+    "border_color": "gray",
+    "text_color": "black"
+  },
+  "textbox:focused" :{
+    "background_color": "yellow",
+    "border_color": "black",
+    "text_color": "black"
   }
 }
