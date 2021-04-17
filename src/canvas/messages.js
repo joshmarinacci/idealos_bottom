@@ -71,6 +71,15 @@ let schemas = {
         RESTART_APP:['target'],
         STOP_APP:['target'],
         START_APP:['target'],
+    },
+    TEST:{
+        START:['sender']
+    },
+    RESOURCE:{
+        GET:['resource','sender'],
+        SET:['resource','data'],
+        CHANGED:['resource','data'],
+        INVALID:['resource'],
     }
 }
 

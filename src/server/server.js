@@ -8,9 +8,9 @@ import {
 } from '../canvas/messages.js'
 import {WindowTracker} from './windows.js'
 import {AppTracker} from './apps.js'
-const hostname = '127.0.0.1'
-const webserver_port = 3000
-const websocket_port = 8081
+export const hostname = '127.0.0.1'
+export const webserver_port = 3000
+export const websocket_port = 8081
 
 function log(...args) {
     console.log(...args)
@@ -26,6 +26,7 @@ const at = new AppTracker(hostname,websocket_port,log)
 const CLIENT_TYPES = {
     SCREEN:'SCREEN',
     DEBUG:'DEBUG',
+    TEST:'TEST',
 }
 
 function handle_start_message(ws,msg) {
@@ -66,6 +67,10 @@ function do_nothing(msg) {}
 function forward_to_target(msg) {
     if(!msg.target) return log("NO TARGET!",msg)
     return connections[msg.target].send(JSON.stringify(msg))
+}
+function start_test(ws,msg) {
+    log("attaching unit test runner")
+    connections[CLIENT_TYPES.TEST] = ws;
 }
 function list_apps(ws,msg) {
     log("listing apps for debug message",msg)
@@ -112,7 +117,32 @@ function start_app(msg) {
 }
 
 
-function start_message_server() {
+const RESOURCES = {
+    'theme':'theme.json'
+}
+async function get_resource(msg) {
+    log("get resource", msg)
+    if (!RESOURCES.hasOwnProperty(msg.resource)) respond(msg, make_message(SCHEMAS.RESOURCE.INVALID, {resource:msg.resource}));
+    let path = RESOURCES[msg.resource]
+    log("reading resource", msg.resource, 'at', path)
+    try {
+        let data = await fs.promises.readFile(path)
+        respond(msg, make_message(SCHEMAS.RESOURCE.CHANGED, {data: data, resource:msg.resource}))
+    } catch (e) {
+        log(e)
+        console.log("cot the error")
+        log('sending to ',msg.sender)
+        respond(msg, make_message(SCHEMAS.RESOURCE.INVALID, {resource:msg.resource}))
+    }
+}
+
+function respond(msg,resp) {
+    resp.target = msg.sender
+    forward_to_target(resp)
+}
+
+
+export function start_message_server() {
     const server = new WS.Server({
         port: websocket_port,
     })
@@ -143,6 +173,12 @@ function start_message_server() {
                 if (message_match(SCHEMAS.DEBUG.RESTART_APP, msg)) return restart_app(msg)
                 if (message_match(SCHEMAS.DEBUG.STOP_APP, msg)) return stop_app(msg)
                 if (message_match(SCHEMAS.DEBUG.START_APP, msg)) return start_app(msg)
+
+                if (message_match(SCHEMAS.TEST.START, msg)) return start_test(ws, msg)
+
+                if (message_match(SCHEMAS.RESOURCE.GET, msg)) return get_resource(msg)
+                if (message_match(SCHEMAS.RESOURCE.SET, msg)) return set_resource(msg)
+
                 log("unknown incoming message", msg)
             } catch (e) {
                 log("ERROR",e)
@@ -153,6 +189,11 @@ function start_message_server() {
         })
         ws.send(JSON.stringify(make_message(SCHEMAS.GENERAL.CONNECTED,{})))
     })
+    return server
+}
+export function stop_message_server(server) {
+    log('stopping the server');
+    server.close()
 }
 function start_web_server() {
     return new Promise((res,rej)=>{
@@ -188,7 +229,7 @@ async function do_start_app(opts) {
     at.start(app.id)
 }
 
-await start_message_server()
+// await start_message_server()
 // await start_web_server()
 
 function screen_connected() {
@@ -204,9 +245,9 @@ function screen_connected() {
     })
 }
 
-await screen_connected()
-await do_start_app({name:'dotclock', path:'src/clients/app1.js',args:[]});
-await do_start_app({name:'app2', path:'src/clients/app2.js',args:[]});
-await do_start_app({name:'guitest', path:'src/clients/gui_test.js',args:[]});
-await do_start_app({name:'fractal', path:'src/clients/fractal.js',args:[]});
+// await screen_connected()
+// await do_start_app({name:'dotclock', path:'src/clients/app1.js',args:[]});
+// await do_start_app({name:'app2', path:'src/clients/app2.js',args:[]});
+// await do_start_app({name:'guitest', path:'src/clients/gui_test.js',args:[]});
+// await do_start_app({name:'fractal', path:'src/clients/fractal.js',args:[]});
 log('started everything')
