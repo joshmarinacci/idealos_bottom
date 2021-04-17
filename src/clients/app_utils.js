@@ -2,6 +2,7 @@ import {default as WebSocket} from "ws"
 import * as PI from "pureimage"
 import {make_message, message_match, SCHEMAS} from '../canvas/messages.js'
 import fs from "fs"
+import {Window} from "./guitoolkit.js"
 
 export class CommonApp {
     constructor(argv,width,height) {
@@ -32,7 +33,8 @@ export class CommonApp {
             this.ws.close()
             process.exit(0)
         });
-
+        this.theme = null
+        this.win = new Window(this,width,height)
     }
     on(type,cb) {
         if(!this.listeners[type]) this.listeners[type] = []

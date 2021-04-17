@@ -1,0 +1,285 @@
+import {make_message, SCHEMAS} from '../canvas/messages.js'
+
+export class Window {
+    constructor(app, width,height) {
+        this.app = app
+        this.width = width
+        this.height = height
+        this.root = null
+        this.mouse = {
+            x: -1,
+            y: -1,
+            down: false,
+            inside: function (x, y, w, h) {
+                if (this.x < x) return false
+                if (this.y < y) return false
+                if (this.x > x + w) return false
+                if (this.y > y + h) return false
+                return true
+            }
+        }
+        this.keyboard = {
+            keyname: ""
+        }
+        app.on(SCHEMAS.MOUSE.DOWN.NAME,(e)=>{
+            app.win.mouse.x = e.payload.x
+            app.win.mouse.y = e.payload.y
+            app.win.mouse.down = true
+            app.win.input()
+            app.win.redraw()
+        })
+        app.on(SCHEMAS.MOUSE.UP.NAME,()=>{
+            app.win.mouse.down = false
+            app.win.input()
+            app.win.redraw()
+        })
+        app.on(SCHEMAS.WINDOW.REFRESH.NAME, ()=>{
+            app.win.redraw()
+        })
+        app.on(SCHEMAS.KEYBOARD.DOWN.NAME, (e)=>{
+            // console.log("keyboard pressed in app",e)
+            app.win.keyboard.keyname = e.payload.keyname;
+            app.win.input()
+            app.win.redraw();
+        })
+        app.on(SCHEMAS.RESOURCE.CHANGED.NAME, (e)=>{
+            if(e.payload.resource === 'theme') {
+                app.theme = JSON.parse(String.fromCharCode(...e.payload.data.data))
+                app.win.redraw()
+            }
+        })
+    }
+    input() {
+        this.root.input(this.mouse,this.keyboard)
+    }
+    redraw() {
+        let gfx = new Gfx(this.app)
+        this.root.layout(gfx)
+        this.root.redraw(gfx)
+    }
+}
+
+class Gfx {
+    constructor(app) {
+        this.app = app
+    }
+    rect(x,y,width,height,color) {
+        return this.app.send(make_message(SCHEMAS.DRAW.RECT, {x, y, width, height, color}))
+    }
+
+    text(x,y,text,color) {
+        return this.app.font.draw_text(this.app,x,y,text,color);
+    }
+    text_size(text) {
+        return this.app.font.measure_text(this.app,text);
+    }
+    theme_bg_color(name, def) {
+        return this.theme_part(name,'background_color',def)
+    }
+    theme_border_color(name, def) {
+        return this.theme_part(name,'border_color',def)
+    }
+    theme_text_color(name, def) {
+        return this.theme_part(name,'text_color',def)
+    }
+    theme_part(name, part, def) {
+        if(this.app.theme && this.app.theme[name] && this.app.theme[name][part]) return this.app.theme[name][part];
+        return def;
+    }
+}
+
+
+class Component {
+    constructor(opts) {
+        this.id = opts.id || ""
+        this.x = opts.x || 0
+        this.y = opts.y || 0
+        this.width = opts.width || 10
+        this.height = opts.height || 10
+        this.listeners = {}
+    }
+
+    on(type, cb) {
+        if (!this.listeners[type]) this.listeners[type] = []
+        this.listeners[type].push(cb)
+    }
+
+    fire(type, payload) {
+        if (!this.listeners[type]) this.listeners[type] = []
+        this.listeners[type].forEach(cb => cb(payload))
+    }
+
+    input(mouse, keyboard) {
+    }
+
+    layout(gfx) {
+    }
+
+    find(query) {
+        if (this.id === query.id) return this
+    }
+}
+
+class Container extends Component {
+    constructor(opts) {
+        super(opts)
+        this.children = opts.children || []
+    }
+
+    input(mouse, keyboard) {
+        this.children.forEach(ch => ch.input(mouse, keyboard))
+    }
+
+    layout(gfx) {
+        this.children.forEach(ch => ch.layout(gfx))
+    }
+
+    find(query) {
+        if (this.id && this.id === query.id) {
+            return this
+        }
+        for (let ch of this.children) {
+            let ans = ch.find(query)
+            if (ans) return ans
+        }
+        return null
+    }
+}
+
+export class Panel extends Container {
+    constructor(opts) {
+        super(opts)
+    }
+
+    redraw(gfx) {
+        gfx.rect(this.x, this.y, this.width, this.height, gfx.theme_bg_color('panel', 'white'))
+        this.children.forEach(ch => ch.redraw(gfx))
+    }
+}
+
+export class Label extends Component {
+    constructor(opts) {
+        super(opts)
+        this.text = opts.text || "label"
+    }
+
+    layout(gfx) {
+        let met = gfx.text_size(this.text)
+        this.width = met.width
+        this.height = met.height
+    }
+
+    redraw(gfx) {
+        gfx.rect(this.x, this.y, this.width, this.height,
+            gfx.theme_bg_color('label', 'green'))
+        gfx.text(this.x, this.y, this.text,
+            gfx.theme_text_color('label', 'yellow'))
+    }
+}
+
+class Insets {
+    constructor(m) {
+        this.left = m
+        this.right = m
+        this.top = m
+        this.bottom = m
+    }
+}
+
+const MAGENTA = 'magenta'
+
+export class Button extends Component {
+    constructor(opts) {
+        super(opts)
+        this.text = opts.text || "button"
+        this.pressed = false
+        this.padding = new Insets(5)
+    }
+
+    input(mouse, keyboard) {
+        this.pressed = mouse.inside(this.x, this.y, this.width, this.height) && mouse.down
+        if (this.pressed) {
+            this.fire('action', {})
+        }
+    }
+
+    layout(gfx) {
+        let met = gfx.text_size(this.text)
+        this.width = this.padding.left + met.width + this.padding.right
+    }
+
+    redraw(gfx) {
+        if (this.pressed) {
+            gfx.rect(this.x, this.y, this.width, this.height,
+                gfx.theme_bg_color('button:pressed', MAGENTA))
+            gfx.text(this.padding.left + this.x, this.y, this.text,
+                gfx.theme_text_color('button:pressed', MAGENTA))
+        } else {
+            gfx.rect(this.x, this.y, this.width, this.height,
+                gfx.theme_bg_color('button', 'magenta'))
+            gfx.text(this.padding.left + this.x, this.y, this.text,
+                gfx.theme_text_color('button', 'magenta'))
+        }
+    }
+
+}
+
+export class TextBox extends Component {
+    constructor(opts) {
+        super(opts)
+        this.text = opts.text || "hi"
+        this.focused = false
+        this.padding = new Insets(5)
+        this.cursor = 2
+    }
+
+    input(mouse, keyboard) {
+        if (mouse.inside(this.x, this.y, this.width, this.height) && mouse.down) {
+            this.focused = true
+        }
+        if (this.focused) {
+            if (keyboard.keyname === 'Backspace') {
+                if (this.text.length > 0) {
+                    this.text = this.text.substring(0, this.text.length - 1)
+                    let before = this.text.substring(0, this.cursor)
+                    let after = this.text.substring(this.cursor)
+                    this.text = before.substring(0, before.length - 1) + after
+                    this.cursor = Math.max(this.cursor - 1, 0)
+                }
+            }
+            if (keyboard.keyname === 'Space') {
+                this.text = this.text + " "
+                this.cursor += 1
+            }
+            if (keyboard.keyname === 'Left') {
+                this.cursor = Math.max(this.cursor - 1, 0)
+            }
+            if (keyboard.keyname === 'Right') {
+                this.cursor = Math.min(this.cursor + 1, this.text.length)
+            }
+            if (keyboard.keyname.length === 1) {
+                // app.log(`keycode = ${keyboard.keyname} = ${keyboard.keyname.charCodeAt(0)}`)
+                let ch = keyboard.keyname.charCodeAt(0)
+                if (ch >= 65 && ch <= 90) {
+                    this.text += String.fromCharCode(ch).toLowerCase()
+                    this.cursor += 1
+                }
+            }
+            keyboard.keyname = ""
+        }
+    }
+
+    redraw(gfx) {
+        let name = "textbox"
+        if (this.focused) name = "textbox:focused"
+        gfx.rect(this.x, this.y, this.width, this.height, gfx.theme_border_color(name, MAGENTA))
+        gfx.rect(this.x + 1, this.y + 1, this.width - 2, this.height - 2, gfx.theme_bg_color(name, MAGENTA))
+        gfx.text(this.padding.left + this.x, this.y, this.text, gfx.theme_text_color(name, MAGENTA))
+        if (this.focused) {
+            let before = this.text.substring(0, this.cursor)
+            let before_metrics = gfx.text_size(before)
+            gfx.rect(this.x + this.padding.left + before_metrics.width, this.y + 2, 1, this.height - 4, gfx.theme_text_color(name, MAGENTA))
+        }
+    }
+
+}
