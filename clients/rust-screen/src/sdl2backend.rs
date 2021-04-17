@@ -203,12 +203,24 @@ impl<'a> SDL2Backend<'a> {
         for(id,win) in windows {
             if let Some(tex) = self.window_buffers.get(id) {
                 //draw background / border
-                self.canvas.set_draw_color(self.calc_window_border_color(win));
-                self.canvas.fill_rect(Rect::new(
-                    ((win.x-BORDER.left)*(SCALE as i32)) as i32,
-                    ((win.y-BORDER.top)*(SCALE as i32)) as i32,
-                    (BORDER.left+win.width+BORDER.right)as u32*SCALE as u32,
-                    (BORDER.top+win.height+BORDER.bottom)as u32*SCALE as u32));
+                match win.window_type.as_str() {
+                    "menubar" => {
+                        //
+                    }
+                    "plain" => {
+                        self.canvas.set_draw_color(self.calc_window_border_color(win));
+                        self.canvas.fill_rect(Rect::new(
+                            ((win.x-BORDER.left)*(SCALE as i32)) as i32,
+                            ((win.y-BORDER.top)*(SCALE as i32)) as i32,
+                            (BORDER.left+win.width+BORDER.right)as u32*SCALE as u32,
+                            (BORDER.top+win.height+BORDER.bottom)as u32*SCALE as u32));
+                        self.font.draw_text_at(&*win.id,
+                                               win.x,
+                                               win.y-8,
+                                               &Color::GREEN, &mut self.canvas, SCALEI);
+                    },
+                    _ => {}
+                }
                 //draw window texture
                 let dst = Some(Rect::new((win.x as u32*SCALE) as i32,
                                          (win.y as u32*SCALE) as i32,
@@ -216,11 +228,6 @@ impl<'a> SDL2Backend<'a> {
                                          (win.height as u32 * SCALE as u32) as u32
                 ));
                 self.canvas.copy(tex,None,dst);
-                self.font.draw_text_at(&*win.id,
-                                       win.x,
-                                       win.y-8,
-                                       &Color::GREEN, &mut self.canvas, SCALEI);
-                // println!("drawing window at {:?}",dst);
             }
         }
         self.font.draw_text_at("idealos", 40,40,&Color::GREEN, &mut self.canvas, SCALEI);

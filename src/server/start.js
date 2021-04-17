@@ -7,6 +7,7 @@ server.screen_connected().then(()=>{
         // {name:'app2', path:'src/clients/app2.js',args:[]},
         {name:'guitest', path:'src/clients/gui_test.js',args:[]},
         // {name:'fractal', path:'src/clients/fractal.js',args:[]},
+        {name:'menubar', path:'src/clients/menubar.js',args:[]},
     ]
 
     console.log('starting apps',apps)

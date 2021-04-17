@@ -5,7 +5,7 @@ import fs from "fs"
 import {Window} from "./guitoolkit.js"
 
 export class CommonApp {
-    constructor(argv,width,height) {
+    constructor(argv,width,height, window_type="plain") {
         let addr = argv[2]
         let appid = argv[3]
         this.appid = appid
@@ -14,7 +14,7 @@ export class CommonApp {
         this.listeners = {}
         this.ws = new WebSocket(addr);
         this.ws.on('open',()=>{
-            this.ws.send(JSON.stringify(make_message(SCHEMAS.WINDOW.OPEN,{width:this.width,height:this.height,sender:appid})))
+            this.ws.send(JSON.stringify(make_message(SCHEMAS.WINDOW.OPEN,{width:this.width,height:this.height,sender:appid, window_type:window_type})))
         })
         this.ws.on("message",(data)=>{
             let msg = JSON.parse(data)

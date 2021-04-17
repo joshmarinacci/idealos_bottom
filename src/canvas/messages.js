@@ -44,7 +44,7 @@ let schemas = {
         WINDOW_LIST:['windows']
     },
     WINDOW:{
-        OPEN:['width','height','sender'],
+        OPEN:['width','height','sender','window_type'],
         OPEN_SCREEN:['target','window'],
         OPEN_RESPONSE:['target','window'],
         CLOSE:['target','window'],

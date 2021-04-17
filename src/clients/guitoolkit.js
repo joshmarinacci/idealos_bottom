@@ -154,7 +154,7 @@ class Component {
     }
 }
 
-class Container extends Component {
+export class Container extends Component {
     constructor(opts) {
         super(opts)
         this.children = opts.children || []

@@ -42,15 +42,21 @@ function handle_open_window_message(ws,msg) {
     if(!connections[msg.sender]) connections[msg.sender] = ws
     ws.target = msg.sender
     let win_id = "win_"+Math.floor(Math.random()*10000)
-    let y = wids.length()
+    let y = wids.length()+30
+    let x = 10
+    if(msg.window_type === 'menubar') {
+        x = 0
+        y = 0
+    }
     wids.add_window(win_id, {
         id:win_id,
         width:msg.width,
         height:msg.height,
-        x:10,
-        y:10,
+        x:x,
+        y:y,
         owner:msg.sender,
-        rects:[]
+        rects:[],
+        window_type:msg.window_type,
     })
 
     //send response to screen

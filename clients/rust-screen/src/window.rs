@@ -25,6 +25,7 @@ pub struct Window {
     pub width:i32,
     pub height:i32,
     pub owner:String,
+    pub window_type:String,
 }
 
 impl Window {
@@ -37,7 +38,7 @@ impl Window {
             width: info.width,
             height: info.height,
             owner: info.owner.clone(),
-            // tex: target,
+            window_type: info.window_type.clone(),
         }
     }
 
