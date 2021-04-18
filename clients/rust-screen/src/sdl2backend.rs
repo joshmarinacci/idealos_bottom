@@ -36,6 +36,7 @@ pub struct SDL2Backend<'a> {
     pub canvas: WindowCanvas,
     pub creator: &'a TextureCreator<WindowContext>,
     pub window_buffers:HashMap<String,Texture<'a>>,
+    pub window_order:Vec<String>,
     pub dragging:bool,
     pub dragtarget:Option<String>,
     pub font:FontInfo<'a>,
@@ -100,7 +101,7 @@ impl<'a> SDL2Backend<'a> {
                                         texture_canvas
                                             .fill_rect(Rect::new(m.x, m.y, m.width as u32, m.height as u32))
                                             .expect("could not fill rect");
-                                        println!("drew rect to texture at {},{} - {}x{}",m.x,m.y,m.width,m.height);
+                                        // println!("drew rect to texture at {},{} - {}x{}",m.x,m.y,m.width,m.height);
                                     });
                                 }
                             }
@@ -150,12 +151,16 @@ impl<'a> SDL2Backend<'a> {
                 .fill_rect(Rect::new(0, 0, (win.width as u32) as u32, (win.height as u32) as u32));
         });
         self.window_buffers.insert(win.id.clone(),tex);
+        self.window_order.push(win.id.clone());
     }
     fn close_window(&mut self, win: &mut Window) {
         // println!("found texture for window");
         //destroy the texture
         //remove from window_buffers
         self.window_buffers.remove(win.id.as_str());
+        if let Some(n) = self.window_order.iter().position(|id|id == &win.id) {
+            self.window_order.remove(n);
+        }
     }
     pub fn start_loop(&mut self,
                       windows: &mut HashMap<String, Window>,
@@ -202,30 +207,32 @@ impl<'a> SDL2Backend<'a> {
         self.canvas.clear();
         //clear background to white
         //for each window
-        for(id,win) in windows {
-            if let Some(tex) = self.window_buffers.get(id) {
-                //draw background / border
-                match win.window_type.as_str() {
-                    "menubar" => { }
-                    "plain" => {
-                        self.canvas.set_draw_color(self.calc_window_border_color(win));
-                        self.canvas.fill_rect(Rect::new(
-                            ((win.x-BORDER.left)*(SCALE as i32)) as i32,
-                            ((win.y-BORDER.top)*(SCALE as i32)) as i32,
-                            (BORDER.left+win.width+BORDER.right)as u32*SCALE as u32,
-                            (BORDER.top+win.height+BORDER.bottom)as u32*SCALE as u32));
-                        self.font.draw_text_at(&*win.id, win.x,win.y-9,&Color::GREEN,  &mut self.canvas, SCALEI);
-                        self.symbol_font.draw_text_at("b",win.x+win.width-7,win.y-8,&Color::BLACK, &mut self.canvas, SCALEI);
+        for id in self.window_order.iter() {
+            if let Some(win) = windows.get(id) {
+                if let Some(tex) = self.window_buffers.get(id) {
+                    //draw background / border
+                    match win.window_type.as_str() {
+                        "menubar" => { }
+                        "plain" => {
+                            self.canvas.set_draw_color(self.calc_window_border_color(win));
+                            self.canvas.fill_rect(Rect::new(
+                                ((win.x-BORDER.left)*(SCALE as i32)) as i32,
+                                ((win.y-BORDER.top)*(SCALE as i32)) as i32,
+                                (BORDER.left+win.width+BORDER.right)as u32*SCALE as u32,
+                                (BORDER.top+win.height+BORDER.bottom)as u32*SCALE as u32));
+                            self.font.draw_text_at(&*win.id, win.x,win.y-9,&Color::GREEN,  &mut self.canvas, SCALEI);
+                            self.symbol_font.draw_text_at("b",win.x+win.width-7,win.y-8,&Color::BLACK, &mut self.canvas, SCALEI);
+                        }
+                        _ => {}
                     }
-                    _ => {}
+                    //draw window texture
+                    let dst = Some(Rect::new((win.x as u32*SCALE) as i32,
+                                             (win.y as u32*SCALE) as i32,
+                                             (win.width as u32 * SCALE as u32) as u32,
+                                             (win.height as u32 * SCALE as u32) as u32
+                    ));
+                    self.canvas.copy(tex,None,dst);
                 }
-                //draw window texture
-                let dst = Some(Rect::new((win.x as u32*SCALE) as i32,
-                                         (win.y as u32*SCALE) as i32,
-                                         (win.width as u32 * SCALE as u32) as u32,
-                                         (win.height as u32 * SCALE as u32) as u32
-                ));
-                self.canvas.copy(tex,None,dst);
             }
         }
         self.font.draw_text_at("idealos", 150,0,&Color::GREEN, &mut self.canvas, SCALEI);
@@ -260,6 +267,7 @@ impl<'a> SDL2Backend<'a> {
                 for win in windows.values() {
                     if win.contains(&pt) {
                         self.active_window = Some(win.id.clone());
+                        self.raise_window(win);
                         let msg = MouseDownMessage {
                             type_: "MOUSE_DOWN".to_string(),
                             x: (pt.x) - win.x,
@@ -298,7 +306,7 @@ impl<'a> SDL2Backend<'a> {
         }
 
     }
-    fn calc_window_border_color(&self, win: &mut Window) -> Color {
+    fn calc_window_border_color(&self, win: &Window) -> Color {
         return if self.active_window == Some(win.id.clone()) {
             Color::RGBA(0, 255, 255, 255)
         } else {
@@ -313,6 +321,12 @@ impl<'a> SDL2Backend<'a> {
                 win.x = mouse_state.x()/SCALEI;
                 win.y = mouse_state.y()/SCALEI;
             }
+        }
+    }
+    fn raise_window(&mut self, win: &Window) {
+        if let Some(n) = self.window_order.iter().position(|x|x == &win.id) {
+            let id = self.window_order.remove(n);
+            self.window_order.push(id)
         }
     }
 }

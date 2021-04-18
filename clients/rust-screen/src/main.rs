@@ -110,6 +110,7 @@ pub fn main() -> Result<(),String> {
         canvas:canvas,
         creator: &creator,
         window_buffers: Default::default(),
+        window_order: vec![],
         dragging: false,
         dragtarget: None,
         font: main_font,
