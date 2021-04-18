@@ -196,6 +196,7 @@ impl<'a> SDL2Backend<'a> {
 
         Ok(())
     }
+
     fn draw_windows(&mut self, windows: &mut HashMap<String, Window>) {
         self.canvas.set_draw_color(Color::RGBA(255,0,255,255));
         self.canvas.clear();
@@ -205,9 +206,7 @@ impl<'a> SDL2Backend<'a> {
             if let Some(tex) = self.window_buffers.get(id) {
                 //draw background / border
                 match win.window_type.as_str() {
-                    "menubar" => {
-                        //
-                    }
+                    "menubar" => { }
                     "plain" => {
                         self.canvas.set_draw_color(self.calc_window_border_color(win));
                         self.canvas.fill_rect(Rect::new(
@@ -215,11 +214,8 @@ impl<'a> SDL2Backend<'a> {
                             ((win.y-BORDER.top)*(SCALE as i32)) as i32,
                             (BORDER.left+win.width+BORDER.right)as u32*SCALE as u32,
                             (BORDER.top+win.height+BORDER.bottom)as u32*SCALE as u32));
-                        self.font.draw_text_at(&*win.id,
-                                               win.x,
-                                               win.y-8,
-                                               &Color::GREEN, &mut self.canvas, SCALEI);
-                    },
+                        self.font.draw_text_at(&*win.id, win.x,win.y-8,&Color::GREEN,  &mut self.canvas, SCALEI);
+                    }
                     _ => {}
                 }
                 //draw window texture
