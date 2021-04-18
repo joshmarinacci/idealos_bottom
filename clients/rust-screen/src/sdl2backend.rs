@@ -24,10 +24,10 @@ use colors_transform::{Rgb, Color as CTColor};
 const SCALE: u32 = 4;
 const SCALEI: i32 = SCALE as i32;
 const BORDER:Insets = Insets {
-    left: 3,
-    right: 3,
-    top: 10,
-    bottom: 3
+    left: 1,
+    right: 1,
+    top: 9,
+    bottom: 1,
 };
 
 pub struct SDL2Backend<'a> {
@@ -214,7 +214,8 @@ impl<'a> SDL2Backend<'a> {
                             ((win.y-BORDER.top)*(SCALE as i32)) as i32,
                             (BORDER.left+win.width+BORDER.right)as u32*SCALE as u32,
                             (BORDER.top+win.height+BORDER.bottom)as u32*SCALE as u32));
-                        self.font.draw_text_at(&*win.id, win.x,win.y-8,&Color::GREEN,  &mut self.canvas, SCALEI);
+                        self.font.draw_text_at(&*win.id, win.x,win.y-9,&Color::GREEN,  &mut self.canvas, SCALEI);
+                        self.symbol_font.draw_text_at("b",win.x+win.width-7,win.y-8,&Color::BLACK, &mut self.canvas, SCALEI);
                     }
                     _ => {}
                 }
