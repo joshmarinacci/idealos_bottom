@@ -13,7 +13,7 @@ use crate::outgoing::process_outgoing;
 use crate::backend::Backend;
 use crate::sdl2backend::SDL2Backend;
 use crate::fontinfo::FontInfo;
-use sdl2::image::LoadTexture;
+use sdl2::image::{LoadTexture, LoadSurface};
 use std::fs::File;
 use std::io::BufReader;
 use std::error::Error;
@@ -22,6 +22,8 @@ use image::io::Reader as ImageReader;
 use sdl2::render::{BlendMode, TextureCreator, Texture};
 use image::RgbaImage;
 use sdl2::video::WindowContext;
+use sdl2::mouse::Cursor;
+use sdl2::surface::Surface;
 
 mod messages;
 mod window;
@@ -86,6 +88,13 @@ pub fn main() -> Result<(),String> {
     let canvas_builder = window.into_canvas();
     let mut canvas = canvas_builder.build().map_err(|e| e.to_string())?;
     let creator = canvas.texture_creator();
+
+    let surface = Surface::from_file("../../resources/cursor.png")
+            .map_err(|err| format!("failed to load cursor image: {}", err))?;
+
+    let cursor = Cursor::from_surface(surface,0,0)
+        .map_err(|err| format!("failed to load cursor: {}", err))?;
+    cursor.set();
 
     let main_font = load_font("../../src/clients/fonts/idealos_font@1.png",
                               "../../src/clients/fonts/idealos_font@1.json",
