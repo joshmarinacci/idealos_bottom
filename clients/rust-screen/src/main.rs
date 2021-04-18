@@ -65,7 +65,6 @@ pub fn main() -> Result<(),String> {
         process_outgoing(&server_out_send, &mut server_out);
     });
 
-
     //send the initial connection message
     let message = OwnedMessage::Text("{\"type\":\"SCREEN_START\"}".to_string());
     match server_out_receive.send(message) {
@@ -75,64 +74,45 @@ pub fn main() -> Result<(),String> {
         }
     }
 
-    // let mut backend= RaylibBackend::make(640,480,60);
+    let sdl_context = sdl2::init()?;
+    let video_subsystem = sdl_context.video()?;
+    let window = video_subsystem
+        .window("rust-sdl2 demo: Video", 1024, 768)
+        .position_centered()
+        .opengl()
+        .build()
+        .map_err(|e| e.to_string())?;
 
+    let canvas_builder = window.into_canvas();
+    let mut canvas = canvas_builder.build().map_err(|e| e.to_string())?;
+    let creator = canvas.texture_creator();
 
-        let sdl_context = sdl2::init()?;
-        let video_subsystem = sdl_context.video()?;
-        let window = video_subsystem
-            .window("rust-sdl2 demo: Video", 1024, 768)
-            .position_centered()
-            .opengl()
-            .build()
-            .map_err(|e| e.to_string())?;
+    let main_font = load_font("../../src/clients/fonts/idealos_font@1.png",
+                              "../../src/clients/fonts/idealos_font@1.json",
+                              &creator)?;
 
-        let canvas_builder = window.into_canvas();
-        let mut canvas = canvas_builder.build().map_err(|e| e.to_string())?;
-        let creator = canvas.texture_creator();
-
-    let font_png_1 = ImageReader::open("../../src/clients/fonts/idealos_font@1.png")
-        .map_err(|e|e.to_string())?
-        .decode().map_err(|e|e.to_string()+"bar")?
-        .into_rgba8();
-    let font_texture_1 = image_to_texture_with_transparent_color(&font_png_1, &creator)?;
-    let font_metrics_1 = load_json("../../src/clients/fonts/idealos_font@1.json")
-        .map_err(|e|e.to_string()+"baz")?;
-    let main_font = FontInfo {
-        bitmap: font_texture_1,
-        metrics: font_metrics_1
-    };
-
-    let font_png_2 = ImageReader::open("../../src/clients/fonts/symbol_font@1.png")
-        .map_err(|e|e.to_string())?
-        .decode().map_err(|e|e.to_string() +"foo")?
-        .into_rgba8();
-    let font_texture_2 = image_to_texture_with_transparent_color(&font_png_2, &creator)?;
-    let font_metrics_2 = load_json("../../src/clients/fonts/symbol_font@1.json")
-        .map_err(|e|e.to_string()+"qux")?;
-    let symbol_font = FontInfo {
-        bitmap: font_texture_2,
-        metrics: font_metrics_2
-    };
+    let symbol_font = load_font("../../src/clients/fonts/symbol_font@1.png",
+                                "../../src/clients/fonts/symbol_font@1.json",
+                                &creator)?;
 
     let mut backend = SDL2Backend {
-            sdl_context: &sdl_context,
-            active_window: None,
-            canvas:canvas,
-            creator: &creator,
-            window_buffers: Default::default(),
-            dragging: false,
-            dragtarget: None,
-            font: main_font,
-            symbol_font: symbol_font,
-        };
-        backend.start_loop(
-            &mut windows,
-            &render_loop_receive,
-            &server_out_receive.clone()
-        );
+        sdl_context: &sdl_context,
+        active_window: None,
+        canvas:canvas,
+        creator: &creator,
+        window_buffers: Default::default(),
+        dragging: false,
+        dragtarget: None,
+        font: main_font,
+        symbol_font: symbol_font,
+    };
+    backend.start_loop(
+        &mut windows,
+        &render_loop_receive,
+        &server_out_receive.clone()
+    );
 
-        //wait for the end
+    //wait for the end
     println!("Waiting for child threads to exit");
 
     server_out_receive.send(OwnedMessage::Close(None));
@@ -143,6 +123,19 @@ pub fn main() -> Result<(),String> {
     Ok(())
 }
 
+fn load_font<'a>(png_path: &str, json_path: &str, creator: &'a TextureCreator<WindowContext>) -> Result<FontInfo<'a>, String> {
+    let font_png_1 = ImageReader::open(png_path)
+        .map_err(|e|e.to_string())?
+        .decode().map_err(|e|e.to_string()+"bar")?
+        .into_rgba8();
+    let font_texture_1 = image_to_texture_with_transparent_color(&font_png_1, &creator)?;
+    let font_metrics_1 = load_json(json_path)
+        .map_err(|e|e.to_string()+"baz")?;
+    return Ok(FontInfo {
+        bitmap: font_texture_1,
+        metrics: font_metrics_1
+    });
+}
 
 
 pub fn load_json(json_path:&str) -> Result<serde_json::Value, Box<dyn Error>> {
