@@ -91,14 +91,30 @@ pub fn main() -> Result<(),String> {
         let mut canvas = canvas_builder.build().map_err(|e| e.to_string())?;
         let creator = canvas.texture_creator();
 
-    let png_path =  "../../src/clients/fonts/idealos_font@1.png";
-    let rust_img = ImageReader::open(png_path).map_err(|e|e.to_string())?
-        .decode().map_err(|e|e.to_string())?
-        .into_rgba8()
-        ;
-    let fnt_tex2 = image_to_texture_with_transparent_color(&rust_img, &creator)?;
+    let font_png_1 = ImageReader::open("../../src/clients/fonts/idealos_font@1.png")
+        .map_err(|e|e.to_string())?
+        .decode().map_err(|e|e.to_string()+"bar")?
+        .into_rgba8();
+    let font_texture_1 = image_to_texture_with_transparent_color(&font_png_1, &creator)?;
+    let font_metrics_1 = load_json("../../src/clients/fonts/idealos_font@1.json")
+        .map_err(|e|e.to_string()+"baz")?;
+    let main_font = FontInfo {
+        bitmap: font_texture_1,
+        metrics: font_metrics_1
+    };
 
-    let metrics = load_json("../../src/clients/fonts/idealos_font@1.json").unwrap();
+    let font_png_2 = ImageReader::open("../../src/clients/fonts/symbol_font@1.png")
+        .map_err(|e|e.to_string())?
+        .decode().map_err(|e|e.to_string() +"foo")?
+        .into_rgba8();
+    let font_texture_2 = image_to_texture_with_transparent_color(&font_png_2, &creator)?;
+    let font_metrics_2 = load_json("../../src/clients/fonts/symbol_font@1.json")
+        .map_err(|e|e.to_string()+"qux")?;
+    let symbol_font = FontInfo {
+        bitmap: font_texture_2,
+        metrics: font_metrics_2
+    };
+
     let mut backend = SDL2Backend {
             sdl_context: &sdl_context,
             active_window: None,
@@ -107,10 +123,8 @@ pub fn main() -> Result<(),String> {
             window_buffers: Default::default(),
             dragging: false,
             dragtarget: None,
-            font: FontInfo {
-                bitmap: fnt_tex2,
-                metrics: metrics
-            },
+            font: main_font,
+            symbol_font: symbol_font,
         };
         backend.start_loop(
             &mut windows,

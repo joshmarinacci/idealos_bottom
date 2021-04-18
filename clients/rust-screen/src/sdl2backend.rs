@@ -21,7 +21,7 @@ use sdl2::mouse::{MouseButton, MouseState};
 use colors_transform::{Rgb, Color as CTColor};
 
 
-const SCALE: u32 = 5;
+const SCALE: u32 = 4;
 const SCALEI: i32 = SCALE as i32;
 const BORDER:Insets = Insets {
     left: 3,
@@ -39,6 +39,7 @@ pub struct SDL2Backend<'a> {
     pub dragging:bool,
     pub dragtarget:Option<String>,
     pub font:FontInfo<'a>,
+    pub symbol_font:FontInfo<'a>,
 }
 
 
@@ -161,6 +162,7 @@ impl<'a> SDL2Backend<'a> {
                       input: &Receiver<RenderMessage>,
                       output: &Sender<OwnedMessage>
         ) -> Result<(),String> {
+        println!("sdl2 backend");
 
         let mut event_pump = self.sdl_context.event_pump()?;
 
