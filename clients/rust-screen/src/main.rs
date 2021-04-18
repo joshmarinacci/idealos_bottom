@@ -24,6 +24,7 @@ use image::RgbaImage;
 use sdl2::video::WindowContext;
 use sdl2::mouse::Cursor;
 use sdl2::surface::Surface;
+use sdl2::rect::Rect;
 
 mod messages;
 mod window;
@@ -89,11 +90,17 @@ pub fn main() -> Result<(),String> {
     let mut canvas = canvas_builder.build().map_err(|e| e.to_string())?;
     let creator = canvas.texture_creator();
 
-    let surface = Surface::from_file("../../resources/cursor.png")
-            .map_err(|err| format!("failed to load cursor image: {}", err))?;
+    //load original image into small surface
+    let small_surf = Surface::from_file("../../resources/cursor.png")?;
+    let small_size = Rect::new(0, 0, small_surf.width(), small_surf.height());
 
-    let cursor = Cursor::from_surface(surface,0,0)
-        .map_err(|err| format!("failed to load cursor: {}", err))?;
+    // create bigger surface
+    let mut big_surf = Surface::new(small_size.width()*4, small_size.height()*4, small_surf.pixel_format_enum())?;
+    let big_size = Rect::new(0, 0, big_surf.width(), big_surf.height());
+    //copy small to big
+    small_surf.blit_scaled(small_size, &mut big_surf, big_size);
+    //turn into a cursor
+    let cursor = Cursor::from_surface(big_surf, 0, 0)?;
     cursor.set();
 
     let main_font = load_font("../../src/clients/fonts/idealos_font@1.png",
