@@ -27,13 +27,21 @@ function doit() {
     function menubar() {
         box(0, 0, WIDTH, 9, 'black', 'white')
         text(2, 1, "File")
-        box(30,0,27,9,'black','black')
-        text(32,1,"Edit",'white')
+        {
+            let x = 20
+            box(x, 0, 27, 9, 'black', 'black')
+            text(x+2, 1, "Edit", 'white')
 
-        box(30,8,50,27,'black','white')
-        text(32,10-1,"Cut")
-        text(32,20-2,"Copy")
-        text(32,30-3,"Paste")
+            box(x, 8, 50, 27, 'black', 'white')
+            text(x+2, 10 - 1, "Cut")
+            text(x+2, 20 - 2, "Copy")
+            text(x+2, 30 - 3, "Paste")
+        }
+        {
+            let x = 47
+            // box(x, 0, 27, 9, 'black', 'white')
+            text(x+2, 1, "View", 'black')
+        }
     }
 
 
@@ -163,7 +171,7 @@ function doit() {
     //jesse calc. has no horizontal scrollbar
     make_calculator(80,120)
 
-    
+
 }
 doit()
 
