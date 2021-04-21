@@ -13,7 +13,30 @@ const icon_metrics = {
 }
 
 let symbols = new Image()
+
+function cut_chroma(img) {
+    console.log("cutting chroma")
+    let can1 = document.createElement('canvas')
+    can1.width = img.width
+    can1.height = img.height
+    let c1 = can1.getContext('2d')
+    c1.drawImage(img,0,0)
+    let id = c1.getImageData(0,0,can1.width,can1.height)
+    for(let n = 0; n<can1.width*can1.height; n++) {
+        let r = id.data[n*4+0]
+        let g = id.data[n*4+1]
+        let b = id.data[n*4+2]
+        //turn pinkish white into transparent
+        if(r === 255 && g === 241 && b === 232) {
+            id.data[n*4+3] = 0
+        }
+    }
+    c1.putImageData(id,0,0)
+    return can1
+}
+
 symbols.onload = () => {
+    symbols = cut_chroma(symbols)
     ctx.save()
     ctx.scale(scale,scale)
     doit()
