@@ -6,8 +6,15 @@ canvas.width = WIDTH*scale;
 canvas.height = HEIGHT*scale;
 
 let ctx = canvas.getContext('2d')
-ctx.save()
-ctx.scale(scale,scale)
+
+let symbols = new Image()
+symbols.onload = () => {
+    ctx.save()
+    ctx.scale(scale,scale)
+    doit()
+    ctx.restore()
+}
+symbols.src = "symbol_font@1.png"
 
 
 function doit() {
@@ -100,6 +107,8 @@ function doit() {
     icon8(WIDTH-10,2,false) //wifi
     icon8(WIDTH-20,2,false) //sound
     icon8(WIDTH-30,2,false) //battery
+    ctx.imageSmoothingEnabled = false
+    ctx.drawImage(symbols,0,0,8,8, 30,50,10,10)
 
     function sidebar(x,y,w,h) {
         ctx.save()
@@ -173,6 +182,4 @@ function doit() {
 
 
 }
-doit()
 
-ctx.restore()
