@@ -7,6 +7,11 @@ canvas.height = HEIGHT*scale;
 
 let ctx = canvas.getContext('2d')
 
+const icon_metrics = {
+    'cursor':[0,0,8,8],
+    'close':[8,0,8,8],
+}
+
 let symbols = new Image()
 symbols.onload = () => {
     ctx.save()
@@ -18,6 +23,13 @@ symbols.src = "symbol_font@1.png"
 
 
 function doit() {
+    function draw_icon(name,x,y) {
+        if(!icon_metrics || !icon_metrics[name]) return
+        let b = icon_metrics[name]
+        ctx.imageSmoothingEnabled = false
+        ctx.drawImage(symbols,b[0],b[1],b[2],b[3], x,y,b[2],b[3])
+    }
+
     function box(x, y, w, h,b,f) {
         ctx.fillStyle = b
         ctx.fillRect(x, y, w, h)
@@ -59,9 +71,10 @@ function doit() {
         //title
         box(x,y,w,9,'black','black')
         text(x+2,y+2,title,'white')
-        box(x+w-9,y,9,9,'black','white')
+        // box(x+w-9,y,9,9,'black','white')
         //close button
-        box(x+w-7,y+2,5,5,'black','black') // top arrow
+        // box(x+w-7,y+2,5,5,'black','black') // top arrow
+        draw_icon('close',x+w-8,y+1)
         //horizontal scrollbar
         box(x,y+h-9,w-8,9,'black','white') //border
         box(x+2,y+h-9+2,3,5,'black','black') //left arrow
@@ -107,8 +120,8 @@ function doit() {
     icon8(WIDTH-10,2,false) //wifi
     icon8(WIDTH-20,2,false) //sound
     icon8(WIDTH-30,2,false) //battery
-    ctx.imageSmoothingEnabled = false
-    ctx.drawImage(symbols,0,0,8,8, 30,50,10,10)
+
+    draw_icon('cursor',10,10)
 
     function sidebar(x,y,w,h) {
         ctx.save()
