@@ -1,7 +1,7 @@
 import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp, PixelFont} from './app_utils.js'
 import {Container} from './guitoolkit.js'
-let app = new CommonApp(process.argv,205,10,'menubar')
+let app = new CommonApp(process.argv,1024/4,10,'menubar')
 
 
 class CustomMenuBar extends Container {

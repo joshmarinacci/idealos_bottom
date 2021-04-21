@@ -13,7 +13,7 @@ use crate::outgoing::process_outgoing;
 use crate::backend::Backend;
 use crate::sdl2backend::SDL2Backend;
 use crate::fontinfo::FontInfo;
-use sdl2::image::LoadTexture;
+use sdl2::image::{LoadTexture, LoadSurface};
 use std::fs::File;
 use std::io::BufReader;
 use std::error::Error;
@@ -22,6 +22,9 @@ use image::io::Reader as ImageReader;
 use sdl2::render::{BlendMode, TextureCreator, Texture};
 use image::RgbaImage;
 use sdl2::video::WindowContext;
+use sdl2::mouse::Cursor;
+use sdl2::surface::Surface;
+use sdl2::rect::Rect;
 
 mod messages;
 mod window;
@@ -65,7 +68,6 @@ pub fn main() -> Result<(),String> {
         process_outgoing(&server_out_send, &mut server_out);
     });
 
-
     //send the initial connection message
     let message = OwnedMessage::Text("{\"type\":\"SCREEN_START\"}".to_string());
     match server_out_receive.send(message) {
@@ -75,50 +77,59 @@ pub fn main() -> Result<(),String> {
         }
     }
 
-    // let mut backend= RaylibBackend::make(640,480,60);
+    let sdl_context = sdl2::init()?;
+    let video_subsystem = sdl_context.video()?;
+    let window = video_subsystem
+        .window("rust-sdl2 demo: Video", 1024, 768)
+        .position_centered()
+        .opengl()
+        .build()
+        .map_err(|e| e.to_string())?;
 
+    let canvas_builder = window.into_canvas();
+    let mut canvas = canvas_builder.build().map_err(|e| e.to_string())?;
+    let creator = canvas.texture_creator();
 
-        let sdl_context = sdl2::init()?;
-        let video_subsystem = sdl_context.video()?;
-        let window = video_subsystem
-            .window("rust-sdl2 demo: Video", 1024, 768)
-            .position_centered()
-            .opengl()
-            .build()
-            .map_err(|e| e.to_string())?;
+    //load original image into small surface
+    let small_surf = Surface::from_file("../../resources/cursor.png")?;
+    let small_size = Rect::new(0, 0, small_surf.width(), small_surf.height());
 
-        let canvas_builder = window.into_canvas();
-        let mut canvas = canvas_builder.build().map_err(|e| e.to_string())?;
-        let creator = canvas.texture_creator();
+    // create bigger surface
+    let mut big_surf = Surface::new(small_size.width()*4, small_size.height()*4, small_surf.pixel_format_enum())?;
+    let big_size = Rect::new(0, 0, big_surf.width(), big_surf.height());
+    //copy small to big
+    small_surf.blit_scaled(small_size, &mut big_surf, big_size);
+    //turn into a cursor
+    let cursor = Cursor::from_surface(big_surf, 0, 0)?;
+    cursor.set();
 
-    let png_path =  "../../src/clients/fonts/idealos_font@1.png";
-    let rust_img = ImageReader::open(png_path).map_err(|e|e.to_string())?
-        .decode().map_err(|e|e.to_string())?
-        .into_rgba8()
-        ;
-    let fnt_tex2 = image_to_texture_with_transparent_color(&rust_img, &creator)?;
+    let main_font = load_font("../../src/clients/fonts/idealos_font@1.png",
+                              "../../src/clients/fonts/idealos_font@1.json",
+                              &creator)?;
 
-    let metrics = load_json("../../src/clients/fonts/idealos_font@1.json").unwrap();
+    let symbol_font = load_font("../../src/clients/fonts/symbol_font@1.png",
+                                "../../src/clients/fonts/symbol_font@1.json",
+                                &creator)?;
+
     let mut backend = SDL2Backend {
-            sdl_context: &sdl_context,
-            active_window: None,
-            canvas:canvas,
-            creator: &creator,
-            window_buffers: Default::default(),
-            dragging: false,
-            dragtarget: None,
-            font: FontInfo {
-                bitmap: fnt_tex2,
-                metrics: metrics
-            },
-        };
-        backend.start_loop(
-            &mut windows,
-            &render_loop_receive,
-            &server_out_receive.clone()
-        );
+        sdl_context: &sdl_context,
+        active_window: None,
+        canvas:canvas,
+        creator: &creator,
+        window_buffers: Default::default(),
+        window_order: vec![],
+        dragging: false,
+        dragtarget: None,
+        font: main_font,
+        symbol_font: symbol_font,
+    };
+    backend.start_loop(
+        &mut windows,
+        &render_loop_receive,
+        &server_out_receive.clone()
+    );
 
-        //wait for the end
+    //wait for the end
     println!("Waiting for child threads to exit");
 
     server_out_receive.send(OwnedMessage::Close(None));
@@ -129,6 +140,19 @@ pub fn main() -> Result<(),String> {
     Ok(())
 }
 
+fn load_font<'a>(png_path: &str, json_path: &str, creator: &'a TextureCreator<WindowContext>) -> Result<FontInfo<'a>, String> {
+    let font_png_1 = ImageReader::open(png_path)
+        .map_err(|e|e.to_string())?
+        .decode().map_err(|e|e.to_string()+"bar")?
+        .into_rgba8();
+    let font_texture_1 = image_to_texture_with_transparent_color(&font_png_1, &creator)?;
+    let font_metrics_1 = load_json(json_path)
+        .map_err(|e|e.to_string()+"baz")?;
+    return Ok(FontInfo {
+        bitmap: font_texture_1,
+        metrics: font_metrics_1
+    });
+}
 
 
 pub fn load_json(json_path:&str) -> Result<serde_json::Value, Box<dyn Error>> {

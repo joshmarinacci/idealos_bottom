@@ -109,6 +109,7 @@ function stop_app(msg) {
                     x: win.x,
                     y: win.y,
                     owner: win.owner,
+                    window_type:win.window_type,
                 }
             }))
         })

@@ -101,7 +101,6 @@ pub struct CloseWindowScreen {
     #[serde(rename = "type")]
     pub type_:String,
     pub target:String,
-    pub window_type:String,
     pub window: WindowInfo,
 }
 
