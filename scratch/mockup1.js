@@ -40,17 +40,15 @@ function doit() {
     menubar()
 
 
-    function make_window() {
-        let x = 10
-        let y = 30
-        let w = 110
-        let h = 80
+    function make_window(x,y,w,h) {
         //bounds
         box(x,y,w,h,'black','white')
         //title
         box(x,y,w,9,'black','black')
         text(x+2,y+2,'Edit: file.txt','white')
         box(x+w-9,y,9,9,'black','white')
+        //close button
+        box(x+w-7,y+2,5,5,'black','black') // top arrow
         //horizontal scrollbar
         box(x,y+h-9,w-8,9,'black','white') //border
         box(x+2,y+h-9+2,3,5,'black','black') //left arrow
@@ -67,7 +65,18 @@ function doit() {
         box(x+w-7,y+h-7,5,5,'black','white')
     }
 
-    make_window()
+    // make text editor
+    make_window(10,30,100,80)
+    //editable text
+    text(14,42,'Hi There!')
+    //cursor
+    box(14+55,40,1,9,'black')
+    box(14+55-1,40,3,1,'black')
+    box(14+55-1,40+8,3,1,'black')
+    //text overlay
+
+    box(30,85,38,7,'black','black')
+    text(31,86,"52 wds",'white')
 
 }
 doit()
