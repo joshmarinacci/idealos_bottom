@@ -38,12 +38,12 @@ function doit() {
 
 
 
-    function make_window(x,y,w,h) {
+    function make_window(x,y,w,h, title) {
         //bounds
         box(x,y,w,h,'black','white')
         //title
         box(x,y,w,9,'black','black')
-        text(x+2,y+2,'Edit: file.txt','white')
+        text(x+2,y+2,title,'white')
         box(x+w-9,y,9,9,'black','white')
         //close button
         box(x+w-7,y+2,5,5,'black','black') // top arrow
@@ -72,7 +72,7 @@ function doit() {
         // make text editor
         ctx.save()
         ctx.translate(10,40)
-        make_window(10,30,100,80)
+        make_window(10,30,100,80,'Edit: file.txt')
         //editable text
         text(14,42,'Hi There!')
         //cursor
@@ -122,7 +122,6 @@ function doit() {
         })
 
         //weather
-
         box(0,75,w,17,'black','white')
         icon16(2,77,false)
         text(17,80,'45d')
@@ -146,7 +145,25 @@ function doit() {
     }
     sidebar(WIDTH-80,8,80,HEIGHT-8)
 
+    function make_calculator(wx,wy) {
+        make_window(wx,wy,80,120,'Jesse Calc')
+        ctx.save()
+        ctx.translate(wx,wy)
+        let x = 5
+        let y = 10;
+        text(x,y,"45m * 8ft ="); y+=10
+        text(x,y,"    1152 ft^2"); y+=10
+        y+=10
+        text(x,y,"45m * 8ft ="); y+=10
+        text(x,y,"    1152 ft^2"); y+=10
+        y+=10
+        ctx.restore()
+    }
+
     //jesse calc. has no horizontal scrollbar
+    make_calculator(80,120)
+
+    
 }
 doit()
 
