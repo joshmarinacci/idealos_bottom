@@ -10,6 +10,7 @@ let ctx = canvas.getContext('2d')
 const icon_metrics = {
     'cursor':[0,0,8,8],
     'close':[8,0,8,8],
+    'resize':[16,0,8,8],
 }
 
 let symbols = new Image()
@@ -96,7 +97,7 @@ function doit() {
         text(x+2,y+2,title,'white')
         // box(x+w-9,y,9,9,'black','white')
         //close button
-        // box(x+w-7,y+2,5,5,'black','black') // top arrow
+        box(x+w-8,y+1,7,7,'white','white') // top arrow
         draw_icon('close',x+w-8,y+1)
         //horizontal scrollbar
         box(x,y+h-9,w-8,9,'black','white') //border
@@ -111,7 +112,8 @@ function doit() {
         box(x+w-7,y+h-13,5,3,'black','black') // bottom arrow
         box(x+w-7,y+30,5,30,'black','black') // thumb
         //resize handle
-        box(x+w-7,y+h-7,5,5,'black','white')
+        // box(x+w-7,y+h-7,5,5,'black','white')
+        draw_icon('resize',x+w-8,y+h-8)
     }
     function icon8(x, y, invert) {
         box(x,y,5,5,invert?'white':'black',invert?'black':'white');
