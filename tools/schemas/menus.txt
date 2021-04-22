@@ -1,0 +1,6 @@
+node_type = enum string "item" "top" "root"
+keystroke_obj = object modifier:string key:string
+item = object type:node_type label:string event:string keystroke:keystroke_obj
+
+@GEN = item
+
