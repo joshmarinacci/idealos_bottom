@@ -99,6 +99,11 @@ async function process_schema(src, dst_js, dst_rs) {
                     output.blank()
                     return
                 }
+                if(type === 'number') {
+                    output.line(`obj.${name} = data.${name}`)
+                    output.blank()
+                    return
+                }
                 output.line(`obj.${name} = MAKE_${type}(data.${name})`)
                 output.blank()
             })
@@ -153,6 +158,9 @@ async function doit() {
     await process_schema('./tools/schemas/menus.txt',
         './src/schemas/menus_schemas.js',
         './menus_schemas.rs')
+    await process_schema('./tools/schemas/windows.txt',
+        './src/schemas/windows_schemas.js',
+        './windows_schemas.rs')
 }
 
 doit().then(()=>console.log("finished generating schemas"));

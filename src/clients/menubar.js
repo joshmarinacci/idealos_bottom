@@ -2,6 +2,7 @@ import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp, PixelFont} from './app_utils.js'
 import {Container} from './guitoolkit.js'
 import {MENUS} from '../schemas/menus_schemas.js'
+import {MENUS as WINDOWS} from "../schemas/windows_schemas.js"
 let app = new CommonApp(process.argv,1024/4,10,'menubar')
 
 let menu_tree = MENUS.MAKE_root({
@@ -76,9 +77,31 @@ class CustomMenuBar extends Container {
         gfx.rect(this.x,this.y,this.width,this.height,'white')
         // gfx.text(this.x,this.y,'cool menu bar','black')
         this.tree.children.forEach((top,i) => {
-            gfx.rect(this.x+i*20,this.y,20,10,'white')
-            gfx.text(this.x+i*20+2,this.y,top.label,'black')
+            let bg = 'white'
+            let fg = 'black'
+            if(top.open) {
+                bg = 'black'
+                fg = 'white'
+            }
+            gfx.rect(this.x + i * 20, this.y, 20, 10, bg)
+            gfx.text(this.x + i * 20 + 2, this.y, top.label, fg)
         })
+    }
+    mouse_down_at(e) {
+        app.log("down at",e.payload)
+        let i = Math.floor(e.payload.x/20)
+        if(this.tree.children.length >= i) {
+            let item = this.tree.children[i]
+            app.log("clicked on",item)
+            item.open = !item.open
+            app.win.redraw()
+            if(item.open) {
+                //request window
+                app.send(WINDOWS.MAKE_create_child_window({type:'CREATE_CHILD_WINDOW',parent:app.win_id, x:i*20,y:10,width:30,height:40,style:'menu'}))
+            } else {
+                //close window
+            }
+        }
     }
 }
 
@@ -92,6 +115,15 @@ async function init() {
         //get the latest version of the theme
         app.send(make_message(SCHEMAS.RESOURCE.GET,{'resource':'theme','sender':app.appid}))
         // app.send(MENUS.MAKE_create_menu_tree_message({type:'CREATE_MENU_TREE',menu:menu_tree}))
+
+        app.on(SCHEMAS.MOUSE.DOWN.NAME,(e)=>{
+            app.win.root.mouse_down_at(e)
+        })
+        app.on(SCHEMAS.MOUSE.UP.NAME,()=>{
+        })
+        app.on(SCHEMAS.WINDOW.REFRESH.NAME, ()=>{
+        })
+
     } catch (e) {
         app.log(e)
     }
