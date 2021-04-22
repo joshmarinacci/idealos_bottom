@@ -20,7 +20,9 @@ const icon_metrics = {
     'sound':[8*2,8,8,8],
     'battery':[8*3,8,8,8],
     'meta':[8*4,16,8,8],
-    'sunny':[8*5,8*1,8,8],
+    'sunny'   :[8*5,8, 8,8],
+    'calendar':[8*5,16,8,8],
+    'chat'    :[8*6,16,8,8],
 }
 
 let symbols = new Image()
@@ -58,7 +60,7 @@ function doit() {
     ctx.scale(scale,scale)
 
     function draw_icon(name,x,y) {
-        if(!icon_metrics || !icon_metrics[name]) return
+        if(!icon_metrics || !icon_metrics[name]) return console.log("missing",name)
         let b = icon_metrics[name]
         ctx.imageSmoothingEnabled = false
         ctx.drawImage(symbols,b[0],b[1],b[2],b[3], x,y,b[2],b[3])
@@ -206,16 +208,16 @@ function doit() {
         //notitfications area
         box(0,94,w,h-94,'black','white')
         let notifs = [
-            ["Hey man,","what's up!"],
-            ["1:30PM: ","planning meeting"],
-            ["Bobby Tables:","Movie Night!"],
+            ['chat',"Hey man,","what's up!"],
+            ['calendar',"1:30PM: ","planning meeting"],
+            ['calendar',"Bobby Tables:","Movie Night!"],
         ]
         notifs.forEach((v,i)=>{
             let hh = 20
             box(0,94+i*hh,w,hh+1,'black','white')
-            icon8(2,94+i*hh+3,false)
-            v.forEach((s,k)=>{
-                text(8,94+i*hh+2+k*8,s,'black');
+            draw_icon(v[0],2,96+i*hh)
+            v.slice(1).forEach((s,k)=>{
+                text(11,93+i*hh+2+k*8,s,'black');
             })
         })
         ctx.restore()
