@@ -2,6 +2,7 @@
 
 
 import fs from 'fs'
+import path from 'path'
 
 function log(...args) {
     console.log(...args)
@@ -61,6 +62,12 @@ async function process_schema(src, dst_js, dst_rs) {
                 values:def_parts.slice()
             }
         }
+        if(def_type === 'array') {
+            defs[name] = {
+                type:'array',
+                array_type:def_parts.shift(),
+            }
+        }
         if(def_type === 'object') {
             let props = {}
             def_parts.forEach(pt => {
@@ -80,7 +87,7 @@ async function process_schema(src, dst_js, dst_rs) {
     let output = new SrcOutput()
     Object.keys(defs).forEach(target => {
         let def = defs[target]
-        log("generating code for",target, def)
+        // log("generating code for",target, def)
         if(def.type === 'object') {
             output.line(`function MAKE_${target}(data) {`)
             output.indent()
@@ -100,13 +107,27 @@ async function process_schema(src, dst_js, dst_rs) {
             output.line('}')
         }
         if(def.type === 'enum') {
-            log("making an enum def",def)
+            // log("making an enum def",def)
             output.line(`export function MAKE_${target}(value) {`)
             output.indent()
             def.values.forEach(val => {
                 output.line(`if(value === ${val}) return value`)
             })
             output.line(`throw new Error("MAKE_${target}: invalid value"+value)`)
+            output.outdent()
+            output.line("}")
+        }
+        if(def.type === 'array') {
+            log("making array def", def)
+            /*
+            make_thing_array(arr) {
+                if(typeof arr !== 'array') throw
+                return arr
+            }
+             */
+            output.line(`export function MAKE_${target}(arr) {`)
+            output.indent()
+            output.line("return arr")
             output.outdent()
             output.line("}")
         }
@@ -121,13 +142,16 @@ async function process_schema(src, dst_js, dst_rs) {
     output.outdent()
     output.line("}")
     // log("final source is\n",output.toString())
+    let dir = path.dirname(dst_js)
+    log("Dir is",dir)
+    fs.promises.mkdir(dir,{recursive:true})
     await fs.promises.writeFile(dst_js,output.toString())
     log("wrote to ",dst_js)
 }
 
 async function doit() {
     await process_schema('./tools/schemas/menus.txt',
-        './menus_schemas.js',
+        './src/schemas/menus_schemas.js',
         './menus_schemas.rs')
 }
 

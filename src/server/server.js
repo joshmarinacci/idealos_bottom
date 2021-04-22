@@ -26,6 +26,7 @@ const CLIENT_TYPES = {
     SCREEN:'SCREEN',
     DEBUG:'DEBUG',
     TEST:'TEST',
+    MENUBAR:'MENUBAR',
 }
 
 let resources = new ResourceManager(log, respond)
@@ -69,6 +70,9 @@ function forward_to_screen(msg) {
 }
 function forward_to_debug(msg) {
     if(connections[CLIENT_TYPES.DEBUG]) return connections[CLIENT_TYPES.DEBUG].send(JSON.stringify(msg))
+}
+function forward_to_menubar(msg) {
+    if(connections[CLIENT_TYPES.MENUBAR]) return connections[CLIENT_TYPES.MENUBAR].send(JSON.stringify(msg))
 }
 function do_nothing(msg) {}
 function forward_to_target(msg) {
@@ -167,6 +171,8 @@ export function start_message_server() {
 
                 if (message_match(SCHEMAS.RESOURCE.GET, msg)) return resources.get_resource(msg)
                 // if (message_match(SCHEMAS.RESOURCE.SET, msg)) return resources.set_resource(msg)
+
+                if(message_match('CREATE_MENU_TREE',msg)) return forward_to_menubar(msg)
 
                 log("unknown incoming message", msg)
             } catch (e) {
