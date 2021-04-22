@@ -11,6 +11,10 @@ const icon_metrics = {
     'cursor':[0,0,8,8],
     'close':[8,0,8,8],
     'resize':[16,0,8,8],
+    'leftarrow':[25,1,7,7],
+    'rightarrow':[32,1,7,7],
+    'uparrow':[41,1,8,7],
+    'downarrow':[48,1,8,7],
 }
 
 let symbols = new Image()
@@ -108,8 +112,9 @@ function doit() {
         //vertical scrollbar
         box(x+w-9,y+8,9,h-16,'black','white')
         box(x+w-7,y+14,5,h-28,'black','white')//track
-        box(x+w-7,y+10,5,3,'black','black') // top arrow
-        box(x+w-7,y+h-13,5,3,'black','black') // bottom arrow
+        // box(x+w-7,y+10,5,3,'black','black') // top arrow
+        // box(x+w-7,y+h-13,5,3,'black','black') // bottom arrow
+        draw_icon('uparrow',x+w-7,y+10)
         box(x+w-7,y+30,5,30,'black','black') // thumb
         //resize handle
         // box(x+w-7,y+h-7,5,5,'black','white')
@@ -186,7 +191,7 @@ function doit() {
         let notifs = [
             ["Hey man,","what's up!"],
             ["1:30PM: ","planning meeting"],
-            ["Bobby Tables ","Movie Night!"],
+            ["Bobby Tables:","Movie Night!"],
         ]
         notifs.forEach((v,i)=>{
             let hh = 20
