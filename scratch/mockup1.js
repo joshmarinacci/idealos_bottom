@@ -7,14 +7,15 @@ canvas.height = HEIGHT*scale;
 
 let ctx = canvas.getContext('2d')
 
+
 const icon_metrics = {
     'cursor':[0,0,8,8],
     'close':[8,0,8,8],
     'resize':[16,0,8,8],
-    'leftarrow':[25,1,7,7],
-    'rightarrow':[32,1,7,7],
+    'leftarrow':[25+1,1,7,7],
+    'rightarrow':[32+1,1,7,7],
     'uparrow':[41,1,8,7],
-    'downarrow':[48,1,8,7],
+    'downarrow':[48+1,2,8,7],
 }
 
 let symbols = new Image()
@@ -42,15 +43,15 @@ function cut_chroma(img) {
 
 symbols.onload = () => {
     symbols = cut_chroma(symbols)
-    ctx.save()
-    ctx.scale(scale,scale)
     doit()
-    ctx.restore()
 }
 symbols.src = "symbol_font@1.png"
 
 
 function doit() {
+    ctx.save()
+    ctx.scale(scale,scale)
+
     function draw_icon(name,x,y) {
         if(!icon_metrics || !icon_metrics[name]) return
         let b = icon_metrics[name]
@@ -105,20 +106,22 @@ function doit() {
         draw_icon('close',x+w-8,y+1)
         //horizontal scrollbar
         box(x,y+h-9,w-8,9,'black','white') //border
-        box(x+2,y+h-9+2,3,5,'black','black') //left arrow
+        // box(x+2,y+h-9+2,3,5,'black','black') //left arrow
+        draw_icon('leftarrow',x+2,y+h-9+2)
         box(x+6,y+h-9+2,w-20,5,'black','white') //track
         box(x+12,y+h-9+2,w-60,5,'black','black') //thumb
-        box(x+w-13,y+h-9+2,3,5,'black','black') //right arrow
+        // box(x+w-13,y+h-9+2,3,5,'black','black') //right arrow
+        draw_icon('rightarrow',x+w-13,y+h-9+2);
         //vertical scrollbar
         box(x+w-9,y+8,9,h-16,'black','white')
         box(x+w-7,y+14,5,h-28,'black','white')//track
         // box(x+w-7,y+10,5,3,'black','black') // top arrow
-        // box(x+w-7,y+h-13,5,3,'black','black') // bottom arrow
         draw_icon('uparrow',x+w-7,y+10)
+        // box(x+w-7,y+h-13,5,3,'black','black') // bottom arrow
+        draw_icon('downarrow',x+w-7,y+h-13-1)
         box(x+w-7,y+30,5,30,'black','black') // thumb
         //resize handle
-        // box(x+w-7,y+h-7,5,5,'black','white')
-        draw_icon('resize',x+w-8,y+h-8)
+        draw_icon('resize',x+w-7,y+h-7)
     }
     function icon8(x, y, invert) {
         box(x,y,5,5,invert?'white':'black',invert?'black':'white');
@@ -223,6 +226,10 @@ function doit() {
     //jesse calc. has no horizontal scrollbar
     make_calculator(80,120)
 
-
+    ctx.restore()
 }
 
+document.fonts.ready.then(()=>{
+    console.log('all fonts are loaded now')
+    doit()
+})
