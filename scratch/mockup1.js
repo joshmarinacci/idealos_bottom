@@ -16,6 +16,11 @@ const icon_metrics = {
     'rightarrow':[32+1,1,7,7],
     'uparrow':[41,1,8,7],
     'downarrow':[48+1,2,8,7],
+    'wifi':[8,8,8,8],
+    'sound':[8*2,8,8,8],
+    'battery':[8*3,8,8,8],
+    'meta':[8*4,16,8,8],
+    'sunny':[8*5,8*1,8,8],
 }
 
 let symbols = new Image()
@@ -73,22 +78,29 @@ function doit() {
     }
 
     function menubar() {
-        box(0, 0, WIDTH, 9, 'black', 'white')
-        text(2, 1, "File")
+        let y = 1
+        box(0, 0, WIDTH, 11, 'black', 'white')
+        text(2, y+1, "File")
         {
             let x = 20
-            box(x, 0, 27, 9, 'black', 'black')
-            text(x+2, 1, "Edit", 'white')
+            box(x, y+0, 27, 9, 'black', 'black')
+            text(x+2, y+1, "Edit", 'white')
+            box(x, y+9, 50, 28, 'black', 'white')
 
-            box(x, 8, 50, 27, 'black', 'white')
-            text(x+2, 10 - 1, "Cut")
-            text(x+2, 20 - 2, "Copy")
-            text(x+2, 30 - 3, "Paste")
+
+            const draw_menu_item = (name,shortcut,x,y) => {
+                text(x, y, name)
+                draw_icon('meta',x+30,y)
+                text(x+40, y, shortcut)
+            }
+            draw_menu_item("Cut",'X',x+2,y+10)
+            draw_menu_item("Copy",'C',x+2,y+19)
+            draw_menu_item("Paste",'V',x+2,y+28)
         }
         {
             let x = 47
             // box(x, 0, 27, 9, 'black', 'white')
-            text(x+2, 1, "View", 'black')
+            text(x+2, y+1, "View", 'black')
         }
     }
 
@@ -150,9 +162,9 @@ function doit() {
     make_texteditor()
 
     //menubar icons
-    icon8(WIDTH-10,2,false) //wifi
-    icon8(WIDTH-20,2,false) //sound
-    icon8(WIDTH-30,2,false) //battery
+    draw_icon('wifi',WIDTH-10,2)
+    draw_icon('sound',WIDTH-20,2)
+    draw_icon('battery',WIDTH-30,2)
 
     draw_icon('cursor',10,10)
 
@@ -186,8 +198,10 @@ function doit() {
 
         //weather
         box(0,75,w,17,'black','white')
-        icon16(2,77,false)
-        text(17,80,'45d')
+        // icon16(2,77,false)
+        draw_icon('sunny',2,79)
+        text(17,80,'45')
+        text(27,77,'o')
 
         //notitfications area
         box(0,94,w,h-94,'black','white')
@@ -206,7 +220,7 @@ function doit() {
         })
         ctx.restore()
     }
-    sidebar(WIDTH-80,8,80,HEIGHT-8)
+    sidebar(WIDTH-80,10,80,HEIGHT-8)
 
     function make_calculator(wx,wy) {
         make_window(wx,wy,80,120,'Jesse Calc')
