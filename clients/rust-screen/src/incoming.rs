@@ -22,7 +22,7 @@ fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<(
                 "SCREEN_WINDOW_LIST" => {
                     let msg:WindowListMessage = serde_json::from_str(txt.as_str())?;
                     renderloop_send.send(RenderMessage::WindowList(msg));
-                    ()
+                    return Ok(())
                 },
                 // "WINDOW_OPEN_SCREEN" => {
                 //     let msg:OpenWindowScreen = serde_json::from_str(txt.as_str())?;
