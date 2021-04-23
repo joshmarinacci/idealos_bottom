@@ -7,7 +7,7 @@ use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 use websocket::OwnedMessage;
 use crate::messages::{RenderMessage, WindowListMessage, OpenWindowScreen, DrawPixelMessage, FillRectMessage, DrawImageMessage, CloseWindowScreen};
-use crate::windows_schemas::{create_child_window_display, close_child_window_display, window_open_display, window_open_display_name, window_list_name, window_list};
+use crate::windows_schemas::{create_child_window_display, close_child_window_display, window_open_display, window_open_display_name, window_list_name, window_list, create_child_window_display_name, close_child_window_display_name};
 
 fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<()>{
     let v: Value = serde_json::from_str(txt.as_str())?;
@@ -21,6 +21,16 @@ fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<(
             if msg_type == window_list_name {
                 let msg:window_list = serde_json::from_str(txt.as_str())?;
                 renderloop_send.send(RenderMessage::WindowList(msg));
+                return Ok(())
+            }
+            if msg_type == create_child_window_display_name {
+                let msg:create_child_window_display = serde_json::from_str(txt.as_str())?;
+                renderloop_send.send(RenderMessage::CreateChildWindow(msg));
+                return Ok(())
+            }
+            if msg_type == close_child_window_display_name {
+                let msg:close_child_window_display = serde_json::from_str(txt.as_str())?;
+                renderloop_send.send(RenderMessage::CloseChildWindow(msg));
                 return Ok(())
             }
             match &msg_type[..] {
@@ -44,16 +54,6 @@ fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<(
                     renderloop_send.send(RenderMessage::CloseWindow(msg));
                     ()
                 },
-                "CREATE_CHILD_WINDOW_DISPLAY" => {
-                    let msg:create_child_window_display = serde_json::from_str(txt.as_str())?;
-                    renderloop_send.send(RenderMessage::CreateChildWindow(msg));
-                    ()
-                },
-                "CLOSE_CHILD_WINDOW_DISPLAY" => {
-                    let msg:close_child_window_display = serde_json::from_str(txt.as_str())?;
-                    renderloop_send.send(RenderMessage::CloseChildWindow(msg));
-                    ()
-                }
                 _ => {
                     println!("some other message type {}",txt)
                 }

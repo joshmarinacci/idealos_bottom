@@ -121,9 +121,6 @@ const MAKE_create_child_window_name = "MAKE_create_child_window_name"
 function MAKE_create_child_window(data) {
     let obj = {}
     obj.type = MAKE_create_child_window_name
-    if(!data.hasOwnProperty('type')) throw new Error("object 'create_child_window' is missing property 'type' ")
-    obj.type = data.type
-    
     if(!data.hasOwnProperty('parent')) throw new Error("object 'create_child_window' is missing property 'parent' ")
     obj.parent = data.parent
     
@@ -151,9 +148,6 @@ const MAKE_create_child_window_response_name = "MAKE_create_child_window_respons
 function MAKE_create_child_window_response(data) {
     let obj = {}
     obj.type = MAKE_create_child_window_response_name
-    if(!data.hasOwnProperty('type')) throw new Error("object 'create_child_window_response' is missing property 'type' ")
-    obj.type = data.type
-    
     if(!data.hasOwnProperty('sender')) throw new Error("object 'create_child_window_response' is missing property 'sender' ")
     obj.sender = data.sender
     
@@ -172,9 +166,6 @@ const MAKE_create_child_window_display_name = "MAKE_create_child_window_display_
 function MAKE_create_child_window_display(data) {
     let obj = {}
     obj.type = MAKE_create_child_window_display_name
-    if(!data.hasOwnProperty('type')) throw new Error("object 'create_child_window_display' is missing property 'type' ")
-    obj.type = data.type
-    
     if(!data.hasOwnProperty('parent')) throw new Error("object 'create_child_window_display' is missing property 'parent' ")
     obj.parent = data.parent
     
@@ -190,9 +181,6 @@ const MAKE_close_child_window_name = "MAKE_close_child_window_name"
 function MAKE_close_child_window(data) {
     let obj = {}
     obj.type = MAKE_close_child_window_name
-    if(!data.hasOwnProperty('type')) throw new Error("object 'close_child_window' is missing property 'type' ")
-    obj.type = data.type
-    
     if(!data.hasOwnProperty('parent')) throw new Error("object 'close_child_window' is missing property 'parent' ")
     obj.parent = data.parent
     
@@ -208,9 +196,6 @@ const MAKE_close_child_window_response_name = "MAKE_close_child_window_response_
 function MAKE_close_child_window_response(data) {
     let obj = {}
     obj.type = MAKE_close_child_window_response_name
-    if(!data.hasOwnProperty('type')) throw new Error("object 'close_child_window_response' is missing property 'type' ")
-    obj.type = data.type
-    
     if(!data.hasOwnProperty('sender')) throw new Error("object 'close_child_window_response' is missing property 'sender' ")
     obj.sender = data.sender
     
@@ -229,9 +214,6 @@ const MAKE_close_child_window_display_name = "MAKE_close_child_window_display_na
 function MAKE_close_child_window_display(data) {
     let obj = {}
     obj.type = MAKE_close_child_window_display_name
-    if(!data.hasOwnProperty('type')) throw new Error("object 'close_child_window_display' is missing property 'type' ")
-    obj.type = data.type
-    
     if(!data.hasOwnProperty('parent')) throw new Error("object 'close_child_window_display' is missing property 'parent' ")
     obj.parent = data.parent
     

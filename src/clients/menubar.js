@@ -99,7 +99,7 @@ class CustomMenuBar extends Container {
                 //request window
                 app.log("sending create child window")
                 app.send(WINDOWS.MAKE_create_child_window({
-                    type:'CREATE_CHILD_WINDOW',
+                    // type:'CREATE_CHILD_WINDOW',
                     parent:app.win_id,
                     x:i*20,y:10,
                     width:30,height:40,
@@ -109,7 +109,7 @@ class CustomMenuBar extends Container {
                 //close window
                 app.log("sending close child window", this.popup_id)
                 app.send(WINDOWS.MAKE_close_child_window({
-                    type:'CLOSE_CHILD_WINDOW',
+                    // type:'CLOSE_CHILD_WINDOW',
                     parent:app.win_id,
                     id: this.popup_id,
                     sender:app.appid
@@ -133,7 +133,8 @@ async function init() {
         app.on(SCHEMAS.MOUSE.DOWN.NAME,(e)=>{
             app.win.root.mouse_down_at(e)
         })
-        app.on(WINDOWS.MAKE_create_child_window_response,(e)=>{
+        app.on(WINDOWS.MAKE_create_child_window_response_name,(e)=>{
+            app.log("got the child window response",e)
             app.win.root.popup_id = e.payload.window.id
         })
         app.on(SCHEMAS.MOUSE.UP.NAME,()=>{

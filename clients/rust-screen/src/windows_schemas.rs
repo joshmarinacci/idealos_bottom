@@ -60,8 +60,6 @@ pub struct window_refresh_response {
 pub const create_child_window_name: &str = "MAKE_create_child_window_name";
 #[derive(Serialize, Deserialize, Debug)]
 pub struct create_child_window {
-    #[serde(rename = "type")]
-    pub _type:String,
     pub parent:String,
     pub x:i64,
     pub y:i64,
@@ -73,8 +71,6 @@ pub struct create_child_window {
 pub const create_child_window_response_name: &str = "MAKE_create_child_window_response_name";
 #[derive(Serialize, Deserialize, Debug)]
 pub struct create_child_window_response {
-    #[serde(rename = "type")]
-    pub _type:String,
     pub sender:String,
     pub target:String,
     pub parent:String,
@@ -83,8 +79,6 @@ pub struct create_child_window_response {
 pub const create_child_window_display_name: &str = "MAKE_create_child_window_display_name";
 #[derive(Serialize, Deserialize, Debug)]
 pub struct create_child_window_display {
-    #[serde(rename = "type")]
-    pub _type:String,
     pub parent:String,
     pub window:window_info,
     pub sender:String,
@@ -92,8 +86,6 @@ pub struct create_child_window_display {
 pub const close_child_window_name: &str = "MAKE_close_child_window_name";
 #[derive(Serialize, Deserialize, Debug)]
 pub struct close_child_window {
-    #[serde(rename = "type")]
-    pub _type:String,
     pub parent:String,
     pub sender:String,
     pub id:String,
@@ -101,8 +93,6 @@ pub struct close_child_window {
 pub const close_child_window_response_name: &str = "MAKE_close_child_window_response_name";
 #[derive(Serialize, Deserialize, Debug)]
 pub struct close_child_window_response {
-    #[serde(rename = "type")]
-    pub _type:String,
     pub sender:String,
     pub target:String,
     pub parent:String,
@@ -111,8 +101,6 @@ pub struct close_child_window_response {
 pub const close_child_window_display_name: &str = "MAKE_close_child_window_display_name";
 #[derive(Serialize, Deserialize, Debug)]
 pub struct close_child_window_display {
-    #[serde(rename = "type")]
-    pub _type:String,
     pub parent:String,
     pub window:String,
     pub sender:String,

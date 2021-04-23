@@ -74,13 +74,13 @@ function handle_open_child_window_message(msg) {
     let ch_win = wids.make_child_window(msg)
     wids.add_window(ch_win.id,ch_win)
     forward_to_screen(WINDOWS.MAKE_create_child_window_display({
-        type:'CREATE_CHILD_WINDOW_DISPLAY',
+        // type:'CREATE_CHILD_WINDOW_DISPLAY',
         parent:msg.parent,
         window:ch_win,
         sender:msg.sender,
     }));
     forward_to_target(WINDOWS.MAKE_create_child_window_response({
-        type:'CREATE_CHILD_WINDOW_RESPONSE',
+        // type:'CREATE_CHILD_WINDOW_RESPONSE',
         target:msg.sender,
         parent:msg.parent,
         window:ch_win,
@@ -92,14 +92,12 @@ function handle_close_child_window_message(msg) {
     log("closing child window",msg.id)
     wids.close_child_window(msg.id)
     forward_to_screen(WINDOWS.MAKE_close_child_window_display({
-        type:'CLOSE_CHILD_WINDOW_DISPLAY',
         target:msg.sender,
         parent:msg.parent,
         window:msg.id,
         sender:msg.sender,
     }))
     forward_to_target(WINDOWS.MAKE_close_child_window_response({
-        type:'CLOSE_CHILD_WINDOW_RESPONSE',
         target:msg.sender,
         parent:msg.parent,
         window:msg.id,
@@ -216,8 +214,8 @@ export function start_message_server() {
                 // if (message_match(SCHEMAS.RESOURCE.SET, msg)) return resources.set_resource(msg)
 
                 if(message_match('CREATE_MENU_TREE',msg)) return forward_to_menubar(msg)
-                if(msg.type === 'CREATE_CHILD_WINDOW')  return handle_open_child_window_message(msg)
-                if(msg.type === 'CLOSE_CHILD_WINDOW') return handle_close_child_window_message(msg)
+                if(msg.type === WINDOWS.MAKE_create_child_window_name)  return handle_open_child_window_message(msg)
+                if(msg.type === WINDOWS.MAKE_close_child_window_name) return handle_close_child_window_message(msg)
 
                 log("unknown incoming message", msg)
             } catch (e) {
