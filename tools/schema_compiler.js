@@ -113,6 +113,7 @@ async function process_schema(src, dst_js, dst_rs) {
             }
             if(def.type === 'enum') {
                 // log("making an enum def",def)
+                js_output.line(`const MAKE_${target}_name = "MAKE_${target}_name"`)
                 js_output.line(`export function MAKE_${target}(value) {`)
                 js_output.indent()
                 def.values.forEach(val => {
@@ -124,12 +125,7 @@ async function process_schema(src, dst_js, dst_rs) {
             }
             if(def.type === 'array') {
                 log("making array def", def)
-                /*
-                make_thing_array(arr) {
-                    if(typeof arr !== 'array') throw
-                    return arr
-                }
-                 */
+                js_output.line(`const MAKE_${target}_name = "MAKE_${target}_name"`)
                 js_output.line(`export function MAKE_${target}(arr) {`)
                 js_output.indent()
                 js_output.line("return arr")

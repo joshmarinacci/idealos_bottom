@@ -1,3 +1,4 @@
+const MAKE_node_type_name = "MAKE_node_type_name"
 export function MAKE_node_type(value) {
     if(value === "item") return value
     if(value === "top") return value
@@ -34,6 +35,7 @@ function MAKE_item(data) {
     
     return obj
 }
+const MAKE_item_array_name = "MAKE_item_array_name"
 export function MAKE_item_array(arr) {
     return arr
 }
