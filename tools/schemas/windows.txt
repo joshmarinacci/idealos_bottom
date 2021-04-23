@@ -1,3 +1,5 @@
-create_child_window = object type:string parent:string x:number y:number width:number height:number style:string
+create_child_window = object type:string parent:string x:number y:number width:number height:number style:string sender:string
+window_info = object id:string width:number height:number x:number y:number owner:string window_type:string
+create_child_window_display = object type:string parent:string window:window_info sender:string
 
 

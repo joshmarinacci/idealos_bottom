@@ -80,87 +80,135 @@ async function process_schema(src, dst_js, dst_rs) {
             }
         }
     })
-    log("final defs",defs)
-    log("gen targets",gen_targets)
+    // log("final defs",defs)
+    // log("gen targets",gen_targets)
 
-    let js_src = ''
-    let output = new SrcOutput()
-    Object.keys(defs).forEach(target => {
-        let def = defs[target]
-        // log("generating code for",target, def)
-        if(def.type === 'object') {
-            output.line(`function MAKE_${target}(data) {`)
-            output.indent()
-            output.line('let obj = {}')
-            Object.entries(def.props).forEach(([name,type])=>{
-                output.line(`if(!data.hasOwnProperty('${name}')) throw new Error("object '${target}' is missing property '${name}' ")`)
-                if(type === 'string') {
-                    output.line(`obj.${name} = data.${name}`)
-                    output.blank()
-                    return
-                }
-                if(type === 'number') {
-                    output.line(`obj.${name} = data.${name}`)
-                    output.blank()
-                    return
-                }
-                output.line(`obj.${name} = MAKE_${type}(data.${name})`)
-                output.blank()
-            })
-            output.line(`return obj`)
-            output.outdent()
-            output.line('}')
-        }
-        if(def.type === 'enum') {
-            // log("making an enum def",def)
-            output.line(`export function MAKE_${target}(value) {`)
-            output.indent()
-            def.values.forEach(val => {
-                output.line(`if(value === ${val}) return value`)
-            })
-            output.line(`throw new Error("MAKE_${target}: invalid value"+value)`)
-            output.outdent()
-            output.line("}")
-        }
-        if(def.type === 'array') {
-            log("making array def", def)
-            /*
-            make_thing_array(arr) {
-                if(typeof arr !== 'array') throw
-                return arr
+    function make_js_output() {
+        let js_output = new SrcOutput()
+        Object.keys(defs).forEach(target => {
+            let def = defs[target]
+            // log("generating code for",target, def)
+            if(def.type === 'object') {
+                js_output.line(`function MAKE_${target}(data) {`)
+                js_output.indent()
+                js_output.line('let obj = {}')
+                Object.entries(def.props).forEach(([name,type])=>{
+                    js_output.line(`if(!data.hasOwnProperty('${name}')) throw new Error("object '${target}' is missing property '${name}' ")`)
+                    if(type === 'string') {
+                        js_output.line(`obj.${name} = data.${name}`)
+                        js_output.blank()
+                        return
+                    }
+                    if(type === 'number') {
+                        js_output.line(`obj.${name} = data.${name}`)
+                        js_output.blank()
+                        return
+                    }
+                    js_output.line(`obj.${name} = MAKE_${type}(data.${name})`)
+                    js_output.blank()
+                })
+                js_output.line(`return obj`)
+                js_output.outdent()
+                js_output.line('}')
             }
-             */
-            output.line(`export function MAKE_${target}(arr) {`)
-            output.indent()
-            output.line("return arr")
-            output.outdent()
-            output.line("}")
-        }
-    })
+            if(def.type === 'enum') {
+                // log("making an enum def",def)
+                js_output.line(`export function MAKE_${target}(value) {`)
+                js_output.indent()
+                def.values.forEach(val => {
+                    js_output.line(`if(value === ${val}) return value`)
+                })
+                js_output.line(`throw new Error("MAKE_${target}: invalid value"+value)`)
+                js_output.outdent()
+                js_output.line("}")
+            }
+            if(def.type === 'array') {
+                log("making array def", def)
+                /*
+                make_thing_array(arr) {
+                    if(typeof arr !== 'array') throw
+                    return arr
+                }
+                 */
+                js_output.line(`export function MAKE_${target}(arr) {`)
+                js_output.indent()
+                js_output.line("return arr")
+                js_output.outdent()
+                js_output.line("}")
+            }
+        })
 
-    output.line("export const MENUS = {")
-    output.indent()
-    Object.keys(defs).forEach(target => {
-        output.line(`MAKE_${target} : MAKE_${target},`)
-    })
+        js_output.line("export const MENUS = {")
+        js_output.indent()
+        Object.keys(defs).forEach(target => {
+            js_output.line(`MAKE_${target} : MAKE_${target},`)
+        })
 
-    output.outdent()
-    output.line("}")
+        js_output.outdent()
+        js_output.line("}")
+        return js_output
+    }
+    let js_output = make_js_output()
     // log("final source is\n",output.toString())
     let dir = path.dirname(dst_js)
     log("Dir is",dir)
     fs.promises.mkdir(dir,{recursive:true})
-    await fs.promises.writeFile(dst_js,output.toString())
+    await fs.promises.writeFile(dst_js,js_output.toString())
     log("wrote to ",dst_js)
+
+    function make_rs_output() {
+        let rs_output = new SrcOutput()
+        rs_output.line("use std::collections::HashMap;\n" +
+            "use serde::{Deserialize, Serialize};\n")
+        Object.keys(defs).forEach(target => {
+            let def = defs[target]
+            if(def.type === 'object') {
+                // console.log("doing rust target",target, '=', def)
+                rs_output.line("#[derive(Serialize, Deserialize, Debug)]")
+                rs_output.line(`pub struct ${target} {`)
+                rs_output.indent()
+                Object.entries(def.props).forEach(([name,type])=> {
+                    console.log(name,type)
+                    if(name === 'type') {
+                        rs_output.line('#[serde(rename = "type")]')
+                        name = '_type'
+                    }
+                    if(type === 'string') type = 'String'
+                    if(type === 'number') type = 'i64'
+                    rs_output.line(`pub ${name}:${type},`)
+                })
+                rs_output.outdent()
+                rs_output.line("}")
+            }
+            if(def.type === 'enum') {
+                console.log("doing rust enum",target,'=',def)
+                rs_output.line("#[derive(Serialize, Deserialize, Debug)]")
+                rs_output.line(`pub enum ${target} { }`)
+            }
+            if(def.type === 'array') {
+                console.log("doing rust array",target,'=',def)
+                rs_output.line("#[derive(Serialize, Deserialize, Debug)]")
+                rs_output.line(`pub struct ${target} { }`)
+            }
+        })
+        return rs_output
+    }
+
+    let rs_output = make_rs_output()
+    log("rust\n",rs_output.toString())
+    let dir2 = path.dirname(dst_rs)
+    await fs.promises.mkdir(dir2,{recursive:true})
+    await fs.promises.writeFile(dst_rs,rs_output.toString())
+    log('wrote to',dst_rs)
 }
 
 async function doit() {
     await process_schema('./tools/schemas/menus.txt',
         './src/schemas/menus_schemas.js',
-        './menus_schemas.rs')
+        './clients/rust-screen/src/menus_schemas.rs')
     await process_schema('./tools/schemas/windows.txt',
         './src/schemas/windows_schemas.js',
-        './windows_schemas.rs')
+        './clients/rust-screen/src/windows_schemas.rs')
 }
 
 doit().then(()=>console.log("finished generating schemas"));
