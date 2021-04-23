@@ -225,7 +225,7 @@ function MAKE_close_child_window_display(data) {
     
     return obj
 }
-export const MENUS = {
+export const WINDOWS = {
     MAKE_window_info : MAKE_window_info,
     MAKE_window_info_name : MAKE_window_info_name,
     MAKE_window_array : MAKE_window_array,

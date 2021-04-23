@@ -1,6 +1,6 @@
 import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp} from './app_utils.js'
-import {MENUS as WINDOWS} from '../schemas/windows_schemas.js'
+import {WINDOWS} from '../schemas/windows_schemas.js'
 
 let width = 50
 let height = 50

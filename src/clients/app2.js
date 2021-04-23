@@ -1,6 +1,6 @@
 import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp} from './app_utils.js'
-import {MENUS as WINDOWS} from '../schemas/windows_schemas.js'
+import {WINDOWS} from '../schemas/windows_schemas.js'
 
 let app = new CommonApp(process.argv,10,5)
 app.on('start',()=>{

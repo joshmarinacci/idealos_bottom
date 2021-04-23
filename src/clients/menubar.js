@@ -2,7 +2,7 @@ import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp, PixelFont} from './app_utils.js'
 import {Container} from './guitoolkit.js'
 import {MENUS} from '../schemas/menus_schemas.js'
-import {MENUS as WINDOWS} from "../schemas/windows_schemas.js"
+import {WINDOWS} from "../schemas/windows_schemas.js"
 let app = new CommonApp(process.argv,1024/4,10,'menubar')
 
 let menu_tree = MENUS.MAKE_root({

@@ -3,7 +3,7 @@ import * as PI from "pureimage"
 import {make_message, message_match, SCHEMAS} from '../canvas/messages.js'
 import fs from "fs"
 import {Window} from "./guitoolkit.js"
-import {MENUS as WINDOWS} from "../schemas/windows_schemas.js"
+import {WINDOWS} from "../schemas/windows_schemas.js"
 
 export class CommonApp {
     constructor(argv,width,height, window_type="plain") {

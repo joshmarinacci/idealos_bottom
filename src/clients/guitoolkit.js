@@ -1,5 +1,5 @@
 import {make_message, SCHEMAS} from '../canvas/messages.js'
-import {MENUS as WINDOWS} from '../schemas/windows_schemas.js'
+import {WINDOWS} from '../schemas/windows_schemas.js'
 
 export class Window {
     constructor(app, width,height) {

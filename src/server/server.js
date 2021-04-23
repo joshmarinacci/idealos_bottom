@@ -7,7 +7,7 @@ import {WindowTracker} from './windows.js'
 import {AppTracker} from './apps.js'
 import {ResourceManager} from './resources.js'
 import {sleep} from '../common.js'
-import {MENUS as WINDOWS} from "../schemas/windows_schemas.js"
+import {WINDOWS} from "../schemas/windows_schemas.js"
 
 export const hostname = '127.0.0.1'
 export const webserver_port = 3000
