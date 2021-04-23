@@ -1,4 +1,5 @@
 import {make_message, SCHEMAS} from '../canvas/messages.js'
+import {MENUS as WINDOWS} from '../schemas/windows_schemas.js'
 
 export class Window {
     constructor(app, width,height) {
@@ -34,7 +35,7 @@ export class Window {
             app.win.input()
             app.win.redraw()
         })
-        app.on(SCHEMAS.WINDOW.REFRESH.NAME, ()=>{
+        app.on(WINDOWS.MAKE_window_refresh_request_name, ()=>{
             app.win.redraw()
         })
         app.on(SCHEMAS.KEYBOARD.DOWN.NAME, (e)=>{

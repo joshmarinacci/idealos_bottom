@@ -95,7 +95,7 @@ impl<'a> SDL2Backend<'a> {
                         RenderMessage::WindowList(m) => {
                             for (key, value) in &m.windows {
                                 // println!("make window id {} at {},{}", value.id, value.x, value.y);
-                                let win = Window::from_info(&value);
+                                let win = Window::from_info2(&value);
                                 self.init_window(&win);
                                 windows.insert(win.id.clone(), win);
                             }

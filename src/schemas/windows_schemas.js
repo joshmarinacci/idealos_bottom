@@ -25,6 +25,14 @@ function MAKE_window_info(data) {
     
     return obj
 }
+const MAKE_window_array_name = "MAKE_window_array_name"
+export function MAKE_window_array(arr) {
+    return arr
+}
+const MAKE_window_map_name = "MAKE_window_map_name"
+export function MAKE_window_map(map) {
+    return map
+}
 const MAKE_window_open_name = "MAKE_window_open_name"
 function MAKE_window_open(data) {
     let obj = {}
@@ -65,6 +73,48 @@ function MAKE_window_open_response(data) {
     if(!data.hasOwnProperty('window')) throw new Error("object 'window_open_response' is missing property 'window' ")
     obj.window = data.window
     
+    return obj
+}
+const MAKE_window_close_name = "MAKE_window_close_name"
+function MAKE_window_close(data) {
+    let obj = {}
+    obj.type = MAKE_window_close_name
+    if(!data.hasOwnProperty('target')) throw new Error("object 'window_close' is missing property 'target' ")
+    obj.target = data.target
+    
+    if(!data.hasOwnProperty('window')) throw new Error("object 'window_close' is missing property 'window' ")
+    obj.window = data.window
+    
+    return obj
+}
+const MAKE_window_list_name = "MAKE_window_list_name"
+function MAKE_window_list(data) {
+    let obj = {}
+    obj.type = MAKE_window_list_name
+    if(!data.hasOwnProperty('windows')) throw new Error("object 'window_list' is missing property 'windows' ")
+    obj.windows = MAKE_window_map(data.windows)
+    
+    return obj
+}
+const MAKE_window_refresh_request_name = "MAKE_window_refresh_request_name"
+function MAKE_window_refresh_request(data) {
+    let obj = {}
+    obj.type = MAKE_window_refresh_request_name
+    if(!data.hasOwnProperty('type')) throw new Error("object 'window_refresh_request' is missing property 'type' ")
+    obj.type = data.type
+    
+    if(!data.hasOwnProperty('target')) throw new Error("object 'window_refresh_request' is missing property 'target' ")
+    obj.target = data.target
+    
+    if(!data.hasOwnProperty('window')) throw new Error("object 'window_refresh_request' is missing property 'window' ")
+    obj.window = data.window
+    
+    return obj
+}
+const MAKE_window_refresh_response_name = "MAKE_window_refresh_response_name"
+function MAKE_window_refresh_response(data) {
+    let obj = {}
+    obj.type = MAKE_window_refresh_response_name
     return obj
 }
 const MAKE_create_child_window_name = "MAKE_create_child_window_name"
@@ -196,12 +246,24 @@ function MAKE_close_child_window_display(data) {
 export const MENUS = {
     MAKE_window_info : MAKE_window_info,
     MAKE_window_info_name : MAKE_window_info_name,
+    MAKE_window_array : MAKE_window_array,
+    MAKE_window_array_name : MAKE_window_array_name,
+    MAKE_window_map : MAKE_window_map,
+    MAKE_window_map_name : MAKE_window_map_name,
     MAKE_window_open : MAKE_window_open,
     MAKE_window_open_name : MAKE_window_open_name,
     MAKE_window_open_display : MAKE_window_open_display,
     MAKE_window_open_display_name : MAKE_window_open_display_name,
     MAKE_window_open_response : MAKE_window_open_response,
     MAKE_window_open_response_name : MAKE_window_open_response_name,
+    MAKE_window_close : MAKE_window_close,
+    MAKE_window_close_name : MAKE_window_close_name,
+    MAKE_window_list : MAKE_window_list,
+    MAKE_window_list_name : MAKE_window_list_name,
+    MAKE_window_refresh_request : MAKE_window_refresh_request,
+    MAKE_window_refresh_request_name : MAKE_window_refresh_request_name,
+    MAKE_window_refresh_response : MAKE_window_refresh_response,
+    MAKE_window_refresh_response_name : MAKE_window_refresh_response_name,
     MAKE_create_child_window : MAKE_create_child_window,
     MAKE_create_child_window_name : MAKE_create_child_window_name,
     MAKE_create_child_window_response : MAKE_create_child_window_response,

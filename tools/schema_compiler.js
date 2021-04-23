@@ -68,6 +68,13 @@ async function process_schema(src, dst_js, dst_rs) {
                 array_type:def_parts.shift(),
             }
         }
+        if(def_type === 'map') {
+            defs[name] = {
+                type:'map',
+                key_type:def_parts.shift(),
+                value_type:def_parts.shift(),
+            }
+        }
         if(def_type === 'object') {
             let props = {}
             def_parts.forEach(pt => {
@@ -132,6 +139,15 @@ async function process_schema(src, dst_js, dst_rs) {
                 js_output.outdent()
                 js_output.line("}")
             }
+            if(def.type === 'map') {
+                log("making JS map def", def)
+                js_output.line(`const MAKE_${target}_name = "MAKE_${target}_name"`)
+                js_output.line(`export function MAKE_${target}(map) {`)
+                js_output.indent()
+                js_output.line("return map")
+                js_output.outdent()
+                js_output.line("}")
+            }
         })
 
         js_output.line("export const MENUS = {")
@@ -178,21 +194,28 @@ async function process_schema(src, dst_js, dst_rs) {
                 rs_output.line("}")
             }
             if(def.type === 'enum') {
-                console.log("doing rust enum",target,'=',def)
+                // console.log("doing rust enum",target,'=',def)
                 rs_output.line("#[derive(Serialize, Deserialize, Debug)]")
                 rs_output.line(`pub enum ${target} { }`)
             }
             if(def.type === 'array') {
-                console.log("doing rust array",target,'=',def)
-                rs_output.line("#[derive(Serialize, Deserialize, Debug)]")
-                rs_output.line(`pub struct ${target} { }`)
+                // console.log("doing rust array",target,'=',def)
+                rs_output.line(`pub type ${target} = Vec<${def.array_type}>;`);
+            }
+            if(def.type === 'map') {
+                // console.log("doing rust output map",target,'=',def)
+                let key_type = def.key_type
+                let value_type = def.value_type
+                if(key_type === 'string') key_type = 'String'
+                if(value_type === 'string') value_type = 'String'
+                rs_output.line(`pub type ${target} = HashMap<${key_type},${value_type}>;`)
             }
         })
         return rs_output
     }
 
     let rs_output = make_rs_output()
-    log("rust\n",rs_output.toString())
+    // log("rust\n",rs_output.toString())
     let dir2 = path.dirname(dst_rs)
     await fs.promises.mkdir(dir2,{recursive:true})
     await fs.promises.writeFile(dst_rs,rs_output.toString())

@@ -7,7 +7,7 @@ use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 use websocket::OwnedMessage;
 use crate::messages::{RenderMessage, WindowListMessage, OpenWindowScreen, DrawPixelMessage, FillRectMessage, DrawImageMessage, CloseWindowScreen};
-use crate::windows_schemas::{create_child_window_display, close_child_window_display, window_open_display, window_open_display_name};
+use crate::windows_schemas::{create_child_window_display, close_child_window_display, window_open_display, window_open_display_name, window_list_name, window_list};
 
 fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<()>{
     let v: Value = serde_json::from_str(txt.as_str())?;
@@ -18,17 +18,12 @@ fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<(
                 renderloop_send.send(RenderMessage::OpenWindow(msg));
                 ()
             }
+            if msg_type == window_list_name {
+                let msg:window_list = serde_json::from_str(txt.as_str())?;
+                renderloop_send.send(RenderMessage::WindowList(msg));
+                return Ok(())
+            }
             match &msg_type[..] {
-                "SCREEN_WINDOW_LIST" => {
-                    let msg:WindowListMessage = serde_json::from_str(txt.as_str())?;
-                    renderloop_send.send(RenderMessage::WindowList(msg));
-                    return Ok(())
-                },
-                // "WINDOW_OPEN_SCREEN" => {
-                //     let msg:OpenWindowScreen = serde_json::from_str(txt.as_str())?;
-                //     renderloop_send.send(RenderMessage::OpenWindow(msg));
-                //     ()
-                // },
                 "DRAW_PIXEL"  => {
                     let msg:DrawPixelMessage = serde_json::from_str(txt.as_str())?;
                     renderloop_send.send(RenderMessage::DrawPixel(msg));

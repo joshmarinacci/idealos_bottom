@@ -1,5 +1,6 @@
 import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp} from './app_utils.js'
+import {MENUS as WINDOWS} from '../schemas/windows_schemas.js'
 
 let app = new CommonApp(process.argv,10,5)
 app.on('start',()=>{
@@ -11,7 +12,7 @@ app.on(SCHEMAS.MOUSE.DOWN.NAME,()=>{
 app.on(SCHEMAS.MOUSE.UP.NAME,()=>{
     draw_button_released()
 })
-app.on(SCHEMAS.WINDOW.REFRESH.NAME, ()=>{
+app.on(WINDOWS.MAKE_window_refresh_request_name, ()=>{
     draw_button_released()
 })
 function fill_rect(w,h,color) {

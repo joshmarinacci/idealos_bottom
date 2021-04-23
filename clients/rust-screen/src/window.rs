@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::messages::WindowInfo;
+use crate::windows_schemas::window_info;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Rect {
@@ -37,6 +38,17 @@ impl Window {
             y:info.y,
             width: info.width,
             height: info.height,
+            owner: info.owner.clone(),
+            window_type: info.window_type.clone(),
+        }
+    }
+    pub fn from_info2(info:&window_info) -> Window {
+        Window {
+            id: info.id.clone(),
+            x: info.x as i32,
+            y: info.y as i32,
+            width: info.width as i32,
+            height: info.height as i32,
             owner: info.owner.clone(),
             window_type: info.window_type.clone(),
         }

@@ -18,8 +18,7 @@ pub struct item {
     pub event:String,
     pub keystroke:keystroke_obj,
 }
-#[derive(Serialize, Deserialize, Debug)]
-pub struct item_array { }
+pub type item_array = Vec<item>;
 pub const root_name: &str = "MAKE_root_name";
 #[derive(Serialize, Deserialize, Debug)]
 pub struct root {

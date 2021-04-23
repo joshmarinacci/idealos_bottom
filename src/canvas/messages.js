@@ -6,15 +6,15 @@ let schemas = {
     },
     SCREEN:{
         START:[],
-        WINDOW_LIST:['windows']
+        // WINDOW_LIST:['windows']
     },
-    WINDOW:{
+    // WINDOW:{
         // OPEN:['width','height','sender','window_type'],
         //OPEN_SCREEN:['target','window'],
-        OPEN_RESPONSE:['target','window'],
-        CLOSE:['target','window'],
-        REFRESH:[],
-    },
+        // OPEN_RESPONSE:['target','window'],
+        // CLOSE:['target','window'],
+        // REFRESH:[],
+    // },
     DRAW:{
         PIXEL:['color','x','y'],
         RECT:['color','x','y','width','height'],

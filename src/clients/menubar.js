@@ -138,7 +138,7 @@ async function init() {
         })
         app.on(SCHEMAS.MOUSE.UP.NAME,()=>{
         })
-        app.on(SCHEMAS.WINDOW.REFRESH.NAME, ()=>{
+        app.on(WINDOWS.MAKE_window_refresh_request_name, ()=>{
         })
 
     } catch (e) {

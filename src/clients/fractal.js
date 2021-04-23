@@ -1,5 +1,6 @@
 import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp} from './app_utils.js'
+import {MENUS as WINDOWS} from '../schemas/windows_schemas.js'
 
 let width = 50
 let height = 50
@@ -11,7 +12,7 @@ function redraw() {
 
 }
 
-app.on(SCHEMAS.WINDOW.REFRESH.NAME, () => {
+app.on(WINDOWS.MAKE_window_refresh_request_name, ()=>{
     redraw()
 })
 

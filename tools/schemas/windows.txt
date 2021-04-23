@@ -1,8 +1,17 @@
 window_info = object id:string width:number height:number x:number y:number owner:string window_type:string
+window_array = array window_info
+window_map   = map string window_info
 
 window_open = object width:number height:number sender:string window_type:string
 window_open_display = object target:string window:window_info
 window_open_response = object target:string window:string
+
+window_close = object target:string window:string
+
+window_list = object windows:window_map
+
+window_refresh_request = object type:string target:string window:string
+window_refresh_response = object
 
 create_child_window = object type:string parent:string x:number y:number width:number height:number style:string sender:string
 create_child_window_response = object type:string sender:string target:string parent:string window:string

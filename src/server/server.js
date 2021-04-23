@@ -34,7 +34,7 @@ let resources = new ResourceManager(log, respond)
 
 function handle_start_message(ws,msg) {
     connections[CLIENT_TYPES.SCREEN] = ws
-    forward_to_screen(make_message(SCHEMAS.SCREEN.WINDOW_LIST, {windows:wids.windows}))
+    forward_to_screen(WINDOWS.MAKE_window_list({windows:wids.windows}))
 }
 function handle_open_window_message(ws,msg) {
     log("app is opening a window",msg)
@@ -191,10 +191,10 @@ export function start_message_server() {
                 if (message_match(SCHEMAS.GENERAL.HEARTBEAT, msg)) return do_nothing(msg)
                 if (message_match(SCHEMAS.SCREEN.START, msg)) return handle_start_message(ws, msg)
 
-                // if (message_match(SCHEMAS.WINDOW.OPEN, msg)) return handle_open_window_message(ws, msg)
                 if(msg.type === WINDOWS.MAKE_window_open_name) return handle_open_window_message(ws,msg)
-                if (message_match(SCHEMAS.WINDOW.OPEN_RESPONSE, msg)) return forward_to_target(msg)
-                if (message_match(SCHEMAS.WINDOW.REFRESH, msg)) return forward_to_target(msg)
+                if(msg.type === WINDOWS.MAKE_window_open_response_name) return forward_to_target(msg)
+                if(msg.type === WINDOWS.MAKE_window_refresh_request_name) return forward_to_target(msg)
+                if(msg.type === WINDOWS.MAKE_window_refresh_response_name) return forward_to_target(msg)
 
                 if (message_match(SCHEMAS.DRAW.PIXEL, msg)) return forward_to_screen(msg)
                 if (message_match(SCHEMAS.DRAW.RECT, msg)) return forward_to_screen(msg)
