@@ -7,6 +7,7 @@ use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 use websocket::OwnedMessage;
 use crate::messages::{RenderMessage, WindowListMessage, OpenWindowScreen, DrawPixelMessage, FillRectMessage, DrawImageMessage, CloseWindowScreen};
+use crate::windows_schemas::{create_child_window_display, close_child_window_display};
 
 fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<()>{
     let v: Value = serde_json::from_str(txt.as_str())?;
@@ -41,6 +42,16 @@ fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<(
                 "WINDOW_CLOSE" => {
                     let msg:CloseWindowScreen = serde_json::from_str(txt.as_str())?;
                     renderloop_send.send(RenderMessage::CloseWindow(msg));
+                    ()
+                },
+                "CREATE_CHILD_WINDOW_DISPLAY" => {
+                    let msg:create_child_window_display = serde_json::from_str(txt.as_str())?;
+                    renderloop_send.send(RenderMessage::CreateChildWindow(msg));
+                    ()
+                },
+                "CLOSE_CHILD_WINDOW_DISPLAY" => {
+                    let msg:close_child_window_display = serde_json::from_str(txt.as_str())?;
+                    renderloop_send.send(RenderMessage::CloseChildWindow(msg));
                     ()
                 }
                 _ => {

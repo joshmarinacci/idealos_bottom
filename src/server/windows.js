@@ -57,4 +57,23 @@ export class WindowTracker {
     is_active_window(win) {
         return (win === this.active_window)
     }
+
+    make_child_window(msg) {
+        let win_id = "win_"+Math.floor(Math.random()*10000)
+        let ch_win = {
+            id:win_id,
+            width:msg.width,
+            height:msg.height,
+            x:msg.x,
+            y:msg.y,
+            owner:msg.sender,
+            window_type: msg.style
+        }
+        this.log("making a child window",ch_win)
+        return ch_win
+    }
+
+    close_child_window(id) {
+        if(this.windows[id]) this.windows[id] = undefined
+    }
 }

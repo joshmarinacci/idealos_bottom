@@ -34,6 +34,8 @@ mod backend;
 mod sdl2backend;
 mod common;
 mod fontinfo;
+mod menus_schemas;
+mod windows_schemas;
 
 
 pub fn main() -> Result<(),String> {

@@ -62,6 +62,28 @@ impl<'a> SDL2Backend<'a> {
                             windows.insert(m.window.id.clone(), win);
                             // println!("window count is {}", windows.len());
                         }
+                        RenderMessage::CreateChildWindow(m) => {
+                            if let Some(win) = windows.get_mut(&m.parent) {
+                                let child:Window = Window {
+                                    id:m.window.id.clone(),
+                                    x: m.window.x as i32,
+                                    y: m.window.y as i32,
+                                    width: m.window.width as i32,
+                                    height: m.window.height as i32,
+                                    owner: m.window.owner.clone(),
+                                    window_type: m.window.window_type.clone(),
+                                };
+
+                                self.init_window(&child);
+                                windows.insert(child.id.clone(),  child);
+                            }
+                        }
+                        RenderMessage::CloseChildWindow(m) => {
+                            if let Some(win) = windows.get_mut(m.window.as_str()) {
+                                self.close_window(win);
+                                windows.remove(m.window.as_str());
+                            }
+                        }
                         RenderMessage::WindowList(m) => {
                             for (key, value) in &m.windows {
                                 // println!("make window id {} at {},{}", value.id, value.x, value.y);
