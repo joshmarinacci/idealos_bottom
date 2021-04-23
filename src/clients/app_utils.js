@@ -3,6 +3,7 @@ import * as PI from "pureimage"
 import {make_message, message_match, SCHEMAS} from '../canvas/messages.js'
 import fs from "fs"
 import {Window} from "./guitoolkit.js"
+import {MENUS} from "../schemas/windows_schemas.js"
 
 export class CommonApp {
     constructor(argv,width,height, window_type="plain") {
@@ -14,12 +15,12 @@ export class CommonApp {
         this.listeners = {}
         this.ws = new WebSocket(addr);
         this.ws.on('open',()=>{
-            this.ws.send(JSON.stringify(make_message(SCHEMAS.WINDOW.OPEN,{width:this.width,height:this.height,sender:appid, window_type:window_type})))
+            this.ws.send(JSON.stringify(MENUS.MAKE_window_open({width:this.width, height:this.height, sender:appid, window_type:window_type})))
         })
         this.ws.on("message",(data)=>{
             let msg = JSON.parse(data)
             // console.log("incoming message",msg);
-            if(message_match(SCHEMAS.WINDOW.OPEN_RESPONSE,msg)) {
+            if(msg.type === MENUS.MAKE_window_open_response_name) {
                 this.win_id = msg.window
                 this.fireLater('start',{})
                 return

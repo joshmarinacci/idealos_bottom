@@ -56,7 +56,15 @@ impl<'a> SDL2Backend<'a> {
                     match msg {
                         RenderMessage::OpenWindow(m) => {
                             // println!("opening a window");
-                            let win = Window::from_info(&m.window);
+                            let win:Window = Window {
+                                id: m.window.id.clone(),
+                                x: m.window.x as i32,
+                                y: m.window.y as i32,
+                                width: m.window.width as i32,
+                                height: m.window.height as i32,
+                                owner: m.window.owner.clone(),
+                                window_type: m.window.window_type.clone(),
+                            };
                             self.init_window(&win);
                             // self.window_buffers.insert(win.id.clone(),win);
                             windows.insert(m.window.id.clone(), win);

@@ -1,7 +1,12 @@
+window_info = object id:string width:number height:number x:number y:number owner:string window_type:string
+
+window_open = object width:number height:number sender:string window_type:string
+window_open_display = object target:string window:window_info
+window_open_response = object target:string window:string
+
 create_child_window = object type:string parent:string x:number y:number width:number height:number style:string sender:string
 create_child_window_response = object type:string sender:string target:string parent:string window:string
 create_child_window_display = object type:string parent:string window:window_info sender:string
-window_info = object id:string width:number height:number x:number y:number owner:string window_type:string
 close_child_window = object type:string parent:string sender:string id:string
 close_child_window_response = object type:string sender:string target:string parent:string window:string
 close_child_window_display = object type:string parent:string window:string sender:string

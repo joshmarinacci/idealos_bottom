@@ -80,8 +80,6 @@ async function process_schema(src, dst_js, dst_rs) {
             }
         }
     })
-    // log("final defs",defs)
-    // log("gen targets",gen_targets)
 
     function make_js_output() {
         let js_output = new SrcOutput()
@@ -89,9 +87,11 @@ async function process_schema(src, dst_js, dst_rs) {
             let def = defs[target]
             // log("generating code for",target, def)
             if(def.type === 'object') {
+                js_output.line(`const MAKE_${target}_name = "MAKE_${target}_name"`)
                 js_output.line(`function MAKE_${target}(data) {`)
                 js_output.indent()
                 js_output.line('let obj = {}')
+                js_output.line(`obj.type = MAKE_${target}_name`)
                 Object.entries(def.props).forEach(([name,type])=>{
                     js_output.line(`if(!data.hasOwnProperty('${name}')) throw new Error("object '${target}' is missing property '${name}' ")`)
                     if(type === 'string') {
@@ -142,6 +142,7 @@ async function process_schema(src, dst_js, dst_rs) {
         js_output.indent()
         Object.keys(defs).forEach(target => {
             js_output.line(`MAKE_${target} : MAKE_${target},`)
+            js_output.line(`MAKE_${target}_name : MAKE_${target}_name,`)
         })
 
         js_output.outdent()
@@ -149,9 +150,7 @@ async function process_schema(src, dst_js, dst_rs) {
         return js_output
     }
     let js_output = make_js_output()
-    // log("final source is\n",output.toString())
     let dir = path.dirname(dst_js)
-    log("Dir is",dir)
     fs.promises.mkdir(dir,{recursive:true})
     await fs.promises.writeFile(dst_js,js_output.toString())
     log("wrote to ",dst_js)
@@ -164,6 +163,8 @@ async function process_schema(src, dst_js, dst_rs) {
             let def = defs[target]
             if(def.type === 'object') {
                 // console.log("doing rust target",target, '=', def)
+                rs_output.line(`pub const ${target}_name: &str = "MAKE_${target}_name";`)
+
                 rs_output.line("#[derive(Serialize, Deserialize, Debug)]")
                 rs_output.line(`pub struct ${target} {`)
                 rs_output.indent()
