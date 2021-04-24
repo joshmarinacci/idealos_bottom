@@ -7,6 +7,7 @@ import {
 } from '../src/server/server.js'
 import {default as WebSocket} from 'ws'
 import {make_message, SCHEMAS} from '../src/canvas/messages.js'
+import {RESOURCES} from '../src/schemas/resources_schemas.js'
 
 
 async function connect_and_wait() {
@@ -18,7 +19,7 @@ async function connect_and_wait() {
         ws.on('open', () => {
             console.log("test opened");
             ws.send(JSON.stringify(make_message(SCHEMAS.TEST.START, {sender: 'TEST'})))
-            // ws.send(JSON.stringify(make_message(SCHEMAS.RESOURCE.GET, {
+            // ws.send(JSON.stringify(make_message(RESOURCES.MAKE_ResourceGet, {
             //     sender: 'TEST',
             //     'resource': 'theme'
             // })))
@@ -69,15 +70,15 @@ function log(...args) {
 describe('resource tests',function() {
     it('checks for an invalid resource', async function() {
         let info = await connect_and_wait()
-        send_message(info, make_message(SCHEMAS.RESOURCE.GET, {sender:'TEST','resource':'themes'}))
-        await wait_for_type(info, SCHEMAS.RESOURCE.INVALID)
+        send_message(info, RESOURCES.MAKE_ResourceGet({sender:'TEST','resource':'themes'}))
+        await wait_for_type(info, RESOURCES.TYPE_ResourceInvalid)
         await stop_all(info)
     })
 
     it('checks for a valid resource', async function() {
         let info = await connect_and_wait()
-        send_message(info, make_message(SCHEMAS.RESOURCE.GET, {sender:'TEST','resource':'test'}))
-        let msg = await wait_for_type(info, SCHEMAS.RESOURCE.CHANGED)
+        send_message(info, RESOURCES.MAKE_ResourceGet({sender:'TEST','resource':'test'}))
+        let msg = await wait_for_type(info, RESOURCES.TYPE_ResourceChanged)
         console.log('received message',msg)
         let payload = JSON.parse(String.fromCharCode(...msg.data.data))
         log('payload is',payload)

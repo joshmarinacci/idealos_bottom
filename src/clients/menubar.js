@@ -1,8 +1,9 @@
-import {make_message, SCHEMAS} from '../canvas/messages.js'
+import {SCHEMAS} from '../canvas/messages.js'
 import {CommonApp, PixelFont} from './app_utils.js'
 import {Container} from './guitoolkit.js'
 import {MENUS} from '../schemas/menus_schemas.js'
 import {WINDOWS} from "../schemas/windows_schemas.js"
+import {RESOURCES} from '../schemas/resources_schemas.js'
 let app = new CommonApp(process.argv,1024/4,10,'menubar')
 
 let menu_tree = MENUS.MAKE_root({
@@ -127,7 +128,7 @@ async function init() {
         app.win.root = new CustomMenuBar({width:app.win.width, height:app.win.height},menu_tree)
         app.win.redraw()
         //get the latest version of the theme
-        app.send(make_message(SCHEMAS.RESOURCE.GET,{'resource':'theme','sender':app.appid}))
+        app.send(RESOURCES.MAKE_ResourceGet({'resource':'theme','sender':app.appid}))
         // app.send(MENUS.MAKE_create_menu_tree_message({type:'CREATE_MENU_TREE',menu:menu_tree}))
 
         app.on(SCHEMAS.MOUSE.DOWN.NAME,(e)=>{

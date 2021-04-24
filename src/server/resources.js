@@ -1,8 +1,9 @@
 import {make_message, SCHEMAS} from '../canvas/messages.js'
 import path from 'path'
 import fs from 'fs'
+import {RESOURCES} from '../schemas/resources_schemas.js'
 
-const RESOURCES = {
+const RESOURCES_SET = {
     'test': {
         path: 'test.json',
         mime: 'text/json'
@@ -21,13 +22,13 @@ export class ResourceManager {
 
     async get_resource(msg) {
         this.log("get resource", msg)
-        if (!RESOURCES.hasOwnProperty(msg.resource)) return this.respond(msg, make_message(SCHEMAS.RESOURCE.INVALID, {resource: msg.resource}))
-        let resource = RESOURCES[msg.resource]
+        if (!RESOURCES_SET.hasOwnProperty(msg.resource)) return this.respond(msg, RESOURCES.MAKE_ResourceInvalid({resource: msg.resource}))
+        let resource = RESOURCES_SET[msg.resource]
         let pth = path.join('resources', resource.path)
         this.log("reading resource", msg.resource, 'at', pth)
         try {
             let data = await fs.promises.readFile(pth)
-            this.respond(msg, make_message(SCHEMAS.RESOURCE.CHANGED, {
+            this.respond(msg, RESOURCES.MAKE_ResourceChanged({
                 data: data,
                 resource: msg.resource,
                 mimetype: resource.mime
@@ -35,7 +36,7 @@ export class ResourceManager {
         } catch (e) {
             this.log(e);
             this.log('sending to ', msg.sender)
-            this.respond(msg, make_message(SCHEMAS.RESOURCE.INVALID, {resource: msg.resource}))
+            this.respond(msg, RESOURCES.MAKE_ResourceInvalid({resource: msg.resource}))
         }
     }
 }

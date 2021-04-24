@@ -1,0 +1,4 @@
+ResourceGet = object resource:string sender:string
+ResourceSet = object resource:string data:string
+ResourceChanged = object resource:string data:string mimetype:string
+ResourceInvalid = object resource:string

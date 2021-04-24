@@ -1,6 +1,7 @@
 import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp, PixelFont} from './app_utils.js'
 import {Button, HBox, Label, Panel, TextBox, ToggleButton, VBox} from './guitoolkit.js'
+import {RESOURCES} from '../schemas/resources_schemas.js'
 let app = new CommonApp(process.argv,100,100)
 
 async function init() {
@@ -40,7 +41,7 @@ async function init() {
         //redraw
         app.win.redraw()
         //get the latest version of the theme
-        app.send(make_message(SCHEMAS.RESOURCE.GET,{'resource':'theme','sender':app.appid}))
+        app.send(RESOURCES.MAKE_ResourceGet({'resource':'theme','sender':app.appid}))
     } catch (e) {
         app.log(e)
     }

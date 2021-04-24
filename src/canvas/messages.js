@@ -40,12 +40,6 @@ let schemas = {
     TEST:{
         START:['sender']
     },
-    RESOURCE:{
-        GET:['resource','sender'],
-        SET:['resource','data'],
-        CHANGED:['resource','data','mimetype'],
-        INVALID:['resource'],
-    }
 }
 
 function process_schema(sch) {
@@ -91,12 +85,3 @@ export function make_message(sch,opts) {
     // console.log("made message",msg)
     return msg
 }
-/*
-export const DEBUG = {
-    // LIST:'DEBUG_LIST',
-    CLIENT:'DEBUG_CLIENT',
-    // LISTS_RESPONSE:'DEBUG_LIST_RESPONSE',
-    RESTART_APP_REQUEST:'RESTART_APP_REQUEST',
-    // LOG:'DEBUG_LOG',
-}
- */

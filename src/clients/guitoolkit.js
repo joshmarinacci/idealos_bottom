@@ -1,5 +1,6 @@
 import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {WINDOWS} from '../schemas/windows_schemas.js'
+import {RESOURCES} from '../schemas/resources_schemas.js'
 
 export class Window {
     constructor(app, width,height) {
@@ -44,7 +45,7 @@ export class Window {
             app.win.input()
             app.win.redraw();
         })
-        app.on(SCHEMAS.RESOURCE.CHANGED.NAME, (e)=>{
+        app.on(RESOURCES.TYPE_ResourceChanged, (e)=>{
             if(e.payload.resource === 'theme') {
                 app.theme = JSON.parse(String.fromCharCode(...e.payload.data.data))
                 app.win.redraw()

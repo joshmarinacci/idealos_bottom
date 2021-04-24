@@ -8,6 +8,7 @@ import {AppTracker} from './apps.js'
 import {ResourceManager} from './resources.js'
 import {sleep} from '../common.js'
 import {WINDOWS} from "../schemas/windows_schemas.js"
+import {RESOURCES} from '../schemas/resources_schemas.js'
 
 export const hostname = '127.0.0.1'
 export const webserver_port = 3000
@@ -210,7 +211,7 @@ export function start_message_server() {
 
                 if (message_match(SCHEMAS.TEST.START, msg)) return start_test(ws, msg)
 
-                if (message_match(SCHEMAS.RESOURCE.GET, msg)) return resources.get_resource(msg)
+                if (msg.type === RESOURCES.TYPE_ResourceGet) return resources.get_resource(msg)
                 // if (message_match(SCHEMAS.RESOURCE.SET, msg)) return resources.set_resource(msg)
 
                 // if(message_match('CREATE_MENU_TREE',msg)) return forward_to_menubar(msg)
