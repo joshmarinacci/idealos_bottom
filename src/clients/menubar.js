@@ -1,4 +1,3 @@
-import {SCHEMAS} from '../canvas/messages.js'
 import {CommonApp, PixelFont} from './app_utils.js'
 import {Container} from './guitoolkit.js'
 import {MENUS} from '../schemas/menus_schemas.js'
