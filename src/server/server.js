@@ -149,7 +149,7 @@ function stop_app(msg) {
     if(at.has_app(appid)) {
         at.stop(appid)
         wids.windows_for_appid(appid).forEach(win => {
-            forward_to_screen(make_message(SCHEMAS.WINDOW.CLOSE, {
+            forward_to_screen(WINDOWS.MAKE_close_child_window_display({
                 target: appid,
                 window: {
                     id: win.id,
@@ -209,13 +209,14 @@ export function start_message_server() {
                 if(msg.type === INPUT.TYPE_KeyboardUp) return forward_to_target(msg)
 
                 if(msg.type === DEBUG.TYPE_ListAppsRequest) return list_apps(ws,msg)
-                if (message_match(SCHEMAS.DEBUG.RESTART_APP, msg)) return restart_app(msg)
-                if (message_match(SCHEMAS.DEBUG.STOP_APP, msg)) return stop_app(msg)
-                if (message_match(SCHEMAS.DEBUG.START_APP, msg)) return start_app(msg)
+                if(msg.type === DEBUG.TYPE_RestartApp) return restart_app(msg)
+                if(msg.type === DEBUG.TYPE_StopApp) return stop_app(msg)
+                if(msg.type === DEBUG.TYPE_StartApp) return start_app(msg)
 
-                // if (message_match(SCHEMAS.TEST.START, msg)) return start_test(ws, msg)
+                if(msg.type === DEBUG.TYPE_TestStart) return start_test(ws,msg)
 
                 if (msg.type === RESOURCES.TYPE_ResourceGet) return resources.get_resource(msg)
+                // if (msg.type === RESOURCES.TYPE_ResourceSet) return resources.set_resource(msg)
                 // if (message_match(SCHEMAS.RESOURCE.SET, msg)) return resources.set_resource(msg)
 
                 // if(message_match('CREATE_MENU_TREE',msg)) return forward_to_menubar(msg)

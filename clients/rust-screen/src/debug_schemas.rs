@@ -26,3 +26,31 @@ pub struct app_info {
     pub path:String,
     pub args:String,
 }
+pub const TestStart_name: &str = "MAKE_TestStart_name";
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TestStart {
+    #[serde(rename = "type")]
+    pub type_:String,
+    pub sender:String,
+}
+pub const StartApp_name: &str = "MAKE_StartApp_name";
+#[derive(Serialize, Deserialize, Debug)]
+pub struct StartApp {
+    #[serde(rename = "type")]
+    pub type_:String,
+    pub target:String,
+}
+pub const StopApp_name: &str = "MAKE_StopApp_name";
+#[derive(Serialize, Deserialize, Debug)]
+pub struct StopApp {
+    #[serde(rename = "type")]
+    pub type_:String,
+    pub target:String,
+}
+pub const RestartApp_name: &str = "MAKE_RestartApp_name";
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RestartApp {
+    #[serde(rename = "type")]
+    pub type_:String,
+    pub target:String,
+}

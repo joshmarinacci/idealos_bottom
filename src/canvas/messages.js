@@ -1,45 +1,12 @@
 
 let schemas = {
-    // GENERAL:{
-    //     CONNECTED:[],
-    //     HEARTBEAT:[],
-    // },
-    // SCREEN:{
-    //     START:[],
-        // WINDOW_LIST:['windows']
-    // },
-    // WINDOW:{
-        // OPEN:['width','height','sender','window_type'],
-        //OPEN_SCREEN:['target','window'],
-        // OPEN_RESPONSE:['target','window'],
-        // CLOSE:['target','window'],
-        // REFRESH:[],
-    // },
     DRAW:{
-        // PIXEL:['color','x','y'],
-        // RECT:['color','x','y','width','height'],
         IMAGE:['x','y','width','height','pixels'],
     },
-    // MOUSE:{
-    //     UP:[],
-    //     DOWN:[],
-    // },
-    // KEYBOARD: {
-    //     UP:[],
-    //     DOWN:[],
-    // },
     DEBUG:{
-        // LIST:[],
-        // LIST_RESPONSE:['connection_count','apps'],
         CLIENT:[],
         LOG:['data'],
-        RESTART_APP:['target'],
-        STOP_APP:['target'],
-        START_APP:['target'],
     },
-    // TEST:{
-    //     START:['sender']
-    // },
 }
 
 function process_schema(sch) {

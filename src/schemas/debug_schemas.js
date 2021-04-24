@@ -38,6 +38,42 @@ function MAKE_app_info(data) {
     
     return obj
 }
+const TYPE_TestStart = "MAKE_TestStart_name"
+function MAKE_TestStart(data) {
+    let obj = {}
+    obj.type = TYPE_TestStart
+    if(!data.hasOwnProperty('sender')) throw new Error("object 'TestStart' is missing property 'sender' ")
+    obj.sender = data.sender
+    
+    return obj
+}
+const TYPE_StartApp = "MAKE_StartApp_name"
+function MAKE_StartApp(data) {
+    let obj = {}
+    obj.type = TYPE_StartApp
+    if(!data.hasOwnProperty('target')) throw new Error("object 'StartApp' is missing property 'target' ")
+    obj.target = data.target
+    
+    return obj
+}
+const TYPE_StopApp = "MAKE_StopApp_name"
+function MAKE_StopApp(data) {
+    let obj = {}
+    obj.type = TYPE_StopApp
+    if(!data.hasOwnProperty('target')) throw new Error("object 'StopApp' is missing property 'target' ")
+    obj.target = data.target
+    
+    return obj
+}
+const TYPE_RestartApp = "MAKE_RestartApp_name"
+function MAKE_RestartApp(data) {
+    let obj = {}
+    obj.type = TYPE_RestartApp
+    if(!data.hasOwnProperty('target')) throw new Error("object 'RestartApp' is missing property 'target' ")
+    obj.target = data.target
+    
+    return obj
+}
 export const DEBUG = {
     MAKE_ListAppsRequest : MAKE_ListAppsRequest,
     TYPE_ListAppsRequest : TYPE_ListAppsRequest,
@@ -47,4 +83,12 @@ export const DEBUG = {
     TYPE_apps_list : TYPE_apps_list,
     MAKE_app_info : MAKE_app_info,
     TYPE_app_info : TYPE_app_info,
+    MAKE_TestStart : MAKE_TestStart,
+    TYPE_TestStart : TYPE_TestStart,
+    MAKE_StartApp : MAKE_StartApp,
+    TYPE_StartApp : TYPE_StartApp,
+    MAKE_StopApp : MAKE_StopApp,
+    TYPE_StopApp : TYPE_StopApp,
+    MAKE_RestartApp : MAKE_RestartApp,
+    TYPE_RestartApp : TYPE_RestartApp,
 }
