@@ -6,7 +6,7 @@ use websocket::receiver::Reader;
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 use websocket::OwnedMessage;
-use crate::messages::{RenderMessage, WindowListMessage, OpenWindowScreen, DrawPixelMessage, FillRectMessage, DrawImageMessage, CloseWindowScreen};
+use crate::messages::{RenderMessage, DrawPixelMessage, FillRectMessage, DrawImageMessage, CloseWindowScreen};
 use crate::windows_schemas::{create_child_window_display, close_child_window_display, window_list_name, window_list, create_child_window_display_name, close_child_window_display_name, WindowOpenDisplay_name, WindowOpenDisplay};
 
 fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<()>{

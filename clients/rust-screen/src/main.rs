@@ -10,10 +10,9 @@ use window::{Window};
 
 use crate::incoming::process_incoming;
 use crate::outgoing::process_outgoing;
-use crate::backend::Backend;
 use crate::sdl2backend::SDL2Backend;
 use crate::fontinfo::FontInfo;
-use sdl2::image::{LoadTexture, LoadSurface};
+use sdl2::image::{LoadSurface};
 use std::fs::File;
 use std::io::BufReader;
 use std::error::Error;

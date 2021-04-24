@@ -1,12 +1,4 @@
-use std::fs::File;
-use std::io::BufReader;
-
-use std::error::Error;
-// use crate::sdl2backend::SDL2Backend;
-// use sdl2::pixels::PixelFormatEnum;
-use sdl2::image::LoadTexture;
-use sdl2::render::{Texture, TextureCreator, Canvas, WindowCanvas};
-use sdl2::video::WindowContext;
+use sdl2::render::{Texture, WindowCanvas};
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 

@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use websocket::OwnedMessage;
 use std::sync::mpsc::Sender;
 use crate::window::Window;
-use crate::messages::RefreshWindowMessage;
 use serde_json::{json};
 use crate::windows_schemas::{window_refresh_request, window_refresh_request_name};
 
