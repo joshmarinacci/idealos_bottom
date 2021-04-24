@@ -10,7 +10,7 @@ pub fn send_refresh_all_windows_request(windows: &HashMap<String, Window>, sende
     for(_, win) in windows {
         println!("sending to window {}", win.id);
         let msg2 = window_refresh_request {
-            _type: window_refresh_request_name.parse().unwrap(),
+            type_: window_refresh_request_name.to_string(),
             target:win.owner.clone(),
             window:win.id.clone(),
         };

@@ -1,0 +1,5 @@
+MouseDown = object x:number y:number target:string
+MouseUp = object x:number y:number target:string
+KeyboardDown = object keyname:string target:string
+KeyboardUp = object keyname:string target:string
+

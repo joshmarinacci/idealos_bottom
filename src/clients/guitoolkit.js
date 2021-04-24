@@ -1,6 +1,7 @@
 import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {WINDOWS} from '../schemas/windows_schemas.js'
 import {RESOURCES} from '../schemas/resources_schemas.js'
+import {INPUT} from '../schemas/input_schemas.js'
 
 export class Window {
     constructor(app, width,height) {
@@ -24,14 +25,14 @@ export class Window {
         this.keyboard = {
             keyname: ""
         }
-        app.on(SCHEMAS.MOUSE.DOWN.NAME,(e)=>{
+        app.on(INPUT.TYPE_MouseDown,(e)=>{
             app.win.mouse.x = e.payload.x
             app.win.mouse.y = e.payload.y
             app.win.mouse.down = true
             app.win.input()
             app.win.redraw()
         })
-        app.on(SCHEMAS.MOUSE.UP.NAME,()=>{
+        app.on(INPUT.TYPE_MouseUp,()=>{
             app.win.mouse.down = false
             app.win.input()
             app.win.redraw()
@@ -39,7 +40,7 @@ export class Window {
         app.on(WINDOWS.TYPE_window_refresh_request, ()=>{
             app.win.redraw()
         })
-        app.on(SCHEMAS.KEYBOARD.DOWN.NAME, (e)=>{
+        app.on(INPUT.TYPE_KeyboardDown, (e)=>{
             // console.log("keyboard pressed in app",e)
             app.win.keyboard.keyname = e.payload.keyname;
             app.win.input()

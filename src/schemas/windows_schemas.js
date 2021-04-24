@@ -100,9 +100,6 @@ const TYPE_window_refresh_request = "MAKE_window_refresh_request_name"
 function MAKE_window_refresh_request(data) {
     let obj = {}
     obj.type = TYPE_window_refresh_request
-    if(!data.hasOwnProperty('type')) throw new Error("object 'window_refresh_request' is missing property 'type' ")
-    obj.type = data.type
-    
     if(!data.hasOwnProperty('target')) throw new Error("object 'window_refresh_request' is missing property 'target' ")
     obj.target = data.target
     

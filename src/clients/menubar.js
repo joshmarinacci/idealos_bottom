@@ -4,6 +4,7 @@ import {Container} from './guitoolkit.js'
 import {MENUS} from '../schemas/menus_schemas.js'
 import {WINDOWS} from "../schemas/windows_schemas.js"
 import {RESOURCES} from '../schemas/resources_schemas.js'
+import {INPUT} from '../schemas/input_schemas.js'
 let app = new CommonApp(process.argv,1024/4,10,'menubar')
 
 let menu_tree = MENUS.MAKE_root({
@@ -131,14 +132,14 @@ async function init() {
         app.send(RESOURCES.MAKE_ResourceGet({'resource':'theme','sender':app.appid}))
         // app.send(MENUS.MAKE_create_menu_tree_message({type:'CREATE_MENU_TREE',menu:menu_tree}))
 
-        app.on(SCHEMAS.MOUSE.DOWN.NAME,(e)=>{
+        app.on(INPUT.TYPE_MouseDown,(e)=>{
             app.win.root.mouse_down_at(e)
         })
         app.on(WINDOWS.TYPE_create_child_window_response,(e)=>{
             app.log("got the child window response",e)
             app.win.root.popup_id = e.payload.window.id
         })
-        app.on(SCHEMAS.MOUSE.UP.NAME,()=>{
+        app.on(INPUT.TYPE_MouseUp,()=>{
         })
         app.on(WINDOWS.TYPE_window_refresh_request, ()=>{
         })

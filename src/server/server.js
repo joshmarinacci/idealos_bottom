@@ -9,6 +9,7 @@ import {ResourceManager} from './resources.js'
 import {sleep} from '../common.js'
 import {WINDOWS} from "../schemas/windows_schemas.js"
 import {RESOURCES} from '../schemas/resources_schemas.js'
+import {INPUT} from '../schemas/input_schemas.js'
 
 export const hostname = '127.0.0.1'
 export const webserver_port = 3000
@@ -199,10 +200,10 @@ export function start_message_server() {
                 if (message_match(SCHEMAS.DRAW.RECT, msg)) return forward_to_screen(msg)
                 if (message_match(SCHEMAS.DRAW.IMAGE, msg)) return forward_to_screen(msg)
 
-                if (message_match(SCHEMAS.MOUSE.DOWN, msg)) return forward_to_target(msg)
-                if (message_match(SCHEMAS.MOUSE.UP, msg)) return forward_to_target(msg)
-                if (message_match(SCHEMAS.KEYBOARD.DOWN,msg)) return forward_to_target(msg)
-                if (message_match(SCHEMAS.KEYBOARD.UP,msg)) return forward_to_target(msg)
+                if(msg.type === INPUT.TYPE_MouseDown) return forward_to_target(msg)
+                if(msg.type === INPUT.TYPE_MouseUp) return forward_to_target(msg)
+                if(msg.type === INPUT.TYPE_KeyboardDown) return forward_to_target(msg)
+                if(msg.type === INPUT.TYPE_KeyboardUp) return forward_to_target(msg)
 
                 if (message_match(SCHEMAS.DEBUG.LIST, msg)) return list_apps(ws, msg)
                 if (message_match(SCHEMAS.DEBUG.RESTART_APP, msg)) return restart_app(msg)

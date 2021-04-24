@@ -1,15 +1,16 @@
 import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp} from './app_utils.js'
 import {WINDOWS} from '../schemas/windows_schemas.js'
+import {INPUT} from '../schemas/input_schemas.js'
 
 let app = new CommonApp(process.argv,10,5)
 app.on('start',()=>{
     draw_button()
 })
-app.on(SCHEMAS.MOUSE.DOWN.NAME,()=>{
+app.on(INPUT.TYPE_MouseDown,()=>{
     draw_button_pressed()
 })
-app.on(SCHEMAS.MOUSE.UP.NAME,()=>{
+app.on(INPUT.TYPE_MouseUp,()=>{
     draw_button_released()
 })
 app.on(WINDOWS.TYPE_window_refresh_request, ()=>{

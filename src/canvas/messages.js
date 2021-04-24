@@ -20,14 +20,14 @@ let schemas = {
         RECT:['color','x','y','width','height'],
         IMAGE:['x','y','width','height','pixels'],
     },
-    MOUSE:{
-        UP:[],
-        DOWN:[],
-    },
-    KEYBOARD: {
-        UP:[],
-        DOWN:[],
-    },
+    // MOUSE:{
+    //     UP:[],
+    //     DOWN:[],
+    // },
+    // KEYBOARD: {
+    //     UP:[],
+    //     DOWN:[],
+    // },
     DEBUG:{
         LIST:[],
         LIST_RESPONSE:['connection_count','apps'],

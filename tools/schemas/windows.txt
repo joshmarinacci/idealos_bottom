@@ -10,7 +10,7 @@ window_close = object target:string window:string
 
 window_list = object windows:window_map
 
-window_refresh_request = object type:string target:string window:string
+window_refresh_request = object target:string window:string
 window_refresh_response = object
 
 create_child_window = object parent:string x:number y:number width:number height:number style:string sender:string

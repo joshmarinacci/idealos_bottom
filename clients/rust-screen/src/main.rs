@@ -35,6 +35,7 @@ mod common;
 mod fontinfo;
 mod menus_schemas;
 mod windows_schemas;
+mod input_schemas;
 
 
 pub fn main() -> Result<(),String> {

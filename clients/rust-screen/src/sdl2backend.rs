@@ -5,7 +5,7 @@ use websocket::OwnedMessage;
 use serde_json::{json};
 
 use crate::window::{Window, Point, Insets};
-use crate::messages::{RenderMessage, MouseDownMessage, MouseUpMessage, KeyboardDownMessage};
+use crate::messages::{RenderMessage};
 use crate::fontinfo::FontInfo;
 
 
@@ -19,6 +19,7 @@ use sdl2::video::WindowContext;
 use sdl2::rect::Rect;
 use sdl2::mouse::{MouseButton, MouseState};
 use colors_transform::{Rgb, Color as CTColor};
+use crate::input_schemas::{MouseDown, MouseUp, KeyboardDown, MouseDown_name, KeyboardDown_name, MouseUp_name};
 
 
 const SCALE: u32 = 4;
@@ -275,8 +276,8 @@ impl<'a> SDL2Backend<'a> {
                     if let Some(id) = &self.active_window {
                         if let Some(win) = windows.get_mut(id) {
                             // println!("got a message {:?}",keycode.name());
-                            let msg = KeyboardDownMessage {
-                                type_: "KEYBOARD_DOWN".to_string(),
+                            let msg = KeyboardDown {
+                                type_: KeyboardDown_name.to_string(),
                                 keyname: keycode.name(),
                                 target: win.owner.clone()
                             };
@@ -298,10 +299,10 @@ impl<'a> SDL2Backend<'a> {
                     if win.contains(&pt) {
                         self.active_window = Some(win.id.clone());
                         self.raise_window(win);
-                        let msg = MouseDownMessage {
-                            type_: "MOUSE_DOWN".to_string(),
-                            x: (pt.x) - win.x,
-                            y: (pt.y) - win.y,
+                        let msg = MouseDown {
+                            type_:MouseDown_name.to_string(),
+                            x: ((pt.x) - win.x) as i64,
+                            y: ((pt.y) - win.y) as i64,
                             target: win.owner.clone()
                         };
                         output.send(OwnedMessage::Text(json!(msg).to_string()));
@@ -324,10 +325,10 @@ impl<'a> SDL2Backend<'a> {
             let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
             if let Some(id) = &self.active_window {
                 if let Some(win) = windows.get(id) {
-                    let msg = MouseUpMessage {
-                        type_: "MOUSE_UP".to_string(),
-                        x: (pt.x) - win.x,
-                        y: (pt.y) - win.y,
+                    let msg = MouseUp {
+                        type_: MouseUp_name.to_string(),
+                        x: ((pt.x) - win.x) as i64,
+                        y: ((pt.y) - win.y) as i64,
                         target: win.owner.clone()
                     };
                     output.send(OwnedMessage::Text(json!(msg).to_string()));

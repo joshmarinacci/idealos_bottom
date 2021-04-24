@@ -108,6 +108,9 @@ async function doit() {
     await process_schema('./tools/schemas/resources.txt',
         './src/schemas/resources_schemas.js',
         './clients/rust-screen/src/resources_schemas.rs')
+    await process_schema('./tools/schemas/input.txt',
+        './src/schemas/input_schemas.js',
+        './clients/rust-screen/src/input_schemas.rs')
 }
 
 function make_js_output(namespace,defs) {
@@ -197,6 +200,8 @@ function make_rs_output(namespace, defs) {
             rs_output.line("#[derive(Serialize, Deserialize, Debug)]")
             rs_output.line(`pub struct ${target} {`)
             rs_output.indent()
+            rs_output.line('#[serde(rename = "type")]')
+            rs_output.line(`pub type_:String,`)
             Object.entries(def.props).forEach(([name,type])=> {
                 // console.log(name,type)
                 if(name === 'type') {
