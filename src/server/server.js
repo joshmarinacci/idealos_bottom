@@ -11,6 +11,8 @@ import {WINDOWS} from "../schemas/windows_schemas.js"
 import {RESOURCES} from '../schemas/resources_schemas.js'
 import {INPUT} from '../schemas/input_schemas.js'
 import {GENERAL} from '../schemas/general_schemas.js'
+import {DEBUG} from '../schemas/debug_schemas.js'
+import {GRAPHICS} from '../schemas/graphics_schemas.js'
 
 export const hostname = '127.0.0.1'
 export const webserver_port = 3000
@@ -129,7 +131,7 @@ function start_test(ws,msg) {
 function list_apps(ws,msg) {
     log("listing apps for debug message",msg)
     connections[CLIENT_TYPES.DEBUG] = ws
-    let response = make_message(SCHEMAS.DEBUG.LIST_RESPONSE,{
+    let response = DEBUG.MAKE_ListAppsResponse({
         connection_count:Object.keys(connections).length,
         apps:at.list_apps(),
     })
@@ -197,8 +199,8 @@ export function start_message_server() {
                 if(msg.type === WINDOWS.TYPE_window_refresh_request) return forward_to_target(msg)
                 if(msg.type === WINDOWS.TYPE_window_refresh_response) return forward_to_target(msg)
 
-                if (message_match(SCHEMAS.DRAW.PIXEL, msg)) return forward_to_screen(msg)
-                if (message_match(SCHEMAS.DRAW.RECT, msg)) return forward_to_screen(msg)
+                if(msg.type === GRAPHICS.TYPE_DrawPixel) return forward_to_screen(msg)
+                if(msg.type === GRAPHICS.TYPE_DrawRect) return forward_to_screen(msg)
                 if (message_match(SCHEMAS.DRAW.IMAGE, msg)) return forward_to_screen(msg)
 
                 if(msg.type === INPUT.TYPE_MouseDown) return forward_to_target(msg)
@@ -206,7 +208,7 @@ export function start_message_server() {
                 if(msg.type === INPUT.TYPE_KeyboardDown) return forward_to_target(msg)
                 if(msg.type === INPUT.TYPE_KeyboardUp) return forward_to_target(msg)
 
-                if (message_match(SCHEMAS.DEBUG.LIST, msg)) return list_apps(ws, msg)
+                if(msg.type === DEBUG.TYPE_ListAppsRequest) return list_apps(ws,msg)
                 if (message_match(SCHEMAS.DEBUG.RESTART_APP, msg)) return restart_app(msg)
                 if (message_match(SCHEMAS.DEBUG.STOP_APP, msg)) return stop_app(msg)
                 if (message_match(SCHEMAS.DEBUG.START_APP, msg)) return start_app(msg)

@@ -114,6 +114,12 @@ async function doit() {
     await process_schema('./tools/schemas/general.txt',
         './src/schemas/general_schemas.js',
         './clients/rust-screen/src/general_schemas.rs')
+    await process_schema('./tools/schemas/graphics.txt',
+        './src/schemas/graphics_schemas.js',
+        './clients/rust-screen/src/graphics_schemas.rs')
+    await process_schema('./tools/schemas/debug.txt',
+        './src/schemas/debug_schemas.js',
+        './clients/rust-screen/src/debug_schemas.rs')
 }
 
 function make_js_output(namespace,defs) {

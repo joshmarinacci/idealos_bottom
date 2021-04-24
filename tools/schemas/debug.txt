@@ -1,0 +1,7 @@
+ListAppsRequest  = object
+ListAppsResponse = object connection_count:number apps:apps_list
+apps_list        = array app_info
+app_info         = object id:string name:string path:string args:string
+
+
+

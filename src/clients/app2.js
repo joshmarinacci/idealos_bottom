@@ -2,6 +2,7 @@ import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp} from './app_utils.js'
 import {WINDOWS} from '../schemas/windows_schemas.js'
 import {INPUT} from '../schemas/input_schemas.js'
+import {GRAPHICS} from '../schemas/graphics_schemas.js'
 
 let app = new CommonApp(process.argv,10,5)
 app.on('start',()=>{
@@ -42,7 +43,7 @@ function draw_char(x, y, ch,color) {
         for(let j=0; j<img.length; j++) {
             for (let i = 0; i < img[0].length; i++) {
                 let px = img[j][i]
-                if(px === 1) app.send(make_message(SCHEMAS.DRAW.PIXEL,{x:x+i, y:y+j, color}))
+                if(px === 1) app.send(GRAPHICS.MAKE_DrawPixel({x:x+i, y:y+j, color, window:app.win_id}))
             }
         }
         x += img[0].length + 2

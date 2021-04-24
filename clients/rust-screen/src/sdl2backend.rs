@@ -116,8 +116,8 @@ impl<'a> SDL2Backend<'a> {
                                     self.canvas.with_texture_canvas(tex, |texture_canvas| {
                                         texture_canvas.set_draw_color(lookup_color(&m.color));
                                         texture_canvas
-                                            .fill_rect(Rect::new(m.x,
-                                                                 m.y, 1, 1))
+                                            .fill_rect(Rect::new(m.x as i32,
+                                                                 m.y as i32, 1, 1))
                                             .expect("could not fill rect");
                                         // println!("drew pixel to texture at {},{} c={}",m.x,m.y, m.color);
                                     });
@@ -130,7 +130,7 @@ impl<'a> SDL2Backend<'a> {
                                     self.canvas.with_texture_canvas(tex, |texture_canvas| {
                                         texture_canvas.set_draw_color(lookup_color(&m.color));
                                         texture_canvas
-                                            .fill_rect(Rect::new(m.x, m.y, m.width as u32, m.height as u32))
+                                            .fill_rect(Rect::new(m.x as i32, m.y as i32, m.width as u32, m.height as u32))
                                             .expect("could not fill rect");
                                         // println!("drew rect to texture at {},{} - {}x{}",m.x,m.y,m.width,m.height);
                                     });

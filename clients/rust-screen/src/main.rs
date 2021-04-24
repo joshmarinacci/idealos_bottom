@@ -39,6 +39,8 @@ mod menus_schemas;
 mod windows_schemas;
 mod input_schemas;
 mod general_schemas;
+mod graphics_schemas;
+mod debug_schemas;
 
 
 pub fn main() -> Result<(),String> {

@@ -2,6 +2,7 @@ import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {WINDOWS} from '../schemas/windows_schemas.js'
 import {RESOURCES} from '../schemas/resources_schemas.js'
 import {INPUT} from '../schemas/input_schemas.js'
+import {GRAPHICS} from '../schemas/graphics_schemas.js'
 
 export class Window {
     constructor(app, width,height) {
@@ -102,7 +103,7 @@ class Gfx {
         this.ty += y
     }
     rect(x,y,width,height,color) {
-        return this.app.send(make_message(SCHEMAS.DRAW.RECT, {x:this.tx+x, y:this.ty+y, width, height, color}))
+        return this.app.send(GRAPHICS.MAKE_DrawRect({x:this.tx+x, y:this.ty+y, width, height, color, window:this.app.window}))
     }
 
     text(x,y,text,color) {

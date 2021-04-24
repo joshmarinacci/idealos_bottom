@@ -16,8 +16,8 @@ let schemas = {
         // REFRESH:[],
     // },
     DRAW:{
-        PIXEL:['color','x','y'],
-        RECT:['color','x','y','width','height'],
+        // PIXEL:['color','x','y'],
+        // RECT:['color','x','y','width','height'],
         IMAGE:['x','y','width','height','pixels'],
     },
     // MOUSE:{
@@ -29,8 +29,8 @@ let schemas = {
     //     DOWN:[],
     // },
     DEBUG:{
-        LIST:[],
-        LIST_RESPONSE:['connection_count','apps'],
+        // LIST:[],
+        // LIST_RESPONSE:['connection_count','apps'],
         CLIENT:[],
         LOG:['data'],
         RESTART_APP:['target'],

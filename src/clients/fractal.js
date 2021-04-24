@@ -1,6 +1,7 @@
 import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp} from './app_utils.js'
 import {WINDOWS} from '../schemas/windows_schemas.js'
+import {GRAPHICS} from '../schemas/graphics_schemas.js'
 
 let width = 50
 let height = 50
@@ -38,7 +39,7 @@ function calc_pixel(count) {
     let h = i.toString(16);
     let color_hex =  '#' + h + h + h
     // app.log('drawing',x,y,'=',i,'color =',color_hex)
-    app.send(make_message(SCHEMAS.DRAW.PIXEL,{x:x, y:y, color: color_hex}))
+    app.send(GRAPHICS.MAKE_DrawPixel({x:x, y:y, color: color_hex, window:app.win_id}))
 }
 
 function init() {
