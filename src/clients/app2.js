@@ -18,7 +18,7 @@ app.on(WINDOWS.TYPE_window_refresh_request, ()=>{
     draw_button_released()
 })
 function fill_rect(w,h,color) {
-    app.send(make_message(SCHEMAS.DRAW.RECT,{x:0,y:0,width:w,height:h,color:color}))
+    app.send(GRAPHICS.MAKE_DrawRect({x:0,y:0,width:w,height:h,color:color, window:app.win._winid}))
 }
 function draw_button() {
     fill_rect(app.width,app.height,'green')

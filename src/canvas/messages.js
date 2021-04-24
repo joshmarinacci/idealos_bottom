@@ -1,7 +1,7 @@
 
 let schemas = {
     DRAW:{
-        IMAGE:['x','y','width','height','pixels'],
+        IMAGE:['x','y','width','height','pixels','window'],
     },
     DEBUG:{
         CLIENT:[],

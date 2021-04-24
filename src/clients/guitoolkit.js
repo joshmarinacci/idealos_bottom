@@ -3,10 +3,87 @@ import {WINDOWS} from '../schemas/windows_schemas.js'
 import {RESOURCES} from '../schemas/resources_schemas.js'
 import {INPUT} from '../schemas/input_schemas.js'
 import {GRAPHICS} from '../schemas/graphics_schemas.js'
+import {default as WebSocket} from 'ws'
+import {PixelFont} from './app_utils.js'
+
+export class App {
+    constructor(argv) {
+        this._appid = argv[3]
+        this.ws = new WebSocket(argv[2]);
+        this.listeners = {}
+        this.ws.on('open', () => {
+            this.fireLater('start', {})
+        })
+        this.ws.on("message", (data) => {
+            let msg = JSON.parse(data)
+            this.fireLater(msg.type, msg)
+        })
+        process.on('SIGTERM', () => {
+            console.log(`Received SIGTERM in app ${appid} `);
+            this.ws.close()
+            process.exit(0)
+        });
+        this._theme = null
+        this._font = null
+    }
+    async a_init() {
+        this._font = await PixelFont.load("src/clients/fonts/font.png", "src/clients/fonts/font.metrics.json")
+        this.on(RESOURCES.TYPE_ResourceChanged, (e)=>{
+            if(e.payload.resource === 'theme') {
+                this._theme = JSON.parse(String.fromCharCode(...e.payload.data.data))
+                this.fireLater(e)
+            }
+        })
+        this.send(RESOURCES.MAKE_ResourceGet({'resource':'theme','sender':this._appid}))
+    }
+    open_window(x,y,width,height,window_type) {
+        return new Promise((res,rej)=>{
+            this.ws.send(JSON.stringify(WINDOWS.MAKE_WindowOpen({
+                width: width,
+                height: height,
+                sender: this._appid,
+                window_type: window_type
+            })))
+            let handler = (e) => {
+                this.log("window was created for us",e)
+                this.off(WINDOWS.TYPE_WindowOpenResponse,handler)
+                let win = new Window(this,width,height,e.payload.window)
+                res(win)
+            }
+            this.on(WINDOWS.TYPE_WindowOpenResponse,handler)
+        })
+
+    }
+    on(type,cb) {
+        if(!this.listeners[type]) this.listeners[type] = []
+        this.listeners[type].push(cb)
+    }
+    off(type,cb) {
+        if(!this.listeners[type]) this.listeners[type] = []
+        this.listeners[type] = this.listeners[type].filter(c => c !== cb)
+    }
+    log(...args) { console.log(...args) }
+    fireLater(type, payload) {
+        setTimeout(()=>{
+            let evt = {
+                type:type,
+                payload:payload
+            }
+            if(this.listeners[type])  this.listeners[type].forEach(cb => {
+                cb(evt)
+            })
+        },1)
+    }
+    send(msg) {
+        msg.app = this.appid
+        this.ws.send(JSON.stringify(msg))
+    }
+}
 
 export class Window {
-    constructor(app, width,height) {
+    constructor(app, width,height,id) {
         this.app = app
+        this._winid = id
         this.width = width
         this.height = height
         this.root = null
@@ -27,30 +104,31 @@ export class Window {
             keyname: ""
         }
         app.on(INPUT.TYPE_MouseDown,(e)=>{
-            app.win.mouse.x = e.payload.x
-            app.win.mouse.y = e.payload.y
-            app.win.mouse.down = true
-            app.win.input()
-            app.win.redraw()
+            this.mouse.x = e.payload.x
+            this.mouse.y = e.payload.y
+            this.mouse.down = true
+            this.input()
+            this.redraw()
         })
         app.on(INPUT.TYPE_MouseUp,()=>{
-            app.win.mouse.down = false
-            app.win.input()
-            app.win.redraw()
+            this.mouse.down = false
+            this.input()
+            this.redraw()
         })
         app.on(WINDOWS.TYPE_window_refresh_request, ()=>{
-            app.win.redraw()
+            this.redraw()
         })
         app.on(INPUT.TYPE_KeyboardDown, (e)=>{
             // console.log("keyboard pressed in app",e)
-            app.win.keyboard.keyname = e.payload.keyname;
-            app.win.input()
-            app.win.redraw();
+            this.keyboard.keyname = e.payload.keyname;
+            this.input()
+            this.redraw();
         })
         app.on(RESOURCES.TYPE_ResourceChanged, (e)=>{
             if(e.payload.resource === 'theme') {
-                app.theme = JSON.parse(String.fromCharCode(...e.payload.data.data))
-                app.win.redraw()
+                // app.theme = JSON.parse(String.fromCharCode(...e.payload.data.data))
+                // app.win.redraw()
+                this.redraw()
             }
         })
     }
@@ -103,14 +181,14 @@ class Gfx {
         this.ty += y
     }
     rect(x,y,width,height,color) {
-        return this.app.send(GRAPHICS.MAKE_DrawRect({x:this.tx+x, y:this.ty+y, width, height, color, window:this.app.window}))
+        return this.app.send(GRAPHICS.MAKE_DrawRect({x:this.tx+x, y:this.ty+y, width, height, color, window:this.win._winid}))
     }
 
     text(x,y,text,color) {
-        return this.app.font.draw_text(this.app,this.tx+x,this.ty+y,text,color);
+        return this.app._font.draw_text(this.app,this.tx+x,this.ty+y,text,color,this.win);
     }
     text_size(text) {
-        return this.app.font.measure_text(this.app,text);
+        return this.app._font.measure_text(this.app,text);
     }
     theme_bg_color(name, def) {
         return this.theme_part(name,'background_color',def)
@@ -122,7 +200,7 @@ class Gfx {
         return this.theme_part(name,'text_color',def)
     }
     theme_part(name, part, def) {
-        if(this.app.theme && this.app.theme[name] && this.app.theme[name][part]) return this.app.theme[name][part];
+        if(this.app._theme && this.app._theme[name] && this.app._theme[name][part]) return this.app._theme[name][part];
         return def;
     }
 }

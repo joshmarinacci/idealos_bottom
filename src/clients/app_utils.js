@@ -134,7 +134,7 @@ class PixelFontImpl {
             height:dy,
         }
     }
-    draw_text(app, x, y, text, color) {
+    draw_text(app, x, y, text, color, win) {
         let rgba = color_to_rgba(color)
         let full_metrics = this.measure_text(app,text);
         let dx = 0
@@ -165,7 +165,7 @@ class PixelFontImpl {
             }
             dy += line_height
         })
-        app.send(make_message(SCHEMAS.DRAW.IMAGE,{x:x,y:y,width:w,height:h,pixels:img.to_array()}))
+        app.send(make_message(SCHEMAS.DRAW.IMAGE,{x:x,y:y,width:w,height:h,pixels:img.to_array(),window:win._winid}))
     }
 }
 
