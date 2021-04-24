@@ -1,13 +1,13 @@
 
 let schemas = {
-    GENERAL:{
-        CONNECTED:[],
-        HEARTBEAT:[],
-    },
-    SCREEN:{
-        START:[],
+    // GENERAL:{
+    //     CONNECTED:[],
+    //     HEARTBEAT:[],
+    // },
+    // SCREEN:{
+    //     START:[],
         // WINDOW_LIST:['windows']
-    },
+    // },
     // WINDOW:{
         // OPEN:['width','height','sender','window_type'],
         //OPEN_SCREEN:['target','window'],
@@ -37,9 +37,9 @@ let schemas = {
         STOP_APP:['target'],
         START_APP:['target'],
     },
-    TEST:{
-        START:['sender']
-    },
+    // TEST:{
+    //     START:['sender']
+    // },
 }
 
 function process_schema(sch) {

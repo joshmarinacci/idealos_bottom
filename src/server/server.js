@@ -10,6 +10,7 @@ import {sleep} from '../common.js'
 import {WINDOWS} from "../schemas/windows_schemas.js"
 import {RESOURCES} from '../schemas/resources_schemas.js'
 import {INPUT} from '../schemas/input_schemas.js'
+import {GENERAL} from '../schemas/general_schemas.js'
 
 export const hostname = '127.0.0.1'
 export const webserver_port = 3000
@@ -188,8 +189,8 @@ export function start_message_server() {
             try {
                 let msg = JSON.parse(m)
                 forward_to_debug(msg)
-                if (message_match(SCHEMAS.GENERAL.HEARTBEAT, msg)) return do_nothing(msg)
-                if (message_match(SCHEMAS.SCREEN.START, msg)) return handle_start_message(ws, msg)
+                if(msg.type === GENERAL.TYPE_Heartbeat) return do_nothing(msg)
+                if(msg.type === GENERAL.TYPE_ScreenStart) return handle_start_message(ws,msg)
 
                 if(msg.type === WINDOWS.TYPE_WindowOpen) return handle_open_window_message(ws,msg)
                 if(msg.type === WINDOWS.TYPE_WindowOpenResponse) return forward_to_target(msg)
@@ -210,7 +211,7 @@ export function start_message_server() {
                 if (message_match(SCHEMAS.DEBUG.STOP_APP, msg)) return stop_app(msg)
                 if (message_match(SCHEMAS.DEBUG.START_APP, msg)) return start_app(msg)
 
-                if (message_match(SCHEMAS.TEST.START, msg)) return start_test(ws, msg)
+                // if (message_match(SCHEMAS.TEST.START, msg)) return start_test(ws, msg)
 
                 if (msg.type === RESOURCES.TYPE_ResourceGet) return resources.get_resource(msg)
                 // if (message_match(SCHEMAS.RESOURCE.SET, msg)) return resources.set_resource(msg)
@@ -227,7 +228,7 @@ export function start_message_server() {
         ws.on('close',(code)=>{
             delete connections[ws.target]
         })
-        ws.send(JSON.stringify(make_message(SCHEMAS.GENERAL.CONNECTED,{})))
+        ws.send(JSON.stringify(GENERAL.MAKE_Connected({})))
     })
     async function do_start_app(opts) {
     }

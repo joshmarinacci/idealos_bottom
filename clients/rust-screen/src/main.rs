@@ -24,6 +24,8 @@ use sdl2::video::WindowContext;
 use sdl2::mouse::Cursor;
 use sdl2::surface::Surface;
 use sdl2::rect::Rect;
+use serde_json::{json};
+use crate::general_schemas::{ScreenStart,ScreenStart_name};
 
 mod messages;
 mod window;
@@ -36,6 +38,7 @@ mod fontinfo;
 mod menus_schemas;
 mod windows_schemas;
 mod input_schemas;
+mod general_schemas;
 
 
 pub fn main() -> Result<(),String> {
@@ -71,7 +74,9 @@ pub fn main() -> Result<(),String> {
     });
 
     //send the initial connection message
-    let message = OwnedMessage::Text("{\"type\":\"SCREEN_START\"}".to_string());
+    let message = OwnedMessage::Text(json!(ScreenStart{
+        type_: ScreenStart_name.to_string(),
+    }).to_string());
     match server_out_receive.send(message) {
         Ok(()) => (),
         Err(e) => {
