@@ -45,14 +45,12 @@ export class App {
                 window_type: window_type
             })))
             let handler = (e) => {
-                this.log("window was created for us",e)
                 this.off(WINDOWS.TYPE_WindowOpenResponse,handler)
                 let win = new Window(this,width,height,e.payload.window)
                 res(win)
             }
             this.on(WINDOWS.TYPE_WindowOpenResponse,handler)
         })
-
     }
     on(type,cb) {
         if(!this.listeners[type]) this.listeners[type] = []
@@ -81,13 +79,16 @@ export class App {
 }
 
 export class Window {
-    constructor(app, width,height,id) {
+    constructor(app, width,height,id,parent) {
         this.app = app
         this._winid = id
         this.width = width
         this.height = height
         this.root = null
         this.focused = null
+        this.is_child = false
+        this.parent = parent
+        if(this.parent) this.is_child = true
         this.mouse = {
             x: -1,
             y: -1,
@@ -166,6 +167,34 @@ export class Window {
     }
     set_focused(el) {
         this.focused = el
+    }
+    a_open_child_window(x,y,width,height,style) {
+        return new Promise((res,rej)=>{
+            this.app.ws.send(JSON.stringify(WINDOWS.MAKE_create_child_window({
+                parent:this._winid,
+                x:x,
+                y:y,
+                width: width,
+                height: height,
+                sender: this.app._appid,
+                style: style
+            })))
+            let handler = (e) => {
+                this.app.off(WINDOWS.TYPE_create_child_window_response,handler)
+                let win = new Window(this.app,width,height,e.payload.window,this)
+                res(win)
+            }
+            this.app.on(WINDOWS.TYPE_WindowOpenResponse,handler)
+        })
+    }
+    close() {
+        if(this.is_child) {
+            this.app.ws.send(JSON.stringify(WINDOWS.MAKE_close_child_window({
+                parent:this.parent._winid,
+                sender:this.app._appid,
+                id:this._winid
+            })))
+        }
     }
 }
 

@@ -1,10 +1,10 @@
 import {CommonApp, PixelFont} from './app_utils.js'
-import {Container} from './guitoolkit.js'
+import {App, Container} from './guitoolkit.js'
 import {MENUS} from '../schemas/menus_schemas.js'
 import {WINDOWS} from "../schemas/windows_schemas.js"
 import {RESOURCES} from '../schemas/resources_schemas.js'
 import {INPUT} from '../schemas/input_schemas.js'
-let app = new CommonApp(process.argv,1024/4,10,'menubar')
+let app = new App(process.argv)//,1024/4,10,'menubar')
 
 let menu_tree = MENUS.MAKE_root({
     type:'root',
@@ -70,9 +70,11 @@ let menu_tree = MENUS.MAKE_root({
 })
 
 class CustomMenuBar extends Container {
-    constructor(opts,tree) {
+    constructor(opts,tree,app,win) {
         super(opts)
         this.tree = tree
+        this.app = app
+        this.win = win
     }
     redraw(gfx) {
         gfx.rect(this.x,this.y,this.width,this.height,'white')
@@ -88,64 +90,57 @@ class CustomMenuBar extends Container {
             gfx.text(this.x + i * 20 + 2, this.y, top.label, fg)
         })
     }
-    mouse_down_at(e) {
-        app.log("down at",e.payload)
+    async mouse_down_at(e) {
+        this.app.log("down at",e.payload)
         let i = Math.floor(e.payload.x/20)
         if(this.tree.children.length >= i) {
             let item = this.tree.children[i]
-            app.log("clicked on",item)
+            this.app.log("clicked on",item)
             item.open = !item.open
-            app.win.redraw()
+            this.win.redraw()
             if(item.open) {
                 //request window
-                app.log("sending create child window")
-                app.send(WINDOWS.MAKE_create_child_window({
-                    // type:'CREATE_CHILD_WINDOW',
-                    parent:app.win_id,
-                    x:i*20,y:10,
-                    width:30,height:40,
-                    style:'menu',
-                    sender:app.appid}))
+                this.app.log("sending create child window")
+                this.popup = await this.win.a_open_child_window(i*20,10,30,40,'menu')
+                // this.app.send(WINDOWS.MAKE_create_child_window({
+                //     type:'CREATE_CHILD_WINDOW',
+                    // parent:this.win._winid,
+                    // x:i*20,y:10,
+                    // width:30,height:40,
+                    // style:'menu',
+                    // sender:this.app._appid}))
             } else {
                 //close window
-                app.log("sending close child window", this.popup_id)
-                app.send(WINDOWS.MAKE_close_child_window({
-                    // type:'CLOSE_CHILD_WINDOW',
-                    parent:app.win_id,
-                    id: this.popup_id,
-                    sender:app.appid
-                }))
+                await this.popup.close()
+                // this.app.log("sending close child window", this.popup_id)
+                // this.app.send(WINDOWS.MAKE_close_child_window({
+                //     type:'CLOSE_CHILD_WINDOW',
+                    // parent:this.win._winid,
+                    // id: this.popup_id,
+                    // sender:this.app._appid
+                // }))
             }
         }
     }
 }
 
 async function init() {
-    try {
-        //load font
-        app.font = await PixelFont.load("src/clients/fonts/font.png", "src/clients/fonts/font.metrics.json")
-        //create gui components
-        app.win.root = new CustomMenuBar({width:app.win.width, height:app.win.height},menu_tree)
-        app.win.redraw()
-        //get the latest version of the theme
-        app.send(RESOURCES.MAKE_ResourceGet({'resource':'theme','sender':app.appid}))
+    await app.a_init()
+    let win = await app.open_window(0,0,1024/4,10,'menubar')
+    win.root = new CustomMenuBar({width:win.width, height:win.height},menu_tree,app,win)
+    win.redraw()
         // app.send(MENUS.MAKE_create_menu_tree_message({type:'CREATE_MENU_TREE',menu:menu_tree}))
 
-        app.on(INPUT.TYPE_MouseDown,(e)=>{
-            app.win.root.mouse_down_at(e)
-        })
-        app.on(WINDOWS.TYPE_create_child_window_response,(e)=>{
-            app.log("got the child window response",e)
-            app.win.root.popup_id = e.payload.window.id
-        })
-        app.on(INPUT.TYPE_MouseUp,()=>{
-        })
-        app.on(WINDOWS.TYPE_window_refresh_request, ()=>{
-        })
+    app.on(INPUT.TYPE_MouseDown,(e)=>{
+        win.root.mouse_down_at(e)
+    })
+        // app.on(WINDOWS.TYPE_create_child_window_response,(e)=>{
+        //     app.log("got the child window response",e)
+        //     app.win.root.popup_id = e.payload.window.id
+        // })
+        // app.on(INPUT.TYPE_MouseUp,()=>{
+        // })
 
-    } catch (e) {
-        app.log(e)
-    }
 }
 
 
