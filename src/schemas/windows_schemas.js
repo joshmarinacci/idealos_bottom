@@ -1,7 +1,7 @@
-const MAKE_window_info_name = "MAKE_window_info_name"
+const TYPE_window_info = "MAKE_window_info_name"
 function MAKE_window_info(data) {
     let obj = {}
-    obj.type = MAKE_window_info_name
+    obj.type = TYPE_window_info
     if(!data.hasOwnProperty('id')) throw new Error("object 'window_info' is missing property 'id' ")
     obj.id = data.id
     
@@ -25,60 +25,60 @@ function MAKE_window_info(data) {
     
     return obj
 }
-const MAKE_window_array_name = "MAKE_window_array_name"
+const TYPE_window_array = "MAKE_window_array_name"
 export function MAKE_window_array(arr) {
     return arr
 }
-const MAKE_window_map_name = "MAKE_window_map_name"
+const TYPE_window_map = "MAKE_window_map_name"
 export function MAKE_window_map(map) {
     return map
 }
-const MAKE_window_open_name = "MAKE_window_open_name"
-function MAKE_window_open(data) {
+const TYPE_WindowOpen = "MAKE_WindowOpen_name"
+function MAKE_WindowOpen(data) {
     let obj = {}
-    obj.type = MAKE_window_open_name
-    if(!data.hasOwnProperty('width')) throw new Error("object 'window_open' is missing property 'width' ")
+    obj.type = TYPE_WindowOpen
+    if(!data.hasOwnProperty('width')) throw new Error("object 'WindowOpen' is missing property 'width' ")
     obj.width = data.width
     
-    if(!data.hasOwnProperty('height')) throw new Error("object 'window_open' is missing property 'height' ")
+    if(!data.hasOwnProperty('height')) throw new Error("object 'WindowOpen' is missing property 'height' ")
     obj.height = data.height
     
-    if(!data.hasOwnProperty('sender')) throw new Error("object 'window_open' is missing property 'sender' ")
+    if(!data.hasOwnProperty('sender')) throw new Error("object 'WindowOpen' is missing property 'sender' ")
     obj.sender = data.sender
     
-    if(!data.hasOwnProperty('window_type')) throw new Error("object 'window_open' is missing property 'window_type' ")
+    if(!data.hasOwnProperty('window_type')) throw new Error("object 'WindowOpen' is missing property 'window_type' ")
     obj.window_type = data.window_type
     
     return obj
 }
-const MAKE_window_open_display_name = "MAKE_window_open_display_name"
-function MAKE_window_open_display(data) {
+const TYPE_WindowOpenDisplay = "MAKE_WindowOpenDisplay_name"
+function MAKE_WindowOpenDisplay(data) {
     let obj = {}
-    obj.type = MAKE_window_open_display_name
-    if(!data.hasOwnProperty('target')) throw new Error("object 'window_open_display' is missing property 'target' ")
+    obj.type = TYPE_WindowOpenDisplay
+    if(!data.hasOwnProperty('target')) throw new Error("object 'WindowOpenDisplay' is missing property 'target' ")
     obj.target = data.target
     
-    if(!data.hasOwnProperty('window')) throw new Error("object 'window_open_display' is missing property 'window' ")
+    if(!data.hasOwnProperty('window')) throw new Error("object 'WindowOpenDisplay' is missing property 'window' ")
     obj.window = MAKE_window_info(data.window)
     
     return obj
 }
-const MAKE_window_open_response_name = "MAKE_window_open_response_name"
-function MAKE_window_open_response(data) {
+const TYPE_WindowOpenResponse = "MAKE_WindowOpenResponse_name"
+function MAKE_WindowOpenResponse(data) {
     let obj = {}
-    obj.type = MAKE_window_open_response_name
-    if(!data.hasOwnProperty('target')) throw new Error("object 'window_open_response' is missing property 'target' ")
+    obj.type = TYPE_WindowOpenResponse
+    if(!data.hasOwnProperty('target')) throw new Error("object 'WindowOpenResponse' is missing property 'target' ")
     obj.target = data.target
     
-    if(!data.hasOwnProperty('window')) throw new Error("object 'window_open_response' is missing property 'window' ")
+    if(!data.hasOwnProperty('window')) throw new Error("object 'WindowOpenResponse' is missing property 'window' ")
     obj.window = data.window
     
     return obj
 }
-const MAKE_window_close_name = "MAKE_window_close_name"
+const TYPE_window_close = "MAKE_window_close_name"
 function MAKE_window_close(data) {
     let obj = {}
-    obj.type = MAKE_window_close_name
+    obj.type = TYPE_window_close
     if(!data.hasOwnProperty('target')) throw new Error("object 'window_close' is missing property 'target' ")
     obj.target = data.target
     
@@ -87,19 +87,19 @@ function MAKE_window_close(data) {
     
     return obj
 }
-const MAKE_window_list_name = "MAKE_window_list_name"
+const TYPE_window_list = "MAKE_window_list_name"
 function MAKE_window_list(data) {
     let obj = {}
-    obj.type = MAKE_window_list_name
+    obj.type = TYPE_window_list
     if(!data.hasOwnProperty('windows')) throw new Error("object 'window_list' is missing property 'windows' ")
     obj.windows = MAKE_window_map(data.windows)
     
     return obj
 }
-const MAKE_window_refresh_request_name = "MAKE_window_refresh_request_name"
+const TYPE_window_refresh_request = "MAKE_window_refresh_request_name"
 function MAKE_window_refresh_request(data) {
     let obj = {}
-    obj.type = MAKE_window_refresh_request_name
+    obj.type = TYPE_window_refresh_request
     if(!data.hasOwnProperty('type')) throw new Error("object 'window_refresh_request' is missing property 'type' ")
     obj.type = data.type
     
@@ -111,16 +111,16 @@ function MAKE_window_refresh_request(data) {
     
     return obj
 }
-const MAKE_window_refresh_response_name = "MAKE_window_refresh_response_name"
+const TYPE_window_refresh_response = "MAKE_window_refresh_response_name"
 function MAKE_window_refresh_response(data) {
     let obj = {}
-    obj.type = MAKE_window_refresh_response_name
+    obj.type = TYPE_window_refresh_response
     return obj
 }
-const MAKE_create_child_window_name = "MAKE_create_child_window_name"
+const TYPE_create_child_window = "MAKE_create_child_window_name"
 function MAKE_create_child_window(data) {
     let obj = {}
-    obj.type = MAKE_create_child_window_name
+    obj.type = TYPE_create_child_window
     if(!data.hasOwnProperty('parent')) throw new Error("object 'create_child_window' is missing property 'parent' ")
     obj.parent = data.parent
     
@@ -144,10 +144,10 @@ function MAKE_create_child_window(data) {
     
     return obj
 }
-const MAKE_create_child_window_response_name = "MAKE_create_child_window_response_name"
+const TYPE_create_child_window_response = "MAKE_create_child_window_response_name"
 function MAKE_create_child_window_response(data) {
     let obj = {}
-    obj.type = MAKE_create_child_window_response_name
+    obj.type = TYPE_create_child_window_response
     if(!data.hasOwnProperty('sender')) throw new Error("object 'create_child_window_response' is missing property 'sender' ")
     obj.sender = data.sender
     
@@ -162,10 +162,10 @@ function MAKE_create_child_window_response(data) {
     
     return obj
 }
-const MAKE_create_child_window_display_name = "MAKE_create_child_window_display_name"
+const TYPE_create_child_window_display = "MAKE_create_child_window_display_name"
 function MAKE_create_child_window_display(data) {
     let obj = {}
-    obj.type = MAKE_create_child_window_display_name
+    obj.type = TYPE_create_child_window_display
     if(!data.hasOwnProperty('parent')) throw new Error("object 'create_child_window_display' is missing property 'parent' ")
     obj.parent = data.parent
     
@@ -177,10 +177,10 @@ function MAKE_create_child_window_display(data) {
     
     return obj
 }
-const MAKE_close_child_window_name = "MAKE_close_child_window_name"
+const TYPE_close_child_window = "MAKE_close_child_window_name"
 function MAKE_close_child_window(data) {
     let obj = {}
-    obj.type = MAKE_close_child_window_name
+    obj.type = TYPE_close_child_window
     if(!data.hasOwnProperty('parent')) throw new Error("object 'close_child_window' is missing property 'parent' ")
     obj.parent = data.parent
     
@@ -192,10 +192,10 @@ function MAKE_close_child_window(data) {
     
     return obj
 }
-const MAKE_close_child_window_response_name = "MAKE_close_child_window_response_name"
+const TYPE_close_child_window_response = "MAKE_close_child_window_response_name"
 function MAKE_close_child_window_response(data) {
     let obj = {}
-    obj.type = MAKE_close_child_window_response_name
+    obj.type = TYPE_close_child_window_response
     if(!data.hasOwnProperty('sender')) throw new Error("object 'close_child_window_response' is missing property 'sender' ")
     obj.sender = data.sender
     
@@ -210,10 +210,10 @@ function MAKE_close_child_window_response(data) {
     
     return obj
 }
-const MAKE_close_child_window_display_name = "MAKE_close_child_window_display_name"
+const TYPE_close_child_window_display = "MAKE_close_child_window_display_name"
 function MAKE_close_child_window_display(data) {
     let obj = {}
-    obj.type = MAKE_close_child_window_display_name
+    obj.type = TYPE_close_child_window_display
     if(!data.hasOwnProperty('parent')) throw new Error("object 'close_child_window_display' is missing property 'parent' ")
     obj.parent = data.parent
     
@@ -227,35 +227,35 @@ function MAKE_close_child_window_display(data) {
 }
 export const WINDOWS = {
     MAKE_window_info : MAKE_window_info,
-    MAKE_window_info_name : MAKE_window_info_name,
+    TYPE_window_info : TYPE_window_info,
     MAKE_window_array : MAKE_window_array,
-    MAKE_window_array_name : MAKE_window_array_name,
+    TYPE_window_array : TYPE_window_array,
     MAKE_window_map : MAKE_window_map,
-    MAKE_window_map_name : MAKE_window_map_name,
-    MAKE_window_open : MAKE_window_open,
-    MAKE_window_open_name : MAKE_window_open_name,
-    MAKE_window_open_display : MAKE_window_open_display,
-    MAKE_window_open_display_name : MAKE_window_open_display_name,
-    MAKE_window_open_response : MAKE_window_open_response,
-    MAKE_window_open_response_name : MAKE_window_open_response_name,
+    TYPE_window_map : TYPE_window_map,
+    MAKE_WindowOpen : MAKE_WindowOpen,
+    TYPE_WindowOpen : TYPE_WindowOpen,
+    MAKE_WindowOpenDisplay : MAKE_WindowOpenDisplay,
+    TYPE_WindowOpenDisplay : TYPE_WindowOpenDisplay,
+    MAKE_WindowOpenResponse : MAKE_WindowOpenResponse,
+    TYPE_WindowOpenResponse : TYPE_WindowOpenResponse,
     MAKE_window_close : MAKE_window_close,
-    MAKE_window_close_name : MAKE_window_close_name,
+    TYPE_window_close : TYPE_window_close,
     MAKE_window_list : MAKE_window_list,
-    MAKE_window_list_name : MAKE_window_list_name,
+    TYPE_window_list : TYPE_window_list,
     MAKE_window_refresh_request : MAKE_window_refresh_request,
-    MAKE_window_refresh_request_name : MAKE_window_refresh_request_name,
+    TYPE_window_refresh_request : TYPE_window_refresh_request,
     MAKE_window_refresh_response : MAKE_window_refresh_response,
-    MAKE_window_refresh_response_name : MAKE_window_refresh_response_name,
+    TYPE_window_refresh_response : TYPE_window_refresh_response,
     MAKE_create_child_window : MAKE_create_child_window,
-    MAKE_create_child_window_name : MAKE_create_child_window_name,
+    TYPE_create_child_window : TYPE_create_child_window,
     MAKE_create_child_window_response : MAKE_create_child_window_response,
-    MAKE_create_child_window_response_name : MAKE_create_child_window_response_name,
+    TYPE_create_child_window_response : TYPE_create_child_window_response,
     MAKE_create_child_window_display : MAKE_create_child_window_display,
-    MAKE_create_child_window_display_name : MAKE_create_child_window_display_name,
+    TYPE_create_child_window_display : TYPE_create_child_window_display,
     MAKE_close_child_window : MAKE_close_child_window,
-    MAKE_close_child_window_name : MAKE_close_child_window_name,
+    TYPE_close_child_window : TYPE_close_child_window,
     MAKE_close_child_window_response : MAKE_close_child_window_response,
-    MAKE_close_child_window_response_name : MAKE_close_child_window_response_name,
+    TYPE_close_child_window_response : TYPE_close_child_window_response,
     MAKE_close_child_window_display : MAKE_close_child_window_display,
-    MAKE_close_child_window_display_name : MAKE_close_child_window_display_name,
+    TYPE_close_child_window_display : TYPE_close_child_window_display,
 }

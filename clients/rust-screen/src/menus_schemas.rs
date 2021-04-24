@@ -12,8 +12,7 @@ pub struct keystroke_obj {
 pub const item_name: &str = "MAKE_item_name";
 #[derive(Serialize, Deserialize, Debug)]
 pub struct item {
-    #[serde(rename = "type")]
-    pub _type:node_type,
+    pub node_type:node_type,
     pub label:String,
     pub event:String,
     pub keystroke:keystroke_obj,

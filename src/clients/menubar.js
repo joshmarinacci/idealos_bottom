@@ -133,13 +133,13 @@ async function init() {
         app.on(SCHEMAS.MOUSE.DOWN.NAME,(e)=>{
             app.win.root.mouse_down_at(e)
         })
-        app.on(WINDOWS.MAKE_create_child_window_response_name,(e)=>{
+        app.on(WINDOWS.TYPE_create_child_window_response,(e)=>{
             app.log("got the child window response",e)
             app.win.root.popup_id = e.payload.window.id
         })
         app.on(SCHEMAS.MOUSE.UP.NAME,()=>{
         })
-        app.on(WINDOWS.MAKE_window_refresh_request_name, ()=>{
+        app.on(WINDOWS.TYPE_window_refresh_request, ()=>{
         })
 
     } catch (e) {

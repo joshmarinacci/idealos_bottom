@@ -35,7 +35,7 @@ export class Window {
             app.win.input()
             app.win.redraw()
         })
-        app.on(WINDOWS.MAKE_window_refresh_request_name, ()=>{
+        app.on(WINDOWS.TYPE_window_refresh_request, ()=>{
             app.win.redraw()
         })
         app.on(SCHEMAS.KEYBOARD.DOWN.NAME, (e)=>{

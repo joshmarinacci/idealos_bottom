@@ -113,11 +113,11 @@ function make_js_output(namespace,defs) {
         let def = defs[target]
         // log("generating code for",target, def)
         if(def.type === 'object') {
-            js_output.line(`const MAKE_${target}_name = "MAKE_${target}_name"`)
+            js_output.line(`const TYPE_${target} = "MAKE_${target}_name"`)
             js_output.line(`function MAKE_${target}(data) {`)
             js_output.indent()
             js_output.line('let obj = {}')
-            js_output.line(`obj.type = MAKE_${target}_name`)
+            js_output.line(`obj.type = TYPE_${target}`)
             Object.entries(def.props).forEach(([name,type])=>{
                 js_output.line(`if(!data.hasOwnProperty('${name}')) throw new Error("object '${target}' is missing property '${name}' ")`)
                 if(type === 'string') {
@@ -139,7 +139,7 @@ function make_js_output(namespace,defs) {
         }
         if(def.type === 'enum') {
             // log("making an enum def",def)
-            js_output.line(`const MAKE_${target}_name = "MAKE_${target}_name"`)
+            js_output.line(`const TYPE_${target} = "MAKE_${target}_name"`)
             js_output.line(`export function MAKE_${target}(value) {`)
             js_output.indent()
             def.values.forEach(val => {
@@ -151,7 +151,7 @@ function make_js_output(namespace,defs) {
         }
         if(def.type === 'array') {
             // log("making array def", def)
-            js_output.line(`const MAKE_${target}_name = "MAKE_${target}_name"`)
+            js_output.line(`const TYPE_${target} = "MAKE_${target}_name"`)
             js_output.line(`export function MAKE_${target}(arr) {`)
             js_output.indent()
             js_output.line("return arr")
@@ -160,7 +160,7 @@ function make_js_output(namespace,defs) {
         }
         if(def.type === 'map') {
             // log("making JS map def", def)
-            js_output.line(`const MAKE_${target}_name = "MAKE_${target}_name"`)
+            js_output.line(`const TYPE_${target} = "MAKE_${target}_name"`)
             js_output.line(`export function MAKE_${target}(map) {`)
             js_output.indent()
             js_output.line("return map")
@@ -173,7 +173,7 @@ function make_js_output(namespace,defs) {
     js_output.indent()
     Object.keys(defs).forEach(target => {
         js_output.line(`MAKE_${target} : MAKE_${target},`)
-        js_output.line(`MAKE_${target}_name : MAKE_${target}_name,`)
+        js_output.line(`TYPE_${target} : TYPE_${target},`)
     })
 
     js_output.outdent()

@@ -12,7 +12,7 @@ app.on(SCHEMAS.MOUSE.DOWN.NAME,()=>{
 app.on(SCHEMAS.MOUSE.UP.NAME,()=>{
     draw_button_released()
 })
-app.on(WINDOWS.MAKE_window_refresh_request_name, ()=>{
+app.on(WINDOWS.TYPE_window_refresh_request, ()=>{
     draw_button_released()
 })
 function fill_rect(w,h,color) {

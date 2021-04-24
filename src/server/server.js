@@ -63,10 +63,10 @@ function handle_open_window_message(ws,msg) {
 
     //send response to screen
     // forward_to_screen(make_message(SCHEMAS.WINDOW.OPEN_SCREEN, {target:msg.sender, window:wids.window_for_id(win_id)}))
-    forward_to_screen(WINDOWS.MAKE_window_open_display({target:msg.sender, window:wids.window_for_id(win_id)}))
+    forward_to_screen(WINDOWS.MAKE_WindowOpenDisplay({target:msg.sender, window:wids.window_for_id(win_id)}))
     //send response back to client
     // forward_to_target(make_message(SCHEMAS.WINDOW.OPEN_RESPONSE, {target:msg.sender, window:win_id}))
-    forward_to_target(WINDOWS.MAKE_window_open_response({target:msg.sender, window:win_id}))
+    forward_to_target(WINDOWS.MAKE_WindowOpenResponse({target:msg.sender, window:win_id}))
 }
 
 function handle_open_child_window_message(msg) {
@@ -189,10 +189,10 @@ export function start_message_server() {
                 if (message_match(SCHEMAS.GENERAL.HEARTBEAT, msg)) return do_nothing(msg)
                 if (message_match(SCHEMAS.SCREEN.START, msg)) return handle_start_message(ws, msg)
 
-                if(msg.type === WINDOWS.MAKE_window_open_name) return handle_open_window_message(ws,msg)
-                if(msg.type === WINDOWS.MAKE_window_open_response_name) return forward_to_target(msg)
-                if(msg.type === WINDOWS.MAKE_window_refresh_request_name) return forward_to_target(msg)
-                if(msg.type === WINDOWS.MAKE_window_refresh_response_name) return forward_to_target(msg)
+                if(msg.type === WINDOWS.TYPE_WindowOpen) return handle_open_window_message(ws,msg)
+                if(msg.type === WINDOWS.TYPE_WindowOpenResponse) return forward_to_target(msg)
+                if(msg.type === WINDOWS.TYPE_window_refresh_request) return forward_to_target(msg)
+                if(msg.type === WINDOWS.TYPE_window_refresh_response) return forward_to_target(msg)
 
                 if (message_match(SCHEMAS.DRAW.PIXEL, msg)) return forward_to_screen(msg)
                 if (message_match(SCHEMAS.DRAW.RECT, msg)) return forward_to_screen(msg)
@@ -213,9 +213,9 @@ export function start_message_server() {
                 if (message_match(SCHEMAS.RESOURCE.GET, msg)) return resources.get_resource(msg)
                 // if (message_match(SCHEMAS.RESOURCE.SET, msg)) return resources.set_resource(msg)
 
-                if(message_match('CREATE_MENU_TREE',msg)) return forward_to_menubar(msg)
-                if(msg.type === WINDOWS.MAKE_create_child_window_name)  return handle_open_child_window_message(msg)
-                if(msg.type === WINDOWS.MAKE_close_child_window_name) return handle_close_child_window_message(msg)
+                // if(message_match('CREATE_MENU_TREE',msg)) return forward_to_menubar(msg)
+                if(msg.type === WINDOWS.TYPE_create_child_window)  return handle_open_child_window_message(msg)
+                if(msg.type === WINDOWS.TYPE_close_child_window) return handle_close_child_window_message(msg)
 
                 log("unknown incoming message", msg)
             } catch (e) {

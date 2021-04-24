@@ -15,7 +15,7 @@ app.on('start',()=>{
     },5000)
 })
 
-app.on(WINDOWS.MAKE_window_refresh_request_name, ()=>{
+app.on(WINDOWS.TYPE_window_refresh_request, ()=>{
     for (let i = 0; i < x; i++) {
         app.send(make_message(SCHEMAS.DRAW.PIXEL,{x:i,y:0,color:'red'}))
     }

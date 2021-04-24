@@ -1,14 +1,14 @@
-const MAKE_node_type_name = "MAKE_node_type_name"
+const TYPE_node_type = "MAKE_node_type_name"
 export function MAKE_node_type(value) {
     if(value === "item") return value
     if(value === "top") return value
     if(value === "root") return value
     throw new Error("MAKE_node_type: invalid value"+value)
 }
-const MAKE_keystroke_obj_name = "MAKE_keystroke_obj_name"
+const TYPE_keystroke_obj = "MAKE_keystroke_obj_name"
 function MAKE_keystroke_obj(data) {
     let obj = {}
-    obj.type = MAKE_keystroke_obj_name
+    obj.type = TYPE_keystroke_obj
     if(!data.hasOwnProperty('modifier')) throw new Error("object 'keystroke_obj' is missing property 'modifier' ")
     obj.modifier = data.modifier
     
@@ -17,12 +17,12 @@ function MAKE_keystroke_obj(data) {
     
     return obj
 }
-const MAKE_item_name = "MAKE_item_name"
+const TYPE_item = "MAKE_item_name"
 function MAKE_item(data) {
     let obj = {}
-    obj.type = MAKE_item_name
-    if(!data.hasOwnProperty('type')) throw new Error("object 'item' is missing property 'type' ")
-    obj.type = MAKE_node_type(data.type)
+    obj.type = TYPE_item
+    if(!data.hasOwnProperty('node_type')) throw new Error("object 'item' is missing property 'node_type' ")
+    obj.node_type = MAKE_node_type(data.node_type)
     
     if(!data.hasOwnProperty('label')) throw new Error("object 'item' is missing property 'label' ")
     obj.label = data.label
@@ -35,14 +35,14 @@ function MAKE_item(data) {
     
     return obj
 }
-const MAKE_item_array_name = "MAKE_item_array_name"
+const TYPE_item_array = "MAKE_item_array_name"
 export function MAKE_item_array(arr) {
     return arr
 }
-const MAKE_root_name = "MAKE_root_name"
+const TYPE_root = "MAKE_root_name"
 function MAKE_root(data) {
     let obj = {}
-    obj.type = MAKE_root_name
+    obj.type = TYPE_root
     if(!data.hasOwnProperty('type')) throw new Error("object 'root' is missing property 'type' ")
     obj.type = MAKE_node_type(data.type)
     
@@ -51,10 +51,10 @@ function MAKE_root(data) {
     
     return obj
 }
-const MAKE_create_menu_tree_message_name = "MAKE_create_menu_tree_message_name"
+const TYPE_create_menu_tree_message = "MAKE_create_menu_tree_message_name"
 function MAKE_create_menu_tree_message(data) {
     let obj = {}
-    obj.type = MAKE_create_menu_tree_message_name
+    obj.type = TYPE_create_menu_tree_message
     if(!data.hasOwnProperty('type')) throw new Error("object 'create_menu_tree_message' is missing property 'type' ")
     obj.type = data.type
     
@@ -65,15 +65,15 @@ function MAKE_create_menu_tree_message(data) {
 }
 export const MENUS = {
     MAKE_node_type : MAKE_node_type,
-    MAKE_node_type_name : MAKE_node_type_name,
+    TYPE_node_type : TYPE_node_type,
     MAKE_keystroke_obj : MAKE_keystroke_obj,
-    MAKE_keystroke_obj_name : MAKE_keystroke_obj_name,
+    TYPE_keystroke_obj : TYPE_keystroke_obj,
     MAKE_item : MAKE_item,
-    MAKE_item_name : MAKE_item_name,
+    TYPE_item : TYPE_item,
     MAKE_item_array : MAKE_item_array,
-    MAKE_item_array_name : MAKE_item_array_name,
+    TYPE_item_array : TYPE_item_array,
     MAKE_root : MAKE_root,
-    MAKE_root_name : MAKE_root_name,
+    TYPE_root : TYPE_root,
     MAKE_create_menu_tree_message : MAKE_create_menu_tree_message,
-    MAKE_create_menu_tree_message_name : MAKE_create_menu_tree_message_name,
+    TYPE_create_menu_tree_message : TYPE_create_menu_tree_message,
 }

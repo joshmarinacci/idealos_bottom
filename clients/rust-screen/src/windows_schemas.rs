@@ -14,23 +14,23 @@ pub struct window_info {
 }
 pub type window_array = Vec<window_info>;
 pub type window_map = HashMap<String,window_info>;
-pub const window_open_name: &str = "MAKE_window_open_name";
+pub const WindowOpen_name: &str = "MAKE_WindowOpen_name";
 #[derive(Serialize, Deserialize, Debug)]
-pub struct window_open {
+pub struct WindowOpen {
     pub width:i64,
     pub height:i64,
     pub sender:String,
     pub window_type:String,
 }
-pub const window_open_display_name: &str = "MAKE_window_open_display_name";
+pub const WindowOpenDisplay_name: &str = "MAKE_WindowOpenDisplay_name";
 #[derive(Serialize, Deserialize, Debug)]
-pub struct window_open_display {
+pub struct WindowOpenDisplay {
     pub target:String,
     pub window:window_info,
 }
-pub const window_open_response_name: &str = "MAKE_window_open_response_name";
+pub const WindowOpenResponse_name: &str = "MAKE_WindowOpenResponse_name";
 #[derive(Serialize, Deserialize, Debug)]
-pub struct window_open_response {
+pub struct WindowOpenResponse {
     pub target:String,
     pub window:String,
 }

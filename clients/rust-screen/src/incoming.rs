@@ -7,16 +7,16 @@ use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 use websocket::OwnedMessage;
 use crate::messages::{RenderMessage, WindowListMessage, OpenWindowScreen, DrawPixelMessage, FillRectMessage, DrawImageMessage, CloseWindowScreen};
-use crate::windows_schemas::{create_child_window_display, close_child_window_display, window_open_display, window_open_display_name, window_list_name, window_list, create_child_window_display_name, close_child_window_display_name};
+use crate::windows_schemas::{create_child_window_display, close_child_window_display, window_list_name, window_list, create_child_window_display_name, close_child_window_display_name, WindowOpenDisplay_name, WindowOpenDisplay};
 
 fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<()>{
     let v: Value = serde_json::from_str(txt.as_str())?;
     match &v["type"] {
         Value::String(msg_type) => {
-            if msg_type == window_open_display_name {
-                let msg:window_open_display = serde_json::from_str(txt.as_str())?;
+            if msg_type == WindowOpenDisplay_name {
+                let msg:WindowOpenDisplay = serde_json::from_str(txt.as_str())?;
                 renderloop_send.send(RenderMessage::OpenWindow(msg));
-                ()
+                return Ok(())
             }
             if msg_type == window_list_name {
                 let msg:window_list = serde_json::from_str(txt.as_str())?;

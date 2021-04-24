@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::windows_schemas::{create_child_window_display, close_child_window_display, window_open_display, window_refresh_request, window_refresh_response, window_list};
+use crate::windows_schemas::{create_child_window_display, close_child_window_display, window_refresh_request, window_refresh_response, window_list, WindowOpenDisplay};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WindowListMessage  {
@@ -12,7 +12,7 @@ pub struct WindowListMessage  {
 #[derive(Debug)]
 pub enum RenderMessage {
     WindowList(window_list),
-    OpenWindow(window_open_display),
+    OpenWindow(WindowOpenDisplay),
     CloseWindow(CloseWindowScreen),
     CreateChildWindow(create_child_window_display),
     CloseChildWindow(close_child_window_display),

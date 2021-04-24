@@ -12,7 +12,7 @@ function redraw() {
 
 }
 
-app.on(WINDOWS.MAKE_window_refresh_request_name, ()=>{
+app.on(WINDOWS.TYPE_window_refresh_request, ()=>{
     redraw()
 })
 

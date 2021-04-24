@@ -1,6 +1,6 @@
 import {default as WebSocket} from "ws"
 import * as PI from "pureimage"
-import {make_message, message_match, SCHEMAS} from '../canvas/messages.js'
+import {make_message, SCHEMAS} from '../canvas/messages.js'
 import fs from "fs"
 import {Window} from "./guitoolkit.js"
 import {WINDOWS} from "../schemas/windows_schemas.js"
@@ -15,12 +15,12 @@ export class CommonApp {
         this.listeners = {}
         this.ws = new WebSocket(addr);
         this.ws.on('open',()=>{
-            this.ws.send(JSON.stringify(WINDOWS.MAKE_window_open({width:this.width, height:this.height, sender:appid, window_type:window_type})))
+            this.ws.send(JSON.stringify(WINDOWS.MAKE_WindowOpen({width:this.width, height:this.height, sender:appid, window_type:window_type})))
         })
         this.ws.on("message",(data)=>{
             let msg = JSON.parse(data)
             // console.log("incoming message",msg);
-            if(msg.type === WINDOWS.MAKE_window_open_response_name) {
+            if(msg.type === WINDOWS.TYPE_WindowOpenResponse) {
                 this.win_id = msg.window
                 this.fireLater('start',{})
                 return

@@ -2,9 +2,9 @@ window_info = object id:string width:number height:number x:number y:number owne
 window_array = array window_info
 window_map   = map string window_info
 
-window_open = object width:number height:number sender:string window_type:string
-window_open_display = object target:string window:window_info
-window_open_response = object target:string window:string
+WindowOpen = object width:number height:number sender:string window_type:string
+WindowOpenDisplay = object target:string window:window_info
+WindowOpenResponse = object target:string window:string
 
 window_close = object target:string window:string
 
