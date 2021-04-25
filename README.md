@@ -19,9 +19,9 @@ handles mouse and keyboard input.
 
 The APIs are designed to support multiple implementations. Currently the core server and apps 
 are written in Javascript, while the display server is written in Rust. There is also a separate
-display implementation in browser Javascript in a separate repo as part of the debugger.
+display implementation in browser Javascript [as part of the debugger](https://github.com/joshmarinacci/idealos_sidecar).
 
-The actual schema for supported messages is in a separate repo, along with generated Javascript
+The actual schema for supported messages [is in a separate repo](https://github.com/joshmarinacci/idealos_schemas), along with generated Javascript
 and Rust bindings to those messages.
 
 ## Steps to Run
