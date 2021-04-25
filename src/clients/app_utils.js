@@ -2,8 +2,8 @@ import {default as WebSocket} from "ws"
 import * as PI from "pureimage"
 import fs from "fs"
 import {Window} from "./guitoolkit.js"
-import {WINDOWS} from "../schemas/windows_schemas.js"
-import {GRAPHICS} from '../schemas/graphics_schemas.js'
+import {WINDOWS} from "idealos_schemas/js/windows.js"
+import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 
 export class CommonApp {
     constructor(argv,width,height, window_type="plain") {

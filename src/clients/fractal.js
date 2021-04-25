@@ -1,6 +1,6 @@
 import {CommonApp} from './app_utils.js'
-import {WINDOWS} from '../schemas/windows_schemas.js'
-import {GRAPHICS} from '../schemas/graphics_schemas.js'
+import {WINDOWS} from 'idealos_schemas/js/windows.js'
+import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 
 let width = 50
 let height = 50

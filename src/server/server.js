@@ -6,12 +6,12 @@ import {WindowTracker} from './windows.js'
 import {AppTracker} from './apps.js'
 import {ResourceManager} from './resources.js'
 import {sleep} from '../common.js'
-import {WINDOWS} from "../schemas/windows_schemas.js"
-import {RESOURCES} from '../schemas/resources_schemas.js'
-import {INPUT} from '../schemas/input_schemas.js'
-import {GENERAL} from '../schemas/general_schemas.js'
-import {DEBUG} from '../schemas/debug_schemas.js'
-import {GRAPHICS} from '../schemas/graphics_schemas.js'
+import {WINDOWS} from "idealos_schemas/js/windows.js"
+import {RESOURCES} from "idealos_schemas/js/resources.js"
+import {INPUT} from "idealos_schemas/js/input.js"
+import {DEBUG} from "idealos_schemas/js/debug.js"
+import {GRAPHICS} from "idealos_schemas/js/graphics.js"
+import {GENERAL} from "idealos_schemas/js/general.js"
 
 export const hostname = '127.0.0.1'
 export const webserver_port = 3000

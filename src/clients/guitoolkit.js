@@ -1,7 +1,7 @@
-import {WINDOWS} from '../schemas/windows_schemas.js'
-import {RESOURCES} from '../schemas/resources_schemas.js'
-import {INPUT} from '../schemas/input_schemas.js'
-import {GRAPHICS} from '../schemas/graphics_schemas.js'
+import {WINDOWS} from 'idealos_schemas/js/windows.js'
+import {RESOURCES} from 'idealos_schemas/js/resources.js'
+import {INPUT} from 'idealos_schemas/js/input.js'
+import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {default as WebSocket} from 'ws'
 import {PixelFont} from './app_utils.js'
 

@@ -1,6 +1,6 @@
 import path from 'path'
 import fs from 'fs'
-import {RESOURCES} from '../schemas/resources_schemas.js'
+import {RESOURCES} from 'idealos_schemas/js/resources.js'
 
 const RESOURCES_SET = {
     'test': {

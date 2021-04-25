@@ -1,9 +1,6 @@
-import {CommonApp, PixelFont} from './app_utils.js'
 import {App, Container} from './guitoolkit.js'
-import {MENUS} from '../schemas/menus_schemas.js'
-import {WINDOWS} from "../schemas/windows_schemas.js"
-import {RESOURCES} from '../schemas/resources_schemas.js'
-import {INPUT} from '../schemas/input_schemas.js'
+import {MENUS} from 'idealos_schemas/js/menus.js'
+import {INPUT} from 'idealos_schemas/js/input.js'
 let app = new App(process.argv)//,1024/4,10,'menubar')
 
 let menu_tree = MENUS.MAKE_root({

@@ -1,9 +1,0 @@
-node_type = enum string "item" "top" "root"
-keystroke_obj = object modifier:string key:string
-item = object node_type:node_type label:string event:string keystroke:keystroke_obj
-item_array = array item
-root = object type:node_type children:item_array
-create_menu_tree_message = object type:string menu:root
-
-@GEN = item
-

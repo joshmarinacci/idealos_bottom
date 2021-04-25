@@ -1,5 +1,0 @@
-Heartbeat = object
-ScreenStart = object
-Connected = object
-log_data = array string
-Log = object data:log_data

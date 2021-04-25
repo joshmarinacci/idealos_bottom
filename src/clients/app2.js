@@ -1,7 +1,7 @@
 import {CommonApp} from './app_utils.js'
-import {WINDOWS} from '../schemas/windows_schemas.js'
-import {INPUT} from '../schemas/input_schemas.js'
-import {GRAPHICS} from '../schemas/graphics_schemas.js'
+import {WINDOWS} from 'idealos_schemas/js/windows.js'
+import {INPUT} from 'idealos_schemas/js/input.js'
+import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 
 let app = new CommonApp(process.argv,10,5)
 app.on('start',()=>{
