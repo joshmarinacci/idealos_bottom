@@ -9,7 +9,6 @@
     "start-server": "node src/server/start.js",
     "raylib": "node src/raylib/raylib_screen.js",
     "rust": "cd clients/rust-screen && cargo run",
-    "docs": "node tools/make_docs.js",
     "build-schemas": "node tools/schema_compiler.js"
   },
   "keywords": [],
