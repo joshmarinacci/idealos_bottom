@@ -3,9 +3,11 @@ function MAKE_ResourceGet(data) {
     let obj = {}
     obj.type = TYPE_ResourceGet
     if(!data.hasOwnProperty('resource')) throw new Error("object 'ResourceGet' is missing property 'resource' ")
+    if(data.resource === undefined) throw new Error("object 'ResourceGet has undefined property resource")
     obj.resource = data.resource
     
     if(!data.hasOwnProperty('sender')) throw new Error("object 'ResourceGet' is missing property 'sender' ")
+    if(data.sender === undefined) throw new Error("object 'ResourceGet has undefined property sender")
     obj.sender = data.sender
     
     return obj
@@ -15,9 +17,11 @@ function MAKE_ResourceSet(data) {
     let obj = {}
     obj.type = TYPE_ResourceSet
     if(!data.hasOwnProperty('resource')) throw new Error("object 'ResourceSet' is missing property 'resource' ")
+    if(data.resource === undefined) throw new Error("object 'ResourceSet has undefined property resource")
     obj.resource = data.resource
     
     if(!data.hasOwnProperty('data')) throw new Error("object 'ResourceSet' is missing property 'data' ")
+    if(data.data === undefined) throw new Error("object 'ResourceSet has undefined property data")
     obj.data = data.data
     
     return obj
@@ -27,12 +31,15 @@ function MAKE_ResourceChanged(data) {
     let obj = {}
     obj.type = TYPE_ResourceChanged
     if(!data.hasOwnProperty('resource')) throw new Error("object 'ResourceChanged' is missing property 'resource' ")
+    if(data.resource === undefined) throw new Error("object 'ResourceChanged has undefined property resource")
     obj.resource = data.resource
     
     if(!data.hasOwnProperty('data')) throw new Error("object 'ResourceChanged' is missing property 'data' ")
+    if(data.data === undefined) throw new Error("object 'ResourceChanged has undefined property data")
     obj.data = data.data
     
     if(!data.hasOwnProperty('mimetype')) throw new Error("object 'ResourceChanged' is missing property 'mimetype' ")
+    if(data.mimetype === undefined) throw new Error("object 'ResourceChanged has undefined property mimetype")
     obj.mimetype = data.mimetype
     
     return obj
@@ -42,6 +49,7 @@ function MAKE_ResourceInvalid(data) {
     let obj = {}
     obj.type = TYPE_ResourceInvalid
     if(!data.hasOwnProperty('resource')) throw new Error("object 'ResourceInvalid' is missing property 'resource' ")
+    if(data.resource === undefined) throw new Error("object 'ResourceInvalid has undefined property resource")
     obj.resource = data.resource
     
     return obj

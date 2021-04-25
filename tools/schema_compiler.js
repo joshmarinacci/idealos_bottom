@@ -135,6 +135,7 @@ function make_js_output(namespace,defs) {
             js_output.line(`obj.type = TYPE_${target}`)
             Object.entries(def.props).forEach(([name,type])=>{
                 js_output.line(`if(!data.hasOwnProperty('${name}')) throw new Error("object '${target}' is missing property '${name}' ")`)
+                js_output.line(`if(data.${name} === undefined) throw new Error("object '${target} has undefined property ${name}")`)
                 if(type === 'string') {
                     js_output.line(`obj.${name} = data.${name}`)
                     js_output.blank()

@@ -31,7 +31,7 @@ fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<(
             }
             if msg_type == close_child_window_display_name {
                 let msg:close_child_window_display = serde_json::from_str(txt.as_str())?;
-                renderloop_send.send(RenderMessage::CloseChildWindow(msg));
+                    renderloop_send.send(RenderMessage::CloseChildWindow(msg));
                 return Ok(())
             }
             if msg_type == DrawPixel_name {

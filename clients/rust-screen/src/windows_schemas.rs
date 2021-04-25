@@ -110,17 +110,17 @@ pub struct close_child_window {
     pub type_:String,
     pub parent:String,
     pub sender:String,
-    pub id:String,
+    pub window:String,
 }
 pub const close_child_window_response_name: &str = "MAKE_close_child_window_response_name";
 #[derive(Serialize, Deserialize, Debug)]
 pub struct close_child_window_response {
     #[serde(rename = "type")]
     pub type_:String,
-    pub sender:String,
-    pub target:String,
     pub parent:String,
+    pub sender:String,
     pub window:String,
+    pub target:String,
 }
 pub const close_child_window_display_name: &str = "MAKE_close_child_window_display_name";
 #[derive(Serialize, Deserialize, Debug)]
@@ -128,6 +128,6 @@ pub struct close_child_window_display {
     #[serde(rename = "type")]
     pub type_:String,
     pub parent:String,
-    pub window:String,
     pub sender:String,
+    pub window:String,
 }

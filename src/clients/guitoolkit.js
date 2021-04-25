@@ -181,10 +181,10 @@ export class Window {
             })))
             let handler = (e) => {
                 this.app.off(WINDOWS.TYPE_create_child_window_response,handler)
-                let win = new Window(this.app,width,height,e.payload.window,this)
+                let win = new Window(this.app,width,height,e.payload.window.id,this)
                 res(win)
             }
-            this.app.on(WINDOWS.TYPE_WindowOpenResponse,handler)
+            this.app.on(WINDOWS.TYPE_create_child_window_response,handler)
         })
     }
     close() {
@@ -192,7 +192,7 @@ export class Window {
             this.app.ws.send(JSON.stringify(WINDOWS.MAKE_close_child_window({
                 parent:this.parent._winid,
                 sender:this.app._appid,
-                id:this._winid
+                window:this._winid
             })))
         }
     }

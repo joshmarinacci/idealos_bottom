@@ -91,34 +91,15 @@ class CustomMenuBar extends Container {
         })
     }
     async mouse_down_at(e) {
-        this.app.log("down at",e.payload)
         let i = Math.floor(e.payload.x/20)
         if(this.tree.children.length >= i) {
             let item = this.tree.children[i]
-            this.app.log("clicked on",item)
             item.open = !item.open
             this.win.redraw()
             if(item.open) {
-                //request window
-                this.app.log("sending create child window")
-                this.popup = await this.win.a_open_child_window(i*20,10,30,40,'menu')
-                // this.app.send(WINDOWS.MAKE_create_child_window({
-                //     type:'CREATE_CHILD_WINDOW',
-                    // parent:this.win._winid,
-                    // x:i*20,y:10,
-                    // width:30,height:40,
-                    // style:'menu',
-                    // sender:this.app._appid}))
+                this.popup = await this.win.a_open_child_window(i*20,20,30,40,'menu')
             } else {
-                //close window
                 await this.popup.close()
-                // this.app.log("sending close child window", this.popup_id)
-                // this.app.send(WINDOWS.MAKE_close_child_window({
-                //     type:'CLOSE_CHILD_WINDOW',
-                    // parent:this.win._winid,
-                    // id: this.popup_id,
-                    // sender:this.app._appid
-                // }))
             }
         }
     }
@@ -132,7 +113,7 @@ async function init() {
         // app.send(MENUS.MAKE_create_menu_tree_message({type:'CREATE_MENU_TREE',menu:menu_tree}))
 
     app.on(INPUT.TYPE_MouseDown,(e)=>{
-        win.root.mouse_down_at(e)
+        win.root.mouse_down_at(e).then(()=>console.log("done event"))
     })
         // app.on(WINDOWS.TYPE_create_child_window_response,(e)=>{
         //     app.log("got the child window response",e)

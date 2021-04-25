@@ -94,18 +94,18 @@ function handle_open_child_window_message(msg) {
 }
 
 function handle_close_child_window_message(msg) {
-    log("closing child window",msg.id)
-    wids.close_child_window(msg.id)
+    log("closing child window",msg.window)
+    wids.close_child_window(msg.window)
     forward_to_screen(WINDOWS.MAKE_close_child_window_display({
         target:msg.sender,
         parent:msg.parent,
-        window:msg.id,
+        window:msg.window,
         sender:msg.sender,
     }))
     forward_to_target(WINDOWS.MAKE_close_child_window_response({
         target:msg.sender,
         parent:msg.parent,
-        window:msg.id,
+        window:msg.window,
         sender:msg.sender,
     }))
 }
@@ -221,7 +221,7 @@ export function start_message_server() {
 
                 // if(message_match('CREATE_MENU_TREE',msg)) return forward_to_menubar(msg)
                 if(msg.type === WINDOWS.TYPE_create_child_window)  return handle_open_child_window_message(msg)
-                if(msg.type === WINDOWS.TYPE_close_child_window) return handle_close_child_window_message(msg)
+                if(msg.type === WINDOWS.TYPE_close_child_window)   return handle_close_child_window_message(msg)
 
                 log("unknown incoming message", msg)
             } catch (e) {

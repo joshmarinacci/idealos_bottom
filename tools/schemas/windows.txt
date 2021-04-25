@@ -13,11 +13,12 @@ window_list = object windows:window_map
 window_refresh_request = object target:string window:string
 window_refresh_response = object
 
-create_child_window = object parent:string x:number y:number width:number height:number style:string sender:string
+create_child_window          = object parent:string x:number y:number width:number height:number style:string sender:string
 create_child_window_response = object sender:string target:string parent:string window:string
-create_child_window_display = object parent:string window:window_info sender:string
-close_child_window = object parent:string sender:string id:string
-close_child_window_response = object sender:string target:string parent:string window:string
-close_child_window_display = object parent:string window:string sender:string
+create_child_window_display  = object parent:string window:window_info sender:string
+
+close_child_window           = object parent:string sender:string window:string
+close_child_window_response  = object parent:string sender:string window:string target:string
+close_child_window_display   = object parent:string sender:string window:string
 
 
