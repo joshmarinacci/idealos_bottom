@@ -97,11 +97,31 @@ class CustomMenuBar extends Container {
             item.open = !item.open
             this.win.redraw()
             if(item.open) {
-                this.popup = await this.win.a_open_child_window(i*20,20,30,40,'menu')
+                let width = 30
+                let height = item.children.length*15
+                this.popup = await this.win.a_open_child_window(i*20,10,width,height,'menu')
+                this.popup.root = new CustomMenu({width, height},item,app,this.popup)
             } else {
                 await this.popup.close()
             }
         }
+    }
+}
+class CustomMenu extends Container {
+    constructor(opts,item,app,win) {
+        super(opts);
+        this.item = item
+        this.app = app
+        this.win = win
+    }
+    redraw(gfx) {
+        gfx.rect(this.x, this.y, this.width, this.height, 'white')
+        this.item.children.forEach((top, i) => {
+            let bg = 'white'
+            let fg = 'black'
+            gfx.rect(1, i * 15, 20, 10, bg)
+            gfx.text(1, i * 15 + 2, top.label, fg)
+        })
     }
 }
 
@@ -110,18 +130,9 @@ async function init() {
     let win = await app.open_window(0,0,1024/4,10,'menubar')
     win.root = new CustomMenuBar({width:win.width, height:win.height},menu_tree,app,win)
     win.redraw()
-        // app.send(MENUS.MAKE_create_menu_tree_message({type:'CREATE_MENU_TREE',menu:menu_tree}))
-
     app.on(INPUT.TYPE_MouseDown,(e)=>{
         win.root.mouse_down_at(e).then(()=>console.log("done event"))
     })
-        // app.on(WINDOWS.TYPE_create_child_window_response,(e)=>{
-        //     app.log("got the child window response",e)
-        //     app.win.root.popup_id = e.payload.window.id
-        // })
-        // app.on(INPUT.TYPE_MouseUp,()=>{
-        // })
-
 }
 
 
