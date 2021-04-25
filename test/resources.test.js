@@ -6,7 +6,6 @@ import {
     websocket_port
 } from '../src/server/server.js'
 import {default as WebSocket} from 'ws'
-import {make_message, SCHEMAS} from '../src/canvas/messages.js'
 import {RESOURCES} from '../src/schemas/resources_schemas.js'
 import {GENERAL} from '../src/schemas/general_schemas.js'
 import {DEBUG} from '../src/schemas/debug_schemas.js'
