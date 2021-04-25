@@ -5,7 +5,9 @@ Currently it runs on Mac, but should work on anything supported by SDL2 that can
 
 The purpose of this prototype is to experiment with desktop OS ideas. How can we provide 
 functionality modern people expect with 1% of the code and at many times the speed (or on meager
-hardware like a Raspberry PI). 
+hardware like a Raspberry PI).
+
+![image](docs/screenshots/basic01.png)
 
 ## Achitecture
 
