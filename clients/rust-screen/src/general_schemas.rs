@@ -19,3 +19,11 @@ pub struct Connected {
     #[serde(rename = "type")]
     pub type_:String,
 }
+pub type log_data = Vec<String>;
+pub const Log_name: &str = "MAKE_Log_name";
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Log {
+    #[serde(rename = "type")]
+    pub type_:String,
+    pub data:log_data,
+}

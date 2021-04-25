@@ -1,4 +1,3 @@
-import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp} from './app_utils.js'
 import {WINDOWS} from '../schemas/windows_schemas.js'
 import {GRAPHICS} from '../schemas/graphics_schemas.js'

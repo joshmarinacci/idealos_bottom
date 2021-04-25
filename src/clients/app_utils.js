@@ -1,6 +1,5 @@
 import {default as WebSocket} from "ws"
 import * as PI from "pureimage"
-import {make_message, SCHEMAS} from '../canvas/messages.js'
 import fs from "fs"
 import {Window} from "./guitoolkit.js"
 import {WINDOWS} from "../schemas/windows_schemas.js"

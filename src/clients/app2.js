@@ -1,4 +1,3 @@
-import {make_message, SCHEMAS} from '../canvas/messages.js'
 import {CommonApp} from './app_utils.js'
 import {WINDOWS} from '../schemas/windows_schemas.js'
 import {INPUT} from '../schemas/input_schemas.js'
@@ -18,7 +17,7 @@ app.on(WINDOWS.TYPE_window_refresh_request, ()=>{
     draw_button_released()
 })
 function fill_rect(w,h,color) {
-    app.send(GRAPHICS.MAKE_DrawRect({x:0,y:0,width:w,height:h,color:color, window:app.win._winid}))
+    app.send(GRAPHICS.MAKE_DrawRect({x:0,y:0,width:w,height:h,color:color, window:app.win_id}))
 }
 function draw_button() {
     fill_rect(app.width,app.height,'green')

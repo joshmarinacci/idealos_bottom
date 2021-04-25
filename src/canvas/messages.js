@@ -2,7 +2,7 @@
 let schemas = {
     DEBUG:{
         CLIENT:[],
-        LOG:['data'],
+        // LOG:['data'],
     },
 }
 

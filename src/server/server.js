@@ -2,7 +2,6 @@ import WS from "ws"
 import fs from "fs"
 import http from "http"
 import path from "path"
-import {make_message, message_match, SCHEMAS} from '../canvas/messages.js'
 import {WindowTracker} from './windows.js'
 import {AppTracker} from './apps.js'
 import {ResourceManager} from './resources.js'
@@ -20,7 +19,7 @@ export const websocket_port = 8081
 
 function log(...args) {
     console.log(...args)
-    forward_to_debug(make_message(SCHEMAS.DEBUG.LOG,{data:args}))
+    forward_to_debug(GENERAL.MAKE_Log({data:args}))
 }
 
 const connections = {}
@@ -67,10 +66,8 @@ function handle_open_window_message(ws,msg) {
     })
 
     //send response to screen
-    // forward_to_screen(make_message(SCHEMAS.WINDOW.OPEN_SCREEN, {target:msg.sender, window:wids.window_for_id(win_id)}))
     forward_to_screen(WINDOWS.MAKE_WindowOpenDisplay({target:msg.sender, window:wids.window_for_id(win_id)}))
     //send response back to client
-    // forward_to_target(make_message(SCHEMAS.WINDOW.OPEN_RESPONSE, {target:msg.sender, window:win_id}))
     forward_to_target(WINDOWS.MAKE_WindowOpenResponse({target:msg.sender, window:win_id}))
 }
 

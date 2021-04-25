@@ -1,4 +1,3 @@
-import {make_message, SCHEMAS} from '../canvas/messages.js'
 import path from 'path'
 import fs from 'fs'
 import {RESOURCES} from '../schemas/resources_schemas.js'

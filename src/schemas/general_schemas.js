@@ -16,6 +16,20 @@ function MAKE_Connected(data) {
     obj.type = TYPE_Connected
     return obj
 }
+const TYPE_log_data = "MAKE_log_data_name"
+export function MAKE_log_data(arr) {
+    return arr
+}
+const TYPE_Log = "MAKE_Log_name"
+function MAKE_Log(data) {
+    let obj = {}
+    obj.type = TYPE_Log
+    if(!data.hasOwnProperty('data')) throw new Error("object 'Log' is missing property 'data' ")
+    if(data.data === undefined) throw new Error("object 'Log has undefined property data")
+    obj.data = MAKE_log_data(data.data)
+    
+    return obj
+}
 export const GENERAL = {
     MAKE_Heartbeat : MAKE_Heartbeat,
     TYPE_Heartbeat : TYPE_Heartbeat,
@@ -23,4 +37,8 @@ export const GENERAL = {
     TYPE_ScreenStart : TYPE_ScreenStart,
     MAKE_Connected : MAKE_Connected,
     TYPE_Connected : TYPE_Connected,
+    MAKE_log_data : MAKE_log_data,
+    TYPE_log_data : TYPE_log_data,
+    MAKE_Log : MAKE_Log,
+    TYPE_Log : TYPE_Log,
 }

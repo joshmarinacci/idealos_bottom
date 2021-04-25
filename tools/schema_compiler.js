@@ -232,7 +232,9 @@ function make_rs_output(namespace, defs) {
         }
         if(def.type === 'array') {
             // console.log("doing rust array",target,'=',def)
-            rs_output.line(`pub type ${target} = Vec<${def.array_type}>;`);
+            let array_type = def.array_type
+            if(array_type === 'string') array_type = 'String'
+            rs_output.line(`pub type ${target} = Vec<${array_type}>;`);
         }
         if(def.type === 'map') {
             // console.log("doing rust output map",target,'=',def)
