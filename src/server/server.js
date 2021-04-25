@@ -37,6 +37,7 @@ const CLIENT_TYPES = {
 let resources = new ResourceManager(log, respond)
 
 function handle_start_message(ws,msg) {
+    log("assigned to screen",CLIENT_TYPES.SCREEN)
     connections[CLIENT_TYPES.SCREEN] = ws
     forward_to_screen(WINDOWS.MAKE_window_list({windows:wids.windows}))
 }
@@ -142,23 +143,24 @@ function restart_app(msg) {
 }
 
 function stop_app(msg) {
+    console.log("stopping app",msg)
     let appid = msg.target
     if(at.has_app(appid)) {
         at.stop(appid)
-        wids.windows_for_appid(appid).forEach(win => {
-            forward_to_screen(WINDOWS.MAKE_close_child_window_display({
-                target: appid,
-                window: {
-                    id: win.id,
-                    width: win.width,
-                    height: win.height,
-                    x: win.x,
-                    y: win.y,
-                    owner: win.owner,
-                    window_type:win.window_type,
-                }
-            }))
-        })
+        // wids.windows_for_appid(appid).forEach(win => {
+        //     forward_to_screen(WINDOWS.MAKE_close_child_window_display({
+        //         target: appid,
+        //         window: {
+        //             id: win.id,
+        //             width: win.width,
+        //             height: win.height,
+        //             x: win.x,
+        //             y: win.y,
+        //             owner: win.owner,
+        //             window_type:win.window_type,
+        //         }
+        //     }))
+        // })
         wids.remove_windows_for_appid(appid)
     }
 }
@@ -195,6 +197,9 @@ export function start_message_server() {
                 if(msg.type === WINDOWS.TYPE_WindowOpenResponse) return forward_to_target(msg)
                 if(msg.type === WINDOWS.TYPE_window_refresh_request) return forward_to_target(msg)
                 if(msg.type === WINDOWS.TYPE_window_refresh_response) return forward_to_target(msg)
+                if(msg.type === WINDOWS.TYPE_window_close) return forward_to_screen(msg)
+                if(msg.type === WINDOWS.TYPE_create_child_window)  return handle_open_child_window_message(msg)
+                if(msg.type === WINDOWS.TYPE_close_child_window)   return handle_close_child_window_message(msg)
 
                 if(msg.type === GRAPHICS.TYPE_DrawPixel) return forward_to_screen(msg)
                 if(msg.type === GRAPHICS.TYPE_DrawRect) return forward_to_screen(msg)
@@ -215,10 +220,7 @@ export function start_message_server() {
                 if(msg.type === RESOURCES.TYPE_ResourceGet) return resources.get_resource(msg)
                 // if (msg.type === RESOURCES.TYPE_ResourceSet) return resources.set_resource(msg)
                 // if (message_match(SCHEMAS.RESOURCE.SET, msg)) return resources.set_resource(msg)
-
                 // if(message_match('CREATE_MENU_TREE',msg)) return forward_to_menubar(msg)
-                if(msg.type === WINDOWS.TYPE_create_child_window)  return handle_open_child_window_message(msg)
-                if(msg.type === WINDOWS.TYPE_close_child_window)   return handle_close_child_window_message(msg)
 
                 log("unknown incoming message", msg)
             } catch (e) {

@@ -31,8 +31,11 @@ export class CommonApp {
 
         process.on('SIGTERM', () => {
             console.log(`Received SIGTERM in app ${appid} `);
-            this.ws.close()
-            process.exit(0)
+            this.ws.send(JSON.stringify(WINDOWS.MAKE_window_close({target:appid, window:this.win_id})))
+            setTimeout(()=>{
+                this.ws.close()
+                process.exit(0)
+            },500)
         });
         this.theme = null
         this.win = new Window(this,width,height)

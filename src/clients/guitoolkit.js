@@ -10,6 +10,7 @@ export class App {
         this._appid = argv[3]
         this.ws = new WebSocket(argv[2]);
         this.listeners = {}
+        this.windows = []
         this.ws.on('open', () => {
             this.fireLater('start', {})
         })
@@ -18,9 +19,18 @@ export class App {
             this.fireLater(msg.type, msg)
         })
         process.on('SIGTERM', () => {
-            console.log(`Received SIGTERM in app ${appid} `);
-            this.ws.close()
-            process.exit(0)
+            console.log(`Received SIGTERM in app ${this._appid} `);
+            this.windows.forEach(win => {
+                console.log("closing window",win._winid,this._appid)
+                this.send(WINDOWS.MAKE_window_close({
+                    target:this._appid,
+                    window:win._winid,
+                }))
+            })
+            setTimeout(()=>{
+                this.ws.close()
+                process.exit(0)
+            },500)
         });
         this._theme = null
         this._font = null
@@ -46,6 +56,7 @@ export class App {
             let handler = (e) => {
                 this.off(WINDOWS.TYPE_WindowOpenResponse,handler)
                 let win = new Window(this,width,height,e.payload.window)
+                this.windows.push(win)
                 res(win)
             }
             this.on(WINDOWS.TYPE_WindowOpenResponse,handler)
@@ -87,7 +98,8 @@ export class Window {
         this.focused = null
         this.is_child = false
         this.parent = parent
-        if(this.parent) this.is_child = true
+        console.log('local window parent is',this.parent)
+        // if(this.parent) this.is_child = true
         this.mouse = {
             x: -1,
             y: -1,
