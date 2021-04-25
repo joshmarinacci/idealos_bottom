@@ -3,7 +3,7 @@ use websocket::OwnedMessage;
 use std::sync::mpsc::Sender;
 use crate::window::Window;
 use serde_json::{json};
-use crate::windows_schemas::{window_refresh_request, window_refresh_request_name};
+use idealos_schemas::windows::{window_refresh_request_name, window_refresh_request};
 
 pub fn send_refresh_all_windows_request(windows: &HashMap<String, Window>, sender:&Sender<OwnedMessage>) {
     println!("sending out full refresh request");

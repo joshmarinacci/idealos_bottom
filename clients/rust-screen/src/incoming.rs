@@ -6,9 +6,10 @@ use websocket::receiver::Reader;
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 use websocket::OwnedMessage;
-use crate::messages::{RenderMessage, DrawPixelMessage, FillRectMessage, DrawImageMessage, CloseWindowScreen};
-use crate::windows_schemas::{create_child_window_display, close_child_window_display, window_list_name, window_list, create_child_window_display_name, close_child_window_display_name, WindowOpenDisplay_name, WindowOpenDisplay};
-use crate::graphics_schemas::{DrawPixel_name, DrawRect_name, DrawPixel, DrawRect, DrawImage_name, DrawImage};
+use crate::messages::{RenderMessage, CloseWindowScreen};
+use idealos_schemas::windows::*;
+use idealos_schemas::graphics::*;
+
 
 fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<()>{
     let v: Value = serde_json::from_str(txt.as_str())?;

@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::windows_schemas::{create_child_window_display, close_child_window_display, window_list, WindowOpenDisplay};
-use crate::graphics_schemas::{DrawRect, DrawPixel, DrawImage};
+use idealos_schemas::windows::{window_list, WindowOpenDisplay, create_child_window_display, close_child_window_display};
+use idealos_schemas::graphics::{DrawPixel, DrawImage, DrawRect};
+
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WindowListMessage  {

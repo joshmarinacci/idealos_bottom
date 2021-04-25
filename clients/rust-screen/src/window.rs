@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::messages::WindowInfo;
-use crate::windows_schemas::window_info;
+use idealos_schemas::windows::window_info;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Rect {

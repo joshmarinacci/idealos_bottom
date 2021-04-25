@@ -25,7 +25,7 @@ use sdl2::mouse::Cursor;
 use sdl2::surface::Surface;
 use sdl2::rect::Rect;
 use serde_json::{json};
-use crate::general_schemas::{ScreenStart,ScreenStart_name};
+use idealos_schemas::general::{ScreenStart_name, ScreenStart};
 
 mod messages;
 mod window;
@@ -35,12 +35,6 @@ mod backend;
 mod sdl2backend;
 mod common;
 mod fontinfo;
-mod menus_schemas;
-mod windows_schemas;
-mod input_schemas;
-mod general_schemas;
-mod graphics_schemas;
-mod debug_schemas;
 
 
 pub fn main() -> Result<(),String> {

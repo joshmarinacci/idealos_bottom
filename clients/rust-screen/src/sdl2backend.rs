@@ -19,8 +19,7 @@ use sdl2::video::WindowContext;
 use sdl2::rect::Rect;
 use sdl2::mouse::{MouseButton, MouseState};
 use colors_transform::{Rgb, Color as CTColor};
-use crate::input_schemas::{MouseDown, MouseUp, KeyboardDown, MouseDown_name, KeyboardDown_name, MouseUp_name};
-
+use idealos_schemas::input::{KeyboardDown, KeyboardDown_name, MouseUp_name, MouseUp, MouseDown_name, MouseDown};
 
 const SCALE: u32 = 4;
 const SCALEI: i32 = SCALE as i32;
