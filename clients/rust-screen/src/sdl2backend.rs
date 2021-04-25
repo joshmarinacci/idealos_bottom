@@ -150,7 +150,7 @@ impl<'a> SDL2Backend<'a> {
                                                 if alpha > 0 {
                                                     let col = Color::RGBA(m.pixels[n + 0], m.pixels[n + 1], m.pixels[n + 2], m.pixels[n + 3]);
                                                     texture_canvas.set_draw_color(col);
-                                                    texture_canvas.fill_rect(Rect::new(m.x+i, m.y+j, 1, 1));
+                                                    texture_canvas.fill_rect(Rect::new((m.x + i) as i32, (m.y + j) as i32, 1, 1));
                                                 }
                                             }
                                         }

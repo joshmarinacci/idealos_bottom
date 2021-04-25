@@ -4,6 +4,7 @@ import {make_message, SCHEMAS} from '../canvas/messages.js'
 import fs from "fs"
 import {Window} from "./guitoolkit.js"
 import {WINDOWS} from "../schemas/windows_schemas.js"
+import {GRAPHICS} from '../schemas/graphics_schemas.js'
 
 export class CommonApp {
     constructor(argv,width,height, window_type="plain") {
@@ -165,7 +166,7 @@ class PixelFontImpl {
             }
             dy += line_height
         })
-        app.send(make_message(SCHEMAS.DRAW.IMAGE,{x:x,y:y,width:w,height:h,pixels:img.to_array(),window:win._winid}))
+        app.send(GRAPHICS.MAKE_DrawImage({x:x,y:y,width:w,height:h,pixels:img.to_array(),window:win._winid}))
     }
 }
 

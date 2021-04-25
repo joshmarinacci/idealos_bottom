@@ -1,3 +1,4 @@
 DrawPixel = object window:string color:string x:number y:number
 DrawRect  = object window:string color:string x:number y:number width:number height:number
-
+DrawImage = object window:string x:number y:number width:number height:number pixels:image_buffer
+image_buffer = array u8

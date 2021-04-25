@@ -8,7 +8,7 @@ use std::sync::mpsc::Sender;
 use websocket::OwnedMessage;
 use crate::messages::{RenderMessage, DrawPixelMessage, FillRectMessage, DrawImageMessage, CloseWindowScreen};
 use crate::windows_schemas::{create_child_window_display, close_child_window_display, window_list_name, window_list, create_child_window_display_name, close_child_window_display_name, WindowOpenDisplay_name, WindowOpenDisplay};
-use crate::graphics_schemas::{DrawPixel_name, DrawRect_name, DrawPixel, DrawRect};
+use crate::graphics_schemas::{DrawPixel_name, DrawRect_name, DrawPixel, DrawRect, DrawImage_name, DrawImage};
 
 fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<()>{
     let v: Value = serde_json::from_str(txt.as_str())?;
@@ -44,12 +44,12 @@ fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<(
                 renderloop_send.send(RenderMessage::FillRect(msg));
                 return Ok(())
             }
+            if msg_type == DrawImage_name {
+                let msg:DrawImage = serde_json::from_str(txt.as_str())?;
+                renderloop_send.send(RenderMessage::DrawImage(msg));
+                return Ok(())
+            }
             match &msg_type[..] {
-                "DRAW_IMAGE"   => {
-                    let msg:DrawImageMessage = serde_json::from_str(txt.as_str())?;
-                    renderloop_send.send(RenderMessage::DrawImage(msg));
-                    ()
-                },
                 "WINDOW_CLOSE" => {
                     let msg:CloseWindowScreen = serde_json::from_str(txt.as_str())?;
                     renderloop_send.send(RenderMessage::CloseWindow(msg));

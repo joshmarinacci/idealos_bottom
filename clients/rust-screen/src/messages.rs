@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use crate::windows_schemas::{create_child_window_display, close_child_window_display, window_list, WindowOpenDisplay};
-use crate::graphics_schemas::{DrawRect, DrawPixel};
+use crate::graphics_schemas::{DrawRect, DrawPixel, DrawImage};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WindowListMessage  {
@@ -18,7 +18,7 @@ pub enum RenderMessage {
     CreateChildWindow(create_child_window_display),
     CloseChildWindow(close_child_window_display),
     DrawPixel(DrawPixel),
-    DrawImage(DrawImageMessage),
+    DrawImage(DrawImage),
     FillRect(DrawRect),
 }
 

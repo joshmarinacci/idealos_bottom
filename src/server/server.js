@@ -201,7 +201,7 @@ export function start_message_server() {
 
                 if(msg.type === GRAPHICS.TYPE_DrawPixel) return forward_to_screen(msg)
                 if(msg.type === GRAPHICS.TYPE_DrawRect) return forward_to_screen(msg)
-                if (message_match(SCHEMAS.DRAW.IMAGE, msg)) return forward_to_screen(msg)
+                if(msg.type === GRAPHICS.TYPE_DrawImage) return forward_to_screen(msg)
 
                 if(msg.type === INPUT.TYPE_MouseDown) return forward_to_target(msg)
                 if(msg.type === INPUT.TYPE_MouseUp) return forward_to_target(msg)
@@ -215,7 +215,7 @@ export function start_message_server() {
 
                 if(msg.type === DEBUG.TYPE_TestStart) return start_test(ws,msg)
 
-                if (msg.type === RESOURCES.TYPE_ResourceGet) return resources.get_resource(msg)
+                if(msg.type === RESOURCES.TYPE_ResourceGet) return resources.get_resource(msg)
                 // if (msg.type === RESOURCES.TYPE_ResourceSet) return resources.set_resource(msg)
                 // if (message_match(SCHEMAS.RESOURCE.SET, msg)) return resources.set_resource(msg)
 
