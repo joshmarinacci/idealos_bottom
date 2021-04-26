@@ -49,7 +49,7 @@ app.on(WINDOWS.TYPE_SetFocusedWindow,()=>{
         children:[
             {
                 type:'top',
-                label:'Awesome',
+                label:'GUI_test',
                 children:[]
             }
         ]
