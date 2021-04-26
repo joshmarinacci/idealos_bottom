@@ -1,4 +1,6 @@
 import {App, Button, HBox, Label, Panel, TextBox, ToggleButton, VBox} from './guitoolkit.js'
+import {WINDOWS} from 'idealos_schemas/js/windows.js'
+import {MENUS} from 'idealos_schemas/js/menus.js'
 let app = new App(process.argv)
 
 async function init() {
@@ -40,3 +42,19 @@ async function init() {
 
 
 app.on('start',()=>init())
+app.on(WINDOWS.TYPE_SetFocusedWindow,()=>{
+    console.log("gui app received the focus")
+    let menu = {
+        type:"root",
+        children:[
+            {
+                type:'top',
+                label:'Awesome',
+                children:[]
+            }
+        ]
+    }
+    let msg =  MENUS.MAKE_SetMenubar({menu:menu})
+    app.send(msg)
+    console.log("sent the message",msg)
+})

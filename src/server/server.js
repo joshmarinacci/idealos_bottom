@@ -12,6 +12,7 @@ import {INPUT} from "idealos_schemas/js/input.js"
 import {DEBUG} from "idealos_schemas/js/debug.js"
 import {GRAPHICS} from "idealos_schemas/js/graphics.js"
 import {GENERAL} from "idealos_schemas/js/general.js"
+import {MENUS} from 'idealos_schemas/js/menus.js'
 
 export const hostname = '127.0.0.1'
 export const webserver_port = 3000
@@ -54,6 +55,7 @@ function handle_open_window_message(ws,msg) {
     if(msg.window_type === 'menubar') {
         x = 0
         y = 0
+        connections[CLIENT_TYPES.MENUBAR] = ws
     }
     wids.add_window(win_id, {
         id:win_id,
@@ -179,6 +181,12 @@ function respond(msg,resp) {
 }
 
 
+function handle_set_window_focused(msg) {
+    let win = wids.window_for_id(msg.window)
+    wids.set_active_window(win)
+    return connections[win.owner].send(JSON.stringify(msg))
+}
+
 export function start_message_server() {
     const server = new WS.Server({
         port: websocket_port,
@@ -209,6 +217,9 @@ export function start_message_server() {
                 if(msg.type === INPUT.TYPE_MouseUp) return forward_to_target(msg)
                 if(msg.type === INPUT.TYPE_KeyboardDown) return forward_to_target(msg)
                 if(msg.type === INPUT.TYPE_KeyboardUp) return forward_to_target(msg)
+
+                if(msg.type === WINDOWS.TYPE_SetFocusedWindow) return handle_set_window_focused(msg)
+                if(msg.type === MENUS.TYPE_SetMenubar) return forward_to_menubar(msg)
 
                 if(msg.type === DEBUG.TYPE_ListAppsRequest) return list_apps(ws,msg)
                 if(msg.type === DEBUG.TYPE_RestartApp) return restart_app(msg)

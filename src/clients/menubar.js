@@ -72,6 +72,10 @@ class CustomMenuBar extends Container {
         this.tree = tree
         this.app = app
         this.win = win
+        app.on(MENUS.TYPE_SetMenubar,(msg)=>{
+            this.tree = msg.payload.menu
+            this.win.redraw()
+        })
     }
     redraw(gfx) {
         gfx.rect(this.x,this.y,this.width,this.height,'white')

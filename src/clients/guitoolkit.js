@@ -83,7 +83,7 @@ export class App {
         },1)
     }
     send(msg) {
-        msg.app = this.appid
+        msg.app = this._appid
         this.ws.send(JSON.stringify(msg))
     }
 }
