@@ -8,7 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start-server": "node src/server/start.js",
     "raylib": "node src/raylib/raylib_screen.js",
-    "rust": "cd clients/rust-screen && cargo run"
+    "rust": "cd clients/rust-screen && cargo run",
+    "docs": "node tools/docs.js"
   },
   "keywords": [],
   "author": "",
@@ -19,5 +20,9 @@
     "pureimage": "^0.3.2",
     "raylib": "^0.7.0",
     "ws": "^7.4.4"
+  },
+  "devDependencies": {
+    "ohm-js": "^15.5.0",
+    "static-build-tools": "^0.1.1"
   }
 }

@@ -1,0 +1,12 @@
+body {
+    background-color: #fff;
+    font-size: 100%;
+    line-height: 150%;
+}
+p {
+    max-width: 40rem;
+}
+
+.mermaid {
+    max-width: 40rem;
+}

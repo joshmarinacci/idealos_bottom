@@ -1,3 +1,5 @@
+# Menubar and Focused Window
+
 There is the concept of a focused app. The display sets this when a window is selected to be
 focused. It looks up the app for that window and tells the server that this is the focused app. Thus
 the server is the single source of truth for who is the focused app and the focused window.  The
