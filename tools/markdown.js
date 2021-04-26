@@ -46,7 +46,7 @@ MarkdownOuter {
     return parser.semantics(match).blocks()
 }
 function parse_markdown_content(block) {
-    // l("parsing markdown inside block",block)
+    l("parsing markdown inside block",block)
     let parser = {}
     parser.grammar = ohm.grammar(`
 MarkdownInner {
@@ -65,7 +65,10 @@ MarkdownInner {
         plain(a) {return ['plain',a.content().join("")] },
         bold(_1,a,_2) { return ['bold',a.content().join("")] },
         italic(_1,a,_2) { return ['italic',a.content().join("")] },
-        code:(_1,a,_2) => ['code',a.content().join("")],
+        code:(_1,a,_2) => {
+            // console.log("matched code",a.content().join(""))
+            return ['code',a.content().join("")]
+        },
         link:(img,_1,text,_2,_3,url,_4) => ['link',
             text.content().join(""),
             url.content().join(""),
@@ -85,11 +88,29 @@ export async function parse_markdown(raw_markdown) {
     let blocks = parse_markdown_blocks(raw_markdown)
     // l("blocks are",blocks)
     return blocks.map(block => {
-        l("type is",block.type)
+        l("type is",block)
         if(block.type === 'P') return parse_markdown_content(block)
         if(block.type === 'LI') return parse_markdown_content(block)
         return block
     })
+}
+
+function calc_style(style) {
+    if(style === 'plain') return 'span'
+    if(style === 'bold') return 'b'
+    if(style === 'italic') return 'i'
+    if(style === 'code') return 'code'
+    return 'span'
+}
+
+async function flatten_block(obj) {
+    let content = ""
+    for (const run of obj.content) {
+        let style = calc_style(run[0])
+        let con = await flatten_html(run[1])
+        content += `<${style}>${con}</${style}>`
+    }
+    return content
 }
 
 export async function flatten_html(obj) {
@@ -100,24 +121,15 @@ export async function flatten_html(obj) {
         return rets.join("\n")
     }
 
-    function calc_style(style) {
-        if(style === 'plain') return 'span'
-        if(style === 'bold') return 'b'
-        if(style === 'italic') return 'i'
-        if(style === 'code') return 'code'
-        return 'span'
-    }
 
     if(obj.type) {
         let content = ""
         if(obj.type === 'P') {
-            for (const run of obj.content) {
-                let style = calc_style(run[0])
-                let con = await flatten_html(run[1])
-                content += `<${style}>${con}</${style}>`
-            }
+            content = await flatten_block(obj)
         } else if (obj.type === 'CODE') {
             return `<div class="${obj.language}">${obj.content}</div>`
+        } else if(obj.type === 'LI') {
+            content = await flatten_block(obj)
         } else {
             if (obj.content) {
                 content = await flatten_html(obj.content)

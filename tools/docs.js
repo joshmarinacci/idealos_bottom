@@ -31,13 +31,8 @@ async function doit() {
 //         src: 'src/images/',
 //         include: (f) => (f.endsWith(".png") || f.endsWith(".jpg") || f.endsWith(".gif"))
 //     })
-    let md = await file_as_string(path.join(DOCS_DIR,"menubar.md"))
-    // log(md)
-    let obj = await parse_markdown(md)
-    log(obj)
-    let generated = await flatten_html(obj)
-    // log(generated)
-    page({builddir:OUT_DIR,file:'menubar.html'},html(
+    let generated = await flatten_html(await parse_markdown(await file_as_string(path.join(DOCS_DIR,'menubar.md'))))
+    await page({builddir:OUT_DIR,file:'menubar.html'},html(
         stylesheet("tools/main.css"),
         include_mermaid(),
         body(
