@@ -1,0 +1,23 @@
+body {
+    background-color: #fff;
+    font-size: 100%;
+    line-height: 150%;
+}
+p {
+    max-width: 40rem;
+}
+
+p code {
+    background-color: oldlace;
+    border-radius: 0.25em;
+    padding: 0.25em;
+}
+li code {
+    background-color: oldlace;
+    border-radius: 0.25em;
+    padding: 0.25em;
+}
+
+.mermaid {
+    max-width: 40rem;
+}
