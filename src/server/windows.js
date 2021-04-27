@@ -53,6 +53,9 @@ export class WindowTracker {
     set_active_window(win) {
         this.active_window = win
     }
+    get_active_window() {
+        return this.active_window
+    }
 
     is_active_window(win) {
         return (win === this.active_window)

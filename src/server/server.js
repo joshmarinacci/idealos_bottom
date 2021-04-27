@@ -202,6 +202,11 @@ function handle_set_window_focused(msg) {
     return connections[win.owner].send(JSON.stringify(msg))
 }
 
+function forward_to_focused(msg) {
+    let win = wids.get_active_window()
+    if(win && win.owner) return connections[win.owner].send(JSON.stringify(msg))
+}
+
 export function start_message_server() {
     const server = new WS.Server({
         port: websocket_port,
@@ -244,6 +249,7 @@ export function start_message_server() {
                 if(msg.type === DEBUG.TYPE_TestStart) return start_test(ws,msg)
 
                 if(msg.type === RESOURCES.TYPE_ResourceGet) return resources.get_resource(msg)
+                if(msg.type === "ACTION") return forward_to_focused(msg)
                 // if (msg.type === RESOURCES.TYPE_ResourceSet) return resources.set_resource(msg)
                 // if (message_match(SCHEMAS.RESOURCE.SET, msg)) return resources.set_resource(msg)
                 // if(message_match('CREATE_MENU_TREE',msg)) return forward_to_menubar(msg)

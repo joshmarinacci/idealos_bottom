@@ -36,7 +36,17 @@ async function init() {
         main_window.redraw()
     })
     main_window.redraw()
-}
+    app.on("ACTION",(e) => {
+        console.log("got the action",e)
+        if(e.payload.command === 'do_a') {
+            main_window.root.find({id:'button-target'}).text = "A'd"
+            main_window.redraw()
+        }
+        if(e.payload.command === 'do_b') {
+            main_window.root.find({id:'button-target'}).text = "B'd"
+            main_window.redraw()
+        }
+    })}
 
 
 
