@@ -121,6 +121,15 @@ export class Window {
             this.input()
             this.redraw()
         })
+        app.on(INPUT.TYPE_MouseMove,(e)=>{
+            if(e.payload.window !== this._winid) return
+            this.mouse.x = e.payload.x
+            this.mouse.y = e.payload.y
+            // console.log("moved",e.payload)
+            // this.mouse.down = true
+            this.input()
+            this.redraw()
+        })
         app.on(INPUT.TYPE_MouseUp,(e)=>{
             if(e.payload.window !== this._winid) return
             this.mouse.down = false
@@ -254,7 +263,7 @@ class Gfx {
 }
 
 
-class Component {
+export class Component {
     constructor(opts) {
         this.id = opts.id || ""
         this.x = opts.x || 0
@@ -355,7 +364,7 @@ export class Label extends Component {
     }
 }
 
-class Insets {
+export class Insets {
     constructor(m) {
         this.left = m
         this.right = m
@@ -375,9 +384,7 @@ export class Button extends Component {
     }
 
     input(mouse, keyboard) {
-        console.log("checking at",this.y, 'mous',mouse.y)
         if(!mouse.inside(this.x,this.y,this.width,this.height)) return false
-        console.log("inside button. mouse down is",mouse.down)
         this.pressed = mouse.down
         if (this.pressed) this.fire('action', {})
         return true

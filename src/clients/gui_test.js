@@ -59,7 +59,7 @@ app.on(WINDOWS.TYPE_SetFocusedWindow,()=>{
         children:[
             {
                 type:'top',
-                label:'GUIT1',
+                label:'Hi',
                 children:[
                     {
                         type:'item',
@@ -72,6 +72,11 @@ app.on(WINDOWS.TYPE_SetFocusedWindow,()=>{
                         command:'do_b'
                     }
                 ]
+            },
+            {
+                type:'top',
+                label:"There",
+                children:[]
             }
         ]
     }
