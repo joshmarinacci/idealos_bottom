@@ -122,6 +122,10 @@ function forward_to_menubar(msg) {
 function do_nothing(msg) {}
 function forward_to_target(msg) {
     if(!msg.target) return log("NO TARGET!",msg)
+    if(!connections[msg.target]) {
+        let keys = Object.keys(connections).join(" ")
+        return log(`TARGET missing ${msg.target}. valid targets${keys}`)
+    }
     return connections[msg.target].send(JSON.stringify(msg))
 }
 function start_test(ws,msg) {
