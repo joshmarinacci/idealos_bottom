@@ -102,7 +102,10 @@ class CustomMenuBar extends Container {
                 let height = item.children.length*15
                 this.popup = await this.win.a_open_child_window(i*20,10,width,height,'menu')
                 this.popup.root = new CustomMenu({width, height},item,app,this.popup)
+                this.popup.redraw()
+                console.log("setup the popup")
             } else {
+                console.log("clsoing the popup")
                 await this.popup.close()
             }
         }
@@ -116,6 +119,7 @@ class CustomMenu extends Container {
         this.win = win
     }
     redraw(gfx) {
+        console.log('drawing the custom child menu')
         gfx.rect(this.x, this.y, this.width, this.height, 'white')
         this.item.children.forEach((top, i) => {
             let bg = 'white'
@@ -123,6 +127,9 @@ class CustomMenu extends Container {
             gfx.rect(1, i * 15, 20, 10, bg)
             gfx.text(1, i * 15 + 2, top.label, fg)
         })
+    }
+    async mouse_down_at(e) {
+        console.log("popup menu got mouse down",e)
     }
 }
 
@@ -132,7 +139,12 @@ async function init() {
     win.root = new CustomMenuBar({width:win.width, height:win.height},menu_tree,app,win)
     win.redraw()
     app.on(INPUT.TYPE_MouseDown,(e)=>{
-        win.root.mouse_down_at(e).then(()=>console.log("done event"))
+        if(win._winid === e.payload.window ) {
+            win.root.mouse_down_at(e).then(()=>console.log("done event"))
+        }
+        if(win.root.popup && win.root.popup._winid === e.payload.window) {
+            win.root.popup.root.mouse_down_at(e).then(()=>console.log("done event"))
+        }
     })
 }
 

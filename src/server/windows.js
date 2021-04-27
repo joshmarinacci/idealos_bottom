@@ -61,6 +61,7 @@ export class WindowTracker {
     make_child_window(msg) {
         let win_id = "win_"+Math.floor(Math.random()*10000)
         let ch_win = {
+            type:'child',
             id:win_id,
             width:msg.width,
             height:msg.height,

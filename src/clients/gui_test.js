@@ -49,8 +49,19 @@ app.on(WINDOWS.TYPE_SetFocusedWindow,()=>{
         children:[
             {
                 type:'top',
-                label:'GUI_test',
-                children:[]
+                label:'GUIT1',
+                children:[
+                    {
+                        type:'item',
+                        label:'Do A',
+                        command:'do_a'
+                    },
+                    {
+                        type:'item',
+                        label:'Do B',
+                        command:'do_b'
+                    }
+                ]
             }
         ]
     }

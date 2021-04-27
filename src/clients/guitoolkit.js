@@ -98,8 +98,8 @@ export class Window {
         this.focused = null
         this.is_child = false
         this.parent = parent
-        console.log('local window parent is',this.parent)
-        // if(this.parent) this.is_child = true
+        // console.log('local window parent is',this.parent)
+        if(this.parent) this.is_child = true
         this.mouse = {
             x: -1,
             y: -1,

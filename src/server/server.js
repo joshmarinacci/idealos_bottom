@@ -58,6 +58,7 @@ function handle_open_window_message(ws,msg) {
         connections[CLIENT_TYPES.MENUBAR] = ws
     }
     wids.add_window(win_id, {
+        type:'root',
         id:win_id,
         width:msg.width,
         height:msg.height,
@@ -128,6 +129,16 @@ function forward_to_target(msg) {
     }
     return connections[msg.target].send(JSON.stringify(msg))
 }
+function forward_to_app(msg) {
+    if(!msg.app) return log("NO TARGET!",msg)
+    if(!connections[msg.app]) {
+        let keys = Object.keys(connections).join(" ")
+        return log(`TARGET missing ${msg.app}. valid targets${keys}`)
+    }
+    return connections[msg.app].send(JSON.stringify(msg))
+}
+
+
 function start_test(ws,msg) {
     log("attaching unit test runner")
     connections[CLIENT_TYPES.TEST] = ws;
@@ -217,10 +228,10 @@ export function start_message_server() {
                 if(msg.type === GRAPHICS.TYPE_DrawRect) return forward_to_screen(msg)
                 if(msg.type === GRAPHICS.TYPE_DrawImage) return forward_to_screen(msg)
 
-                if(msg.type === INPUT.TYPE_MouseDown) return forward_to_target(msg)
-                if(msg.type === INPUT.TYPE_MouseUp) return forward_to_target(msg)
-                if(msg.type === INPUT.TYPE_KeyboardDown) return forward_to_target(msg)
-                if(msg.type === INPUT.TYPE_KeyboardUp) return forward_to_target(msg)
+                if(msg.type === INPUT.TYPE_MouseDown) return forward_to_app(msg)
+                if(msg.type === INPUT.TYPE_MouseUp) return forward_to_app(msg)
+                if(msg.type === INPUT.TYPE_KeyboardDown) return forward_to_app(msg)
+                if(msg.type === INPUT.TYPE_KeyboardUp) return forward_to_app(msg)
 
                 if(msg.type === WINDOWS.TYPE_SetFocusedWindow) return handle_set_window_focused(msg)
                 if(msg.type === MENUS.TYPE_SetMenubar) return forward_to_menubar(msg)
