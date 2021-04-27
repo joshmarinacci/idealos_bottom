@@ -91,22 +91,22 @@ class CustomMenuBar extends Container {
             gfx.text(this.x + i * 20 + 2, this.y, top.label, fg)
         })
     }
-    async mouse_down_at(e) {
-        let i = Math.floor(e.payload.x/20)
-        if(this.tree.children.length >= i) {
+    input(m,k,w) {
+        let i = Math.floor(m.x/20)
+        if(this.tree.children.length > i) {
             let item = this.tree.children[i]
             item.open = !item.open
             this.win.redraw()
             if(item.open) {
                 let width = 30
-                let height = item.children.length*15
-                this.popup = await this.win.a_open_child_window(i*20,10,width,height,'menu')
-                this.popup.root = new CustomMenu({width, height},item,app,this.popup)
-                this.popup.redraw()
-                console.log("setup the popup")
+                let height = item.children.length*20
+                this.win.a_open_child_window(i*20,20,width,height,'menu').then(popup => {
+                    this.popup = popup
+                    this.popup.root = new CustomMenu({width, height},item,app,this.popup)
+                    this.popup.redraw()
+                })
             } else {
-                console.log("clsoing the popup")
-                await this.popup.close()
+                if(this.popup)  this.popup.close()
             }
         }
     }
@@ -119,17 +119,31 @@ class CustomMenu extends Container {
         this.win = win
     }
     redraw(gfx) {
-        console.log('drawing the custom child menu')
-        gfx.rect(this.x, this.y, this.width, this.height, 'white')
+        gfx.rect(this.x, this.y, this.width, this.height, 'black')
+        gfx.rect(this.x+1, this.y+1, this.width-2, this.height-2, 'red')
         this.item.children.forEach((top, i) => {
             let bg = 'white'
             let fg = 'black'
-            gfx.rect(1, i * 15, 20, 10, bg)
-            gfx.text(1, i * 15 + 2, top.label, fg)
+            if(top.active) {
+                bg = 'black'
+                fg = 'white'
+            }
+            gfx.rect(2, i * 15+2, 20, 10, bg)
+            gfx.text(2, i * 15 + 4, top.label, fg)
         })
     }
-    async mouse_down_at(e) {
-        console.log("popup menu got mouse down",e)
+    input(m,k,w) {
+        let j = Math.floor(m.y/15)
+        if(this.item.children.length > j) {
+            let sub = this.item.children[j]
+            sub.active = !sub.active
+            this.win.close()
+            this.win.redraw()
+            this.app.send({
+                type:'ACTION',
+                command:sub.command
+            })
+        }
     }
 }
 
@@ -138,14 +152,6 @@ async function init() {
     let win = await app.open_window(0,0,1024/4,10,'menubar')
     win.root = new CustomMenuBar({width:win.width, height:win.height},menu_tree,app,win)
     win.redraw()
-    app.on(INPUT.TYPE_MouseDown,(e)=>{
-        if(win._winid === e.payload.window ) {
-            win.root.mouse_down_at(e).then(()=>console.log("done event"))
-        }
-        if(win.root.popup && win.root.popup._winid === e.payload.window) {
-            win.root.popup.root.mouse_down_at(e).then(()=>console.log("done event"))
-        }
-    })
 }
 
 

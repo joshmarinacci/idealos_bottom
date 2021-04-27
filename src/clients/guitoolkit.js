@@ -55,7 +55,7 @@ export class App {
             })))
             let handler = (e) => {
                 this.off(WINDOWS.TYPE_WindowOpenResponse,handler)
-                let win = new Window(this,width,height,e.payload.window)
+                let win = new Window(this,width,height,e.payload.window,null,false)
                 this.windows.push(win)
                 res(win)
             }
@@ -89,17 +89,15 @@ export class App {
 }
 
 export class Window {
-    constructor(app, width,height,id,parent) {
+    constructor(app, width,height,id,parent=null,is_child=false) {
         this.app = app
         this._winid = id
         this.width = width
         this.height = height
         this.root = null
         this.focused = null
-        this.is_child = false
+        this.is_child = is_child
         this.parent = parent
-        // console.log('local window parent is',this.parent)
-        if(this.parent) this.is_child = true
         this.mouse = {
             x: -1,
             y: -1,
@@ -116,21 +114,25 @@ export class Window {
             keyname: ""
         }
         app.on(INPUT.TYPE_MouseDown,(e)=>{
+            if(e.payload.window !== this._winid) return
             this.mouse.x = e.payload.x
             this.mouse.y = e.payload.y
             this.mouse.down = true
             this.input()
             this.redraw()
         })
-        app.on(INPUT.TYPE_MouseUp,()=>{
+        app.on(INPUT.TYPE_MouseUp,(e)=>{
+            if(e.payload.window !== this._winid) return
             this.mouse.down = false
             this.input()
             this.redraw()
         })
-        app.on(WINDOWS.TYPE_window_refresh_request, ()=>{
+        app.on(WINDOWS.TYPE_window_refresh_request, (e)=>{
+            if(e.payload.window !== this._winid) return
             this.redraw()
         })
         app.on(INPUT.TYPE_KeyboardDown, (e)=>{
+            if(e.payload.window !== this._winid) return
             // console.log("keyboard pressed in app",e)
             this.keyboard.keyname = e.payload.keyname;
             this.input()
@@ -192,7 +194,8 @@ export class Window {
             })))
             let handler = (e) => {
                 this.app.off(WINDOWS.TYPE_create_child_window_response,handler)
-                let win = new Window(this.app,width,height,e.payload.window.id,this)
+                let win = new Window(this.app,width,height,e.payload.window.id,this,true)
+                this.app.windows.push(win)
                 res(win)
             }
             this.app.on(WINDOWS.TYPE_create_child_window_response,handler)
@@ -205,6 +208,11 @@ export class Window {
                 sender:this.app._appid,
                 window:this._winid
             })))
+        } else {
+            this.app.send(WINDOWS.MAKE_window_close({
+                target: this.app._appid,
+                window: this._winid,
+            }))
         }
     }
 }
