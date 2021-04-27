@@ -47,12 +47,12 @@ export class App {
     }
     open_window(x,y,width,height,window_type) {
         return new Promise((res,rej)=>{
-            this.ws.send(JSON.stringify(WINDOWS.MAKE_WindowOpen({
+            this.send(WINDOWS.MAKE_WindowOpen({
                 width: width,
                 height: height,
                 sender: this._appid,
                 window_type: window_type
-            })))
+            }))
             let handler = (e) => {
                 this.off(WINDOWS.TYPE_WindowOpenResponse,handler)
                 let win = new Window(this,width,height,e.payload.window,null,false)
@@ -183,7 +183,7 @@ export class Window {
     }
     a_open_child_window(x,y,width,height,style) {
         return new Promise((res,rej)=>{
-            this.app.ws.send(JSON.stringify(WINDOWS.MAKE_create_child_window({
+            this.app.send(WINDOWS.MAKE_create_child_window({
                 parent:this._winid,
                 x:x,
                 y:y,
@@ -191,7 +191,7 @@ export class Window {
                 height: height,
                 sender: this.app._appid,
                 style: style
-            })))
+            }))
             let handler = (e) => {
                 this.app.off(WINDOWS.TYPE_create_child_window_response,handler)
                 let win = new Window(this.app,width,height,e.payload.window.id,this,true)
@@ -203,11 +203,11 @@ export class Window {
     }
     close() {
         if(this.is_child) {
-            this.app.ws.send(JSON.stringify(WINDOWS.MAKE_close_child_window({
+            this.app.send(WINDOWS.MAKE_close_child_window({
                 parent:this.parent._winid,
                 sender:this.app._appid,
                 window:this._winid
-            })))
+            }))
         } else {
             this.app.send(WINDOWS.MAKE_window_close({
                 target: this.app._appid,
