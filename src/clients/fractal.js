@@ -53,3 +53,8 @@ function init() {
 }
 
 app.on('start', () => init())
+
+app.on(WINDOWS.TYPE_window_close_request,(e) => {
+    console.log("got a close on window",e)
+    app.a_shutdown().then("finished")
+})

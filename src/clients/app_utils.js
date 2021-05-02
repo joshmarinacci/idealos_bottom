@@ -29,17 +29,22 @@ export class CommonApp {
         })
 
 
-        process.on('SIGTERM', () => {
-            console.log(`Received SIGTERM in app ${appid} `);
-            this.ws.send(JSON.stringify(WINDOWS.MAKE_window_close_response({target:appid, window:this.win_id})))
-            setTimeout(()=>{
-                this.ws.close()
-                process.exit(0)
-            },500)
-        });
+        process.on('SIGTERM', () => this.a_shutdown())
         this.theme = null
         this.win = new Window(this,width,height)
     }
+    async a_shutdown() {
+        this.log("shuting down the app")
+            this.send(WINDOWS.MAKE_window_close_response({
+                target:this.appid,
+                window:this.win_id,
+            }))
+        setTimeout(()=>{
+            this.ws.close()
+            process.exit(0)
+        },500)
+    }
+
     on(type,cb) {
         if(!this.listeners[type]) this.listeners[type] = []
         this.listeners[type].push(cb)

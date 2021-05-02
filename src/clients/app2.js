@@ -65,3 +65,8 @@ function draw_button_released() {
     fill_rect(app.width,app.height,'green')
     draw_text(2,1,"hi",'black')
 }
+
+app.on(WINDOWS.TYPE_window_close_request,(e) => {
+    console.log("got a close on window",e)
+    app.a_shutdown().then("finished")
+})
