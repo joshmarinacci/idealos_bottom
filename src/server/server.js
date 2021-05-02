@@ -198,6 +198,8 @@ function respond(msg,resp) {
 
 function handle_set_window_focused(msg) {
     let win = wids.window_for_id(msg.window)
+    if(!win) return log(`no such window ${msg.window}`)
+    if(!win.owner) return log(`window has no owner ${win.owner}`)
     wids.set_active_window(win)
     return connections[win.owner].send(JSON.stringify(msg))
 }
