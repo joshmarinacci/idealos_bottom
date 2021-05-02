@@ -227,7 +227,8 @@ export function start_message_server() {
                 if(msg.type === WINDOWS.TYPE_WindowOpenResponse) return forward_to_target(msg)
                 if(msg.type === WINDOWS.TYPE_window_refresh_request) return forward_to_target(msg)
                 if(msg.type === WINDOWS.TYPE_window_refresh_response) return forward_to_target(msg)
-                if(msg.type === WINDOWS.TYPE_window_close) return forward_to_screen(msg)
+                if(msg.type === WINDOWS.TYPE_window_close_response) return forward_to_screen(msg)
+                if(msg.type === WINDOWS.TYPE_window_close_request) return forward_to_target(msg)
                 if(msg.type === WINDOWS.TYPE_create_child_window)  return handle_open_child_window_message(msg)
                 if(msg.type === WINDOWS.TYPE_close_child_window)   return handle_close_child_window_message(msg)
 

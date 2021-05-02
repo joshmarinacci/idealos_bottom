@@ -84,3 +84,8 @@ app.on(WINDOWS.TYPE_SetFocusedWindow,()=>{
     app.send(msg)
     console.log("sent the message",msg)
 })
+
+app.on(WINDOWS.TYPE_window_close_request,(e) => {
+    console.log("got a close on window",e)
+    app.a_shutdown().then("finished")
+})

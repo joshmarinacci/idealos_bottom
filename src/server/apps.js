@@ -31,7 +31,10 @@ export class AppTracker {
         ].concat(app.args))
         app.subprocess.stdout.on('data',(data)=>this.log(`STDOUT ${app.name} ${data}`))
         app.subprocess.stderr.on('data',(data)=>this.log(`STDERR ${app.name} ${data}`))
-        app.subprocess.on('exit',(code)=> this.log(`${app.name} ended with code = ${code}`))
+        app.subprocess.on('exit',(code)=> {
+            this.log(`${app.name} ended with code = ${code}`)
+            app.subprocess = undefined
+        })
     }
 
     get_app_by_id(id) {

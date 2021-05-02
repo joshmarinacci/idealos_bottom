@@ -20,20 +20,24 @@ export class App {
         })
         process.on('SIGTERM', () => {
             console.log(`Received SIGTERM in app ${this._appid} `);
-            this.windows.forEach(win => {
-                console.log("closing window",win._winid,this._appid)
-                this.send(WINDOWS.MAKE_window_close({
-                    target:this._appid,
-                    window:win._winid,
-                }))
-            })
-            setTimeout(()=>{
-                this.ws.close()
-                process.exit(0)
-            },500)
+            this.a_shutdown().then("done shutting down")
         });
         this._theme = null
         this._font = null
+    }
+
+    async a_shutdown() {
+        this.windows.forEach(win => {
+            console.log("closing window",win._winid,this._appid)
+            this.send(WINDOWS.MAKE_window_close_response({
+                target:this._appid,
+                window:win._winid,
+            }))
+        })
+        setTimeout(()=>{
+            this.ws.close()
+            process.exit(0)
+        },500)
     }
     async a_init() {
         this._font = await PixelFont.load("src/clients/fonts/font.png", "src/clients/fonts/font.metrics.json")
@@ -218,7 +222,7 @@ export class Window {
                 window:this._winid
             }))
         } else {
-            this.app.send(WINDOWS.MAKE_window_close({
+            this.app.send(WINDOWS.MAKE_window_close_response({
                 target: this.app._appid,
                 window: this._winid,
             }))

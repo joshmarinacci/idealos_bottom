@@ -31,7 +31,7 @@ export class CommonApp {
 
         process.on('SIGTERM', () => {
             console.log(`Received SIGTERM in app ${appid} `);
-            this.ws.send(JSON.stringify(WINDOWS.MAKE_window_close({target:appid, window:this.win_id})))
+            this.ws.send(JSON.stringify(WINDOWS.MAKE_window_close_response({target:appid, window:this.win_id})))
             setTimeout(()=>{
                 this.ws.close()
                 process.exit(0)
