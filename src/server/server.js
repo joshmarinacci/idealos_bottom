@@ -24,8 +24,11 @@ function log(...args) {
 }
 
 const connections = {}
-const wids = new WindowTracker()
-const at = new AppTracker(hostname,websocket_port,log,wids)
+const wids = new WindowTracker(send_delegate)
+const at = new AppTracker(hostname,websocket_port,log,wids,send_delegate)
+function send_delegate(msg) {
+    forward_to_screen(msg)
+}
 
 
 const CLIENT_TYPES = {

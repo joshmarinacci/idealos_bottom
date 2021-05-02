@@ -1,12 +1,14 @@
 import {spawn} from 'child_process'
+import {DEBUG} from 'idealos_schemas/js/debug.js'
 
 export class AppTracker {
-    constructor(hostname,websocket_port, log_delegate, wids) {
+    constructor(hostname,websocket_port, log_delegate, wids, sender) {
         this.hostname = hostname
         this.websocket_port = websocket_port
         this.apps = []
         this.log_delegate = log_delegate
         this.wids = wids
+        this.send = sender
     }
     log(...args) {
         if(this.log_delegate) this.log_delegate(...args)
@@ -40,6 +42,8 @@ export class AppTracker {
             this.log(`${app.name} ended with code = ${code}`)
             app.subprocess = undefined
         })
+
+        this.send(DEBUG.MAKE_AppStarted({target:id}))
     }
 
     get_app_by_id(id) {
@@ -63,6 +67,7 @@ export class AppTracker {
             console.log("Looks like it was already killed")
         }
         this.wids.remove_windows_for_appid(id)
+        this.send(DEBUG.MAKE_AppStopped({target:id}))
     }
 
     list_apps() {

@@ -1,7 +1,10 @@
+import {WINDOWS} from 'idealos_schemas/js/windows.js'
+
 export class WindowTracker {
-    constructor() {
+    constructor(sender) {
         this.windows = {}
         this.active_window = null
+        this.send = sender
     }
     find(pt) {
         return Object.values(this.windows).find(win => {
@@ -33,6 +36,7 @@ export class WindowTracker {
         Object.keys(this.windows).forEach(id => {
             if(this.windows[id] && this.windows[id].owner === appid) {
                 this.windows[id] = undefined
+                this.send(WINDOWS.MAKE_window_close_response({target:appid, window:id}))
             }
         })
     }
