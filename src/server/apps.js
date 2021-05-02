@@ -1,11 +1,12 @@
 import {spawn} from 'child_process'
 
 export class AppTracker {
-    constructor(hostname,websocket_port, log_delegate) {
+    constructor(hostname,websocket_port, log_delegate, wids) {
         this.hostname = hostname
         this.websocket_port = websocket_port
         this.apps = []
         this.log_delegate = log_delegate
+        this.wids = wids
     }
     log(...args) {
         if(this.log_delegate) this.log_delegate(...args)
@@ -21,6 +22,7 @@ export class AppTracker {
         this.apps.push(app)
         return app
     }
+
 
     start(id) {
         let app = this.get_app_by_id(id)
@@ -60,6 +62,7 @@ export class AppTracker {
         } else {
             console.log("Looks like it was already killed")
         }
+        this.wids.remove_windows_for_appid(id)
     }
 
     list_apps() {
@@ -67,5 +70,14 @@ export class AppTracker {
             id:app.id,name:app.name,path:app.path,args:app.args,
             running:(app.subprocess?true:false)
         }))
+    }
+
+    start_app_by_name(name) {
+        let app = this.get_app_by_name(name)
+        return this.start(app.id)
+    }
+
+    restart(target) {
+        this.log("restarting not supported yet")
     }
 }

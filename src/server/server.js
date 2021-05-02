@@ -25,7 +25,7 @@ function log(...args) {
 
 const connections = {}
 const wids = new WindowTracker()
-const at = new AppTracker(hostname,websocket_port,log)
+const at = new AppTracker(hostname,websocket_port,log,wids)
 
 
 const CLIENT_TYPES = {
@@ -58,7 +58,7 @@ function handle_open_window_message(ws,msg) {
     ws.target = msg.sender
     let win_id = "win_"+Math.floor(Math.random()*10000)
     let y = wids.length()+30
-    let x = 10
+    let x = 40
     if(msg.window_type === WINDOW_TYPES.MENUBAR) {
         x = 0
         y = 0
@@ -165,37 +165,6 @@ function list_apps(ws,msg) {
     if(connections[CLIENT_TYPES.DEBUG]) return connections[CLIENT_TYPES.DEBUG].send(JSON.stringify(response))
 }
 
-function restart_app(msg) {
-    log("restarting app",msg)
-        // at.start(appid)
-    // }
-}
-
-function stop_app(msg) {
-    console.log("stopping app",msg)
-    let appid = msg.target
-    if(at.has_app(appid)) {
-        at.stop(appid)
-        wids.remove_windows_for_appid(appid)
-    }
-}
-function start_app(msg) {
-    let appid = msg.target
-    if(at.has_app(appid)) {
-        at.start(appid)
-    } else {
-        console.error(`no such app id ${appid}`)
-    }
-}
-
-function start_app_by_name(msg) {
-    console.log("starting with app name",msg.name)
-    let app = at.get_app_by_name(msg.name)
-    at.start(app.id)
-}
-
-
-
 function respond(msg,resp) {
     resp.target = msg.sender
     forward_to_target(resp)
@@ -254,10 +223,10 @@ export function start_message_server() {
                 if(msg.type === MENUS.TYPE_SetMenubar) return forward_to_menubar(msg)
 
                 if(msg.type === DEBUG.TYPE_ListAppsRequest) return list_apps(ws,msg)
-                if(msg.type === DEBUG.TYPE_RestartApp) return restart_app(msg)
-                if(msg.type === DEBUG.TYPE_StopApp) return stop_app(msg)
-                if(msg.type === DEBUG.TYPE_StartApp) return start_app(msg)
-                if(msg.type === DEBUG.TYPE_StartAppByName) return start_app_by_name(msg)
+                if(msg.type === DEBUG.TYPE_RestartApp) return at.restart(msg.target)
+                if(msg.type === DEBUG.TYPE_StopApp) return at.stop(msg.target)
+                if(msg.type === DEBUG.TYPE_StartApp) return at.start(msg.target)
+                if(msg.type === DEBUG.TYPE_StartAppByName) return at.start_app_by_name(msg.name)
 
                 if(msg.type === DEBUG.TYPE_TestStart) return start_test(ws,msg)
 
@@ -277,9 +246,6 @@ export function start_message_server() {
         })
         ws.send(JSON.stringify(GENERAL.MAKE_Connected({})))
     })
-    async function do_start_app(opts) {
-    }
-
 
     return {
         wsserver:server,
@@ -352,8 +318,4 @@ function screen_connected() {
 }
 
 // await screen_connected()
-// await do_start_app({name:'dotclock', path:'src/clients/app1.js',args:[]});
-// await do_start_app({name:'app2', path:'src/clients/app2.js',args:[]});
-// await do_start_app({name:'guitest', path:'src/clients/gui_test.js',args:[]});
-// await do_start_app({name:'fractal', path:'src/clients/fractal.js',args:[]});
 log('started everything')
