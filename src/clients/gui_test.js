@@ -46,7 +46,8 @@ async function init() {
             main_window.root.find({id:'button-target'}).text = "B'd"
             main_window.redraw()
         }
-    })}
+    })
+}
 
 
 

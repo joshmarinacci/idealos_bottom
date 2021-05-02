@@ -8,7 +8,6 @@ export class AppTracker {
         this.log_delegate = log_delegate
     }
     log(...args) {
-        console.log(...args)
         if(this.log_delegate) this.log_delegate(...args)
     }
 
@@ -25,6 +24,10 @@ export class AppTracker {
 
     start(id) {
         let app = this.get_app_by_id(id)
+        if(!app) return console.error(`no such app ${id}`)
+        if(app.subprocess) {
+            return console.error(`app is already running, it seems ${id}`)
+        }
         app.subprocess = spawn('node', [
             app.path,
             `ws://${this.hostname}:${this.websocket_port}`,app.id
@@ -40,6 +43,9 @@ export class AppTracker {
     get_app_by_id(id) {
         return this.apps.find(ap => ap.id === id)
     }
+    get_app_by_name(name) {
+        return this.apps.find(ap => ap.name === name)
+    }
 
     has_app(id) {
         return this.apps.some(ap => ap.id === id)
@@ -47,8 +53,13 @@ export class AppTracker {
 
     stop(id) {
         let app = this.get_app_by_id(id)
-        app.subprocess.kill('SIGTERM')
-        app.subprocess = undefined
+        if(!app) return console.error(`no such app ${id}`)
+        if(app.subprocess) {
+            app.subprocess.kill('SIGTERM')
+            app.subprocess = undefined
+        } else {
+            console.log("Looks like it was already killed")
+        }
     }
 
     list_apps() {

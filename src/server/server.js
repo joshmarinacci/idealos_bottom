@@ -33,6 +33,13 @@ const CLIENT_TYPES = {
     DEBUG:'DEBUG',
     TEST:'TEST',
     MENUBAR:'MENUBAR',
+    DOCK:'DOCK'
+}
+
+const WINDOW_TYPES = {
+    MENUBAR:'menubar',
+    DOCK:'dock',
+    PLAIN:'plain',
 }
 
 let resources = new ResourceManager(log, respond)
@@ -52,10 +59,15 @@ function handle_open_window_message(ws,msg) {
     let win_id = "win_"+Math.floor(Math.random()*10000)
     let y = wids.length()+30
     let x = 10
-    if(msg.window_type === 'menubar') {
+    if(msg.window_type === WINDOW_TYPES.MENUBAR) {
         x = 0
         y = 0
         connections[CLIENT_TYPES.MENUBAR] = ws
+    }
+    if(msg.window_type === WINDOW_TYPES.DOCK) {
+        x = 0
+        y = 20
+        connections[CLIENT_TYPES.DOCK] = ws
     }
     wids.add_window(win_id, {
         type:'root',
@@ -164,30 +176,24 @@ function stop_app(msg) {
     let appid = msg.target
     if(at.has_app(appid)) {
         at.stop(appid)
-        // wids.windows_for_appid(appid).forEach(win => {
-        //     forward_to_screen(WINDOWS.MAKE_close_child_window_display({
-        //         target: appid,
-        //         window: {
-        //             id: win.id,
-        //             width: win.width,
-        //             height: win.height,
-        //             x: win.x,
-        //             y: win.y,
-        //             owner: win.owner,
-        //             window_type:win.window_type,
-        //         }
-        //     }))
-        // })
         wids.remove_windows_for_appid(appid)
     }
 }
 function start_app(msg) {
-    log("trying to start the app",msg)
     let appid = msg.target
     if(at.has_app(appid)) {
         at.start(appid)
+    } else {
+        console.error(`no such app id ${appid}`)
     }
 }
+
+function start_app_by_name(msg) {
+    console.log("starting with app name",msg.name)
+    let app = at.get_app_by_name(msg.name)
+    at.start(app.id)
+}
+
 
 
 function respond(msg,resp) {
@@ -201,6 +207,7 @@ function handle_set_window_focused(msg) {
     if(!win) return log(`no such window ${msg.window}`)
     if(!win.owner) return log(`window has no owner ${win.owner}`)
     wids.set_active_window(win)
+    if(!connections[win.owner]) return console.error(`no app is running for the window ${win.id}`)
     return connections[win.owner].send(JSON.stringify(msg))
 }
 
@@ -208,6 +215,7 @@ function forward_to_focused(msg) {
     let win = wids.get_active_window()
     if(win && win.owner) return connections[win.owner].send(JSON.stringify(msg))
 }
+
 
 export function start_message_server() {
     const server = new WS.Server({
@@ -249,6 +257,7 @@ export function start_message_server() {
                 if(msg.type === DEBUG.TYPE_RestartApp) return restart_app(msg)
                 if(msg.type === DEBUG.TYPE_StopApp) return stop_app(msg)
                 if(msg.type === DEBUG.TYPE_StartApp) return start_app(msg)
+                if(msg.type === DEBUG.TYPE_StartAppByName) return start_app_by_name(msg)
 
                 if(msg.type === DEBUG.TYPE_TestStart) return start_test(ws,msg)
 
