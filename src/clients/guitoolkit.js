@@ -5,6 +5,44 @@ import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {default as WebSocket} from 'ws'
 import {PixelFont} from './app_utils.js'
 
+export class Point {
+    constructor(x,y) {
+        this.x = x
+        this.y = y
+    }
+    subtract(pt2) {
+        return new Point(
+            this.x-pt2.x,
+            this.y - pt2.y,
+        )
+    }
+
+    add(pt) {
+        return new Point(
+            this.x + pt.x,
+            this.y + pt.y,
+        )
+    }
+}
+export class Bounds {
+    constructor(x,y,w,h) {
+        this.x = x
+        this.y = y
+        this.width = w
+        this.height = h
+    }
+    contains(pt) {
+        if(pt.x < this.x) return false
+        if(pt.x > this.x+this.width) return false
+        if(pt.y < this.y) return false
+        if(pt.y > this.y+this.height) return false
+        return true
+    }
+    translate_into(pt) {
+        return new Point(pt.x-this.x,pt.y-this.y)
+    }
+}
+
 export class App {
     constructor(argv) {
         this._appid = argv[3]
@@ -92,6 +130,56 @@ export class App {
     }
 }
 
+class EventDispatcher {
+    constructor(win) {
+        this.window = win
+    }
+
+    dispatch(e) {
+        if (e.type === INPUT.TYPE_MouseDown) {
+            let evt = {
+                type:e.type,
+                pos: new Point(Math.floor(e.x),Math.floor(e.y))
+            }
+            return this.dispatch_mousedown(evt,this.window.root)
+        }
+        if (e.type === INPUT.TYPE_MouseUp) {
+            let evt = {
+                type:e.type,
+                pos: new Point(Math.floor(e.x),Math.floor(e.y))
+            }
+            return this.dispatch_mouseup(evt,this.window.root)
+        }
+    }
+
+    dispatch_mousedown(evt,node) {
+        console.log(`down`,evt.pos,node.constructor.name, node.children.length)
+        for (let ch of node.children) {
+            console.log('checking',ch.constructor.name,ch.bounds(),ch.bounds().contains(evt.pos))
+            if(ch.bounds().contains(evt.pos)) {
+                return this.dispatch_mousedown({
+                    type:evt.type,
+                    pos: ch.bounds().translate_into(evt.pos)
+                },ch)
+            }
+        }
+        node.input(evt)
+    }
+
+    dispatch_mouseup(evt,node) {
+        console.log(`up`,evt.pos,node.constructor.name, node.children.length)
+        for (let ch of node.children) {
+            if(ch.bounds().contains(evt.pos)) {
+                return this.dispatch_mouseup({
+                    type:evt.type,
+                    pos: ch.bounds().translate_into(evt.pos)
+                },ch)
+            }
+        }
+        node.input(evt)
+    }
+}
+
 export class Window {
     constructor(app, width,height,id,parent=null,is_child=false) {
         this.app = app
@@ -114,31 +202,35 @@ export class Window {
                 return true
             }
         }
+        this.dispatcher = new EventDispatcher(this)
         this.keyboard = {
             keyname: ""
         }
         app.on(INPUT.TYPE_MouseDown,(e)=>{
             if(e.payload.window !== this._winid) return
-            this.mouse.x = e.payload.x
-            this.mouse.y = e.payload.y
-            this.mouse.down = true
-            this.input()
+            // this.mouse.x = e.payload.x
+            // this.mouse.y = e.payload.y
+            // this.mouse.down = true
+            // this.input()
+            this.dispatcher.dispatch(e.payload)
             this.redraw()
         })
         app.on(INPUT.TYPE_MouseMove,(e)=>{
             if(e.payload.window !== this._winid) return
-            this.mouse.x = e.payload.x
-            this.mouse.y = e.payload.y
+            // this.mouse.x = e.payload.x
+            // this.mouse.y = e.payload.y
             // console.log("moved",e.payload)
             // this.mouse.down = true
-            this.input()
-            this.redraw()
+            // this.input()
+            // this.redraw()
         })
         app.on(INPUT.TYPE_MouseUp,(e)=>{
             if(e.payload.window !== this._winid) return
-            this.mouse.down = false
-            this.input()
-            this.redraw()
+            console.log("up")
+            this.dispatcher.dispatch(e.payload)
+            // this.mouse.down = false
+            // this.input()
+            // this.redraw()
         })
         app.on(WINDOWS.TYPE_window_refresh_request, (e)=>{
             if(e.payload.window !== this._winid) return
@@ -147,9 +239,9 @@ export class Window {
         app.on(INPUT.TYPE_KeyboardDown, (e)=>{
             if(e.payload.window !== this._winid) return
             // console.log("keyboard pressed in app",e)
-            this.keyboard.keyname = e.payload.keyname;
-            this.input()
-            this.redraw();
+            // this.keyboard.keyname = e.payload.keyname;
+            // this.input()
+            // this.redraw();
         })
         app.on(RESOURCES.TYPE_ResourceChanged, (e)=>{
             if(e.payload.resource === 'theme') {
@@ -159,8 +251,10 @@ export class Window {
             }
         })
     }
+    /*
     input() {
         if(!this.root) return
+        this.root.parent = this
         let mouse_event = {
             x:this.mouse.x,
             y:this.mouse.y,
@@ -180,9 +274,14 @@ export class Window {
 
         let handled = this.root.input(mouse_event,this.keyboard,this)
         if(!handled) this.set_focused(null)
+    }*/
+    repaint() {
+        console.log("repainting window")
+        this.redraw()
     }
     redraw() {
         if(!this.root) return
+        this.root.parent = this
         let gfx = new Gfx(this.app,this)
         this.root.layout(gfx)
         this.root.redraw(gfx)
@@ -228,6 +327,7 @@ export class Window {
             }))
         }
     }
+
 }
 
 class Gfx {
@@ -275,8 +375,12 @@ export class Component {
         this.width = opts.width || 10
         this.height = opts.height || 10
         this.listeners = {}
+        this.children = []
     }
 
+    bounds() {
+        return new Bounds(this.x,this.y,this.width,this.height)
+    }
     on(type, cb) {
         if (!this.listeners[type]) this.listeners[type] = []
         this.listeners[type].push(cb)
@@ -287,7 +391,7 @@ export class Component {
         this.listeners[type].forEach(cb => cb(payload))
     }
 
-    input(mouse, keyboard, win) {
+    input(e) {
         return false
     }
 
@@ -297,22 +401,27 @@ export class Component {
     find(query) {
         if (this.id === query.id) return this
     }
+    repaint() {
+        console.log("repaint up",this.constructor.name)
+        if(this.parent && this.parent.repaint()) this.parent.repaint()
+    }
 }
 
 export class Container extends Component {
     constructor(opts) {
         super(opts)
         this.children = opts.children || []
+        this.children.forEach(ch => ch.parent = this)
     }
 
-    input(mouse, keyboard, win) {
-        mouse.translate(-this.x,-this.y)
-        for(let ch of this.children) {
-            let handled = ch.input(mouse,keyboard, win)
-            if(handled) return true
-        }
-        mouse.translate(this.x,this.y)
-        return false
+    input(e) {
+        // mouse.translate(-this.x,-this.y)
+        // for(let ch of this.children) {
+        //     let handled = ch.input(mouse,keyboard, win)
+        //     if(handled) return true
+        // }
+        // mouse.translate(this.x,this.y)
+        // return false
     }
 
     layout(gfx) {
@@ -354,6 +463,10 @@ export class Label extends Component {
         this.text = opts.text || "label"
     }
 
+    input(e) {
+        console.log("label got event",e.type)
+    }
+
     layout(gfx) {
         let met = gfx.text_size(this.text)
         this.width = met.width
@@ -384,14 +497,23 @@ export class Button extends Component {
         super(opts)
         this.text = opts.text || "button"
         this.pressed = false
+        this.hover = false
         this.padding = new Insets(5)
     }
 
-    input(mouse, keyboard) {
-        if(!mouse.inside(this.x,this.y,this.width,this.height)) return false
-        this.pressed = mouse.down
-        if (this.pressed) this.fire('action', {})
-        return true
+    input(e) {
+        // if(e.type === INPUT.TYPE_MouseMove) {
+        //     this.hover = true
+        // }
+        if(e.type === INPUT.TYPE_MouseDown) {
+            this.pressed = true
+            this.repaint()
+        }
+        if(e.type === INPUT.TYPE_MouseUp) {
+            this.pressed = false
+            this.repaint()
+            this.fire('action', {})
+        }
     }
 
     layout(gfx) {
@@ -420,12 +542,12 @@ export class ToggleButton extends Button {
         super(opts);
         this.selected = false
     }
-    input(mouse,keyboard) {
-        super.input(mouse,keyboard)
-        if(this.pressed) {
-            this.selected = !this.selected
-        }
-    }
+    // input(mouse,keyboard) {
+    //     super.input(mouse,keyboard)
+    //     if(this.pressed) {
+    //         this.selected = !this.selected
+    //     }
+    // }
     redraw(gfx) {
         let name = 'button'
         // if(this.pressed) name = 'button:pressed'
@@ -520,11 +642,15 @@ export class VBox extends Container {
     layout(gfx) {
         this.children.forEach(ch => ch.layout(gfx))
         let y = 0
+        let maxx = 0
         this.children.forEach(ch => {
             ch.x = 0
             ch.y = y
             y += ch.height
+            maxx = Math.max(maxx,ch.width)
         })
+        this.width = maxx
+        this.height = y
     }
 }
 export class HBox extends Container {
@@ -534,11 +660,15 @@ export class HBox extends Container {
     layout(gfx) {
         this.children.forEach(ch => ch.layout(gfx))
         let x = 0
+        let maxy = 0
         this.children.forEach(ch => {
             ch.x = x
             ch.y = 0
             x += ch.width
+            maxy = Math.max(maxy,ch.height)
         })
+        this.width = x
+        this.height = maxy
     }
 
 }
