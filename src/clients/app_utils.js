@@ -151,7 +151,6 @@ class PixelFontImpl {
         let h = full_metrics.height;
         let img = new BufferImage(w,h)
         text.split("\n").forEach(line => {
-
             for(let n=0; n<line.length; n++) {
                 let ch = line.charCodeAt(n)
                 let met = this.info.metrics[ch]
