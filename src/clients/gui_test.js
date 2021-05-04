@@ -1,6 +1,7 @@
 import {App, Button, HBox, Label, Panel, TextBox, ToggleButton, VBox} from './guitoolkit.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
+import {INPUT} from 'idealos_schemas/js/input.js'
 let app = new App(process.argv)
 
 async function init() {
@@ -35,16 +36,19 @@ async function init() {
         main_window.redraw()
     })
     main_window.redraw()
-    app.on("ACTION",(e) => {
-        // console.log("got the action",e)
-        // if(e.payload.command === 'do_a') {
-        //     main_window.root.find({id:'button-target'}).text = "A'd"
-        //     main_window.redraw()
-        // }
-        // if(e.payload.command === 'do_b') {
-        //     main_window.root.find({id:'button-target'}).text = "B'd"
-        //     main_window.redraw()
-        // }
+    app.on(INPUT.TYPE_Action,(e) => {
+        if(e.payload.command === 'do_a') {
+            main_window.root.find({id:'button-target'}).text = "A'd"
+            main_window.redraw()
+        }
+        if(e.payload.command === 'do_b') {
+            main_window.root.find({id:'button-target'}).text = "B'd"
+            main_window.redraw()
+        }
+        if(e.payload.command === 'do_foo') {
+            main_window.root.find({id:'button-target'}).text = "food"
+            main_window.redraw()
+        }
     })
 }
 
@@ -76,7 +80,13 @@ app.on(WINDOWS.TYPE_SetFocusedWindow,()=>{
             {
                 type:'top',
                 label:"There",
-                children:[]
+                children:[
+                    {
+                        type:'item',
+                        label:'Do Foo',
+                        command:'do_foo'
+                    }
+                ]
             }
         ]
     }

@@ -620,16 +620,18 @@ export class VBox extends Container {
 export class HBox extends Container {
     constructor(opts) {
         super(opts);
+        this.padding = opts.padding || 0
     }
     layout(gfx) {
         this.children.forEach(ch => ch.layout(gfx))
-        let x = 0
-        let maxy = 0
+        let x = this.padding
+        let maxy = this.padding
         this.children.forEach(ch => {
             ch.x = x
-            ch.y = 0
+            ch.y = this.padding
             x += ch.width
-            maxy = Math.max(maxy,ch.height)
+            x += this.padding
+            maxy = Math.max(maxy,this.padding+ch.height+this.padding)
         })
         this.width = x
         this.height = maxy

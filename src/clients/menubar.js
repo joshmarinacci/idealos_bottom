@@ -1,4 +1,4 @@
-import {App, Button, Component, Container, Insets, Label} from './guitoolkit.js'
+import {App, Button, Component, Container, HBox, Insets, Label, VBox} from './guitoolkit.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 let app = new App(process.argv)//,1024/4,10,'menubar')
@@ -72,98 +72,81 @@ class MenuItem extends Component {
         this.text = opts.text || "button"
         this.item = opts.item
         this.pressed = false
-        this.active = false
         this.action = opts.action
-        this.padding = new Insets(5)
+        this.padding = new Insets(3)
         this.win = opts.win
     }
     layout(gfx) {
         let met = gfx.text_size(this.text)
         this.width = this.padding.left + met.width + this.padding.right
+        this.height = this.padding.top + met.height + this.padding.bottom
     }
-    input(mouse, keyboard,w) {
-        if(!mouse.inside(this.x,this.y,this.width,this.height)) {
-            this.active = false
-            return false
-        } else {
-            this.active = true
-        }
-        if(mouse.down) {
-            if(!this.pressed) {
-                console.log('transition to pressed, trigger the event')
-                this.do_action()
-            }
+    input(e) {
+        if(e.type === INPUT.TYPE_MouseDown) {
             this.pressed = true
-        } else {
-            // this.pressed = false
+            this.repaint()
         }
-        return true
+        if(e.type === INPUT.TYPE_MouseUp && this.pressed === true) {
+            if(this.action)this.action()
+            this.pressed = false
+            this.repaint()
+        }
     }
 
     redraw(gfx) {
-        let bg = "blue"
-        if (this.pressed)  bg = "green"
-        if(this.active)    bg = "yellow"
-        if(this.pressed && this.active) bg = "orange"
+        let bg = "white"
+        if(this.pressed)  bg = "red"
         gfx.rect(this.x, this.y, this.width, this.height, bg)
         gfx.text(this.padding.left + this.x, this.y, this.text, "black")
     }
-
-    do_action() {
-        if(this.action)this.action()
-        // this.item.open = !this.item.open
-        // if(this.item.open) {
-        //     this.win.a_open_child_window(this.x*20,20,40,80,'menu').then(popup => {
-        //         console.log("got the popup window")
-        //         this.popup = popup
-        //         this.popup.root = new CustomMenu({width:popup.width, height:popup.height},this.item,app,this.popup)
-        //         this.popup.redraw()
-        //     })
-        // }
-    }
 }
-class CustomMenuBar extends Container {
+
+class CustomMenuBar extends HBox {
     constructor(opts,tree,app,win) {
         super(opts)
         this.tree = tree
         this.app = app
         this.win = win
+        this.padding = 1
         app.on(MENUS.TYPE_SetMenubar,(msg)=>{
             this.tree = msg.payload.menu
             this.children = this.tree.children.map((item,i) => {
-                return new MenuItem({text:item.label, x:i*30, width:30, y:1, height:this.height-2, item:item, win:win, action:()=>{
+                return new MenuItem({text:item.label, item:item, win:win, action:()=>{
                         win.a_open_child_window(this.x*20+10,20+10,40,80,'menu').then(popup => {
                             this.popup = popup
-                            this.popup.root = new CustomMenu({width:popup.width, height:popup.height},item,app,popup)
-                            this.popup.redraw()
+                            this.popup.root = new CustomMenu(
+                                {width:popup.width, height:popup.height},
+                                item,app,popup)
+                            this.popup.root.parent = this.popup
+                            this.popup.repaint()
                         })
                     }})
             })
-            this.win.redraw()
+            this.children.forEach(ch => ch.parent = this)
+            this.repaint()
         })
     }
+
     redraw(gfx) {
-        gfx.rect(this.x,this.y,this.width,this.height,'red')
+        gfx.rect(this.x,this.y,this.width,this.height,'black')
         super.redraw(gfx)
     }
 }
-class CustomMenu extends Container {
+
+class CustomMenu extends VBox {
     constructor(opts,item,app,win) {
         super(opts);
         this.item = item
         this.app = app
         this.win = win
         this.children = this.item.children.map((item,i) => {
-            return new MenuItem({text:item.label,x:1, y:1+20*i,width:20,height:10, item:item, win:win, action:()=>{
+            return new MenuItem({text:item.label, item:item, win:win, action:()=>{
                 win.close()
                 app.send(INPUT.MAKE_Action({command:item.command}))
             }})
         })
-    }
-    redraw(gfx) {
-        gfx.rect(this.x, this.y, this.width, this.height, 'black')
-        gfx.rect(this.x+1, this.y+1, this.width-2, this.height-2, 'red')
-        super.redraw(gfx)
+        this.children.forEach(ch => ch.parent = this)
+        this.padding = 1
     }
 }
 
