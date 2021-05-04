@@ -10,7 +10,7 @@ async function init() {
         width:main_window.width,
         height:main_window.height,
         children:[
-            new Label({text:"label 1"}),
+            new Label({text:"label 1", font:app._symbol_font}),
             new Label({text:"label 2"}),
             new Label({text:"label 3"}),
             new Button({text:'button',width:30, height:15}),

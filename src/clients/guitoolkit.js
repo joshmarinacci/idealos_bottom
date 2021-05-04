@@ -78,7 +78,8 @@ export class App {
         },500)
     }
     async a_init() {
-        this._font = await PixelFont.load("src/clients/fonts/font.png", "src/clients/fonts/font.metrics.json")
+        this._font = await PixelFont.load("src/clients/fonts/idealos_font@1.png", "src/clients/fonts/idealos_font@1.json")
+        this._symbol_font = await PixelFont.load("src/clients/fonts/symbol_font@1.png","src/clients/fonts/symbol_font@1.json")
         this.on(RESOURCES.TYPE_ResourceChanged, (e)=>{
             if(e.payload.resource === 'theme') {
                 this._theme = JSON.parse(String.fromCharCode(...e.payload.data.data))
@@ -301,11 +302,13 @@ class Gfx {
         return this.app.send(GRAPHICS.MAKE_DrawRect({x:this.tx+x, y:this.ty+y, width, height, color, window:this.win._winid}))
     }
 
-    text(x,y,text,color) {
-        return this.app._font.draw_text(this.app,this.tx+x,this.ty+y,text,color,this.win);
+    text(x,y,text,color,font) {
+        if(font) return font.draw_text(this.app, this.tx+x, this.ty+y, text, color, this.win)
+        return this.app._font.draw_text(this.app,this.tx+x,this.ty+y,text,color,this.win)
     }
-    text_size(text) {
-        return this.app._font.measure_text(this.app,text);
+    text_size(text, font) {
+        if(font) return font.measure_text(this.app,text)
+        return this.app._font.measure_text(this.app,text)
     }
     theme_bg_color(name, def) {
         return this.theme_part(name,'background_color',def)
@@ -332,6 +335,7 @@ export class Component {
         this.height = opts.height || 10
         this.listeners = {}
         this.children = []
+        this.font = opts.font || null
     }
 
     bounds() {
@@ -424,7 +428,7 @@ export class Label extends Component {
     }
 
     layout(gfx) {
-        let met = gfx.text_size(this.text)
+        let met = gfx.text_size(this.text,this.font)
         this.width = met.width
         this.height = met.height
     }
@@ -433,7 +437,7 @@ export class Label extends Component {
         gfx.rect(this.x, this.y, this.width, this.height,
             gfx.theme_bg_color('label', 'green'))
         gfx.text(this.x, this.y, this.text,
-            gfx.theme_text_color('label', 'yellow'))
+            gfx.theme_text_color('label', 'yellow'), this.font)
     }
 }
 
