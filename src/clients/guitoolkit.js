@@ -133,6 +133,8 @@ export class App {
 class EventDispatcher {
     constructor(win) {
         this.window = win
+        this.keyboard_target = null
+        this.mouse_target = null
     }
 
     dispatch(e) {
@@ -150,6 +152,14 @@ class EventDispatcher {
             }
             return this.dispatch_mouseup(evt,this.window.root)
         }
+        if(e.type === INPUT.TYPE_KeyboardDown) {
+            let evt = {
+                type:e.type,
+                keyname:e.keyname,
+                shift:e.shift,
+            }
+            return this.dispatch_keydown(evt,this.window.root)
+        }
     }
 
     dispatch_mousedown(evt,node) {
@@ -163,20 +173,22 @@ class EventDispatcher {
                 },ch)
             }
         }
+        this.mouse_target = node
+        this.keyboard_target = node
+        this.window.set_focused(node)
         node.input(evt)
     }
 
     dispatch_mouseup(evt,node) {
-        console.log(`up`,evt.pos,node.constructor.name, node.children.length)
-        for (let ch of node.children) {
-            if(ch.bounds().contains(evt.pos)) {
-                return this.dispatch_mouseup({
-                    type:evt.type,
-                    pos: ch.bounds().translate_into(evt.pos)
-                },ch)
-            }
+        if(this.mouse_target) {
+            this.mouse_target.input(evt)
+            this.mouse_target = null
         }
-        node.input(evt)
+    }
+
+    dispatch_keydown(evt, root) {
+        if(!this.keyboard_target) return console.error("no keyboard target")
+        this.keyboard_target.input(evt)
     }
 }
 
@@ -190,47 +202,18 @@ export class Window {
         this.focused = null
         this.is_child = is_child
         this.parent = parent
-        this.mouse = {
-            x: -1,
-            y: -1,
-            down: false,
-            inside: function (x, y, w, h) {
-                if (this.x < x) return false
-                if (this.y < y) return false
-                if (this.x > x + w) return false
-                if (this.y > y + h) return false
-                return true
-            }
-        }
         this.dispatcher = new EventDispatcher(this)
-        this.keyboard = {
-            keyname: ""
-        }
         app.on(INPUT.TYPE_MouseDown,(e)=>{
             if(e.payload.window !== this._winid) return
-            // this.mouse.x = e.payload.x
-            // this.mouse.y = e.payload.y
-            // this.mouse.down = true
-            // this.input()
             this.dispatcher.dispatch(e.payload)
-            this.redraw()
         })
         app.on(INPUT.TYPE_MouseMove,(e)=>{
             if(e.payload.window !== this._winid) return
-            // this.mouse.x = e.payload.x
-            // this.mouse.y = e.payload.y
-            // console.log("moved",e.payload)
-            // this.mouse.down = true
-            // this.input()
-            // this.redraw()
+            this.dispatcher.dispatch(e.payload)
         })
         app.on(INPUT.TYPE_MouseUp,(e)=>{
             if(e.payload.window !== this._winid) return
-            console.log("up")
             this.dispatcher.dispatch(e.payload)
-            // this.mouse.down = false
-            // this.input()
-            // this.redraw()
         })
         app.on(WINDOWS.TYPE_window_refresh_request, (e)=>{
             if(e.payload.window !== this._winid) return
@@ -238,10 +221,7 @@ export class Window {
         })
         app.on(INPUT.TYPE_KeyboardDown, (e)=>{
             if(e.payload.window !== this._winid) return
-            // console.log("keyboard pressed in app",e)
-            // this.keyboard.keyname = e.payload.keyname;
-            // this.input()
-            // this.redraw();
+            this.dispatcher.dispatch(e.payload)
         })
         app.on(RESOURCES.TYPE_ResourceChanged, (e)=>{
             if(e.payload.resource === 'theme') {
@@ -251,30 +231,6 @@ export class Window {
             }
         })
     }
-    /*
-    input() {
-        if(!this.root) return
-        this.root.parent = this
-        let mouse_event = {
-            x:this.mouse.x,
-            y:this.mouse.y,
-            translate:function(x,y) {
-                this.x += x;
-                this.y += y;
-            },
-            down:this.mouse.down,
-            inside:function(x,y, w, h) {
-                if (this.x < x) return false
-                if (this.y < y) return false
-                if (this.x > x + w) return false
-                if (this.y > y + h) return false
-                return true
-            }
-        }
-
-        let handled = this.root.input(mouse_event,this.keyboard,this)
-        if(!handled) this.set_focused(null)
-    }*/
     repaint() {
         console.log("repainting window")
         this.redraw()
@@ -497,14 +453,10 @@ export class Button extends Component {
         super(opts)
         this.text = opts.text || "button"
         this.pressed = false
-        this.hover = false
         this.padding = new Insets(5)
     }
 
     input(e) {
-        // if(e.type === INPUT.TYPE_MouseMove) {
-        //     this.hover = true
-        // }
         if(e.type === INPUT.TYPE_MouseDown) {
             this.pressed = true
             this.repaint()
@@ -560,54 +512,62 @@ export class ToggleButton extends Button {
     }
 }
 
+const WORD_KEYS = {
+    'A':true,
+}
+for(let i=48; i<=57; i++) {
+    WORD_KEYS[String.fromCharCode(i)] = true
+}
+for(let i=65; i<=90; i++) {
+    WORD_KEYS[String.fromCharCode(i)] = true
+}
+
 export class TextBox extends Component {
+
     constructor(opts) {
         super(opts)
         this.text = opts.text || "textbox"
         this.padding = new Insets(5)
         this.cursor = 2
+        this.selected = false
     }
 
-    input(evt) {
-        /*
-        if(!mouse.inside(this.x, this.y, this.width, this.height)) return false
-        if(mouse.down) win.set_focused(this)
-        if(!win.is_focused(this)) return false
-        if (win.is_focused(this)) {
-            if (keyboard.keyname === 'Backspace') {
-                if (this.text.length > 0) {
-                    this.text = this.text.substring(0, this.text.length - 1)
-                    let before = this.text.substring(0, this.cursor)
-                    let after = this.text.substring(this.cursor)
-                    this.text = before.substring(0, before.length - 1) + after
-                    this.cursor = Math.max(this.cursor - 1, 0)
-                }
-            }
-            if (keyboard.keyname === 'Space') {
-                this.text = this.text + " "
-                this.cursor += 1
-            }
-            if (keyboard.keyname === 'Left') {
-                this.cursor = Math.max(this.cursor - 1, 0)
-            }
-            if (keyboard.keyname === 'Right') {
-                this.cursor = Math.min(this.cursor + 1, this.text.length)
-            }
-            if (keyboard.keyname.length === 1) {
-                // app.log(`keycode = ${keyboard.keyname} = ${keyboard.keyname.charCodeAt(0)}`)
-                let ch = keyboard.keyname.charCodeAt(0)
-                if (ch >= 65 && ch <= 90) {
-                    this.text += String.fromCharCode(ch).toLowerCase()
-                    this.cursor += 1
-                }
-            }
-            if (keyboard.keyname === 'Return') {
-                this.fire('action',{target:this})
-            }
-            keyboard.keyname = ""
+    input(e) {
+        // console.log("textbox input",e)
+        if(e.type === INPUT.TYPE_MouseDown) {
+            this.selected = true
+            console.log("textbox is selected")
+            this.repaint()
+            return
         }
-        return true
-         */
+        if(this.is_word_char(e.keyname)) {
+            if(e.shift) {
+                return this.append_char(e.keyname.toUpperCase())
+            } else {
+                return this.append_char(e.keyname.toLowerCase())
+            }
+        }
+        if(e.keyname === 'SPACE') return this.append_char(' ')
+        if (e.keyname === 'BACKSPACE') {
+            if (this.text.length > 0) {
+                let before = this.text.substring(0, this.cursor)
+                let after = this.text.substring(this.cursor)
+                this.text = before.substring(0, before.length - 1) + after
+                this.cursor = Math.max(this.cursor - 1, 0)
+                this.repaint()
+            }
+        }
+        if(e.keyname === 'LEFT') {
+            this.cursor = Math.max(this.cursor - 1, 0)
+            this.repaint()
+        }
+        if(e.keyname === 'RIGHT') {
+            this.cursor = Math.min(this.cursor + 1, this.text.length)
+            this.repaint()
+        }
+            // if (keyboard.keyname === 'Return') {
+            //     this.fire('action',{target:this})
+            // }
     }
 
     redraw(gfx) {
@@ -623,6 +583,16 @@ export class TextBox extends Component {
         }
     }
 
+    append_char(ch) {
+        this.text += ch
+        console.log("new text is",this.text)
+        this.cursor += 1
+        this.repaint()
+    }
+
+    is_word_char(key) {
+        return WORD_KEYS.hasOwnProperty(key)
+    }
 }
 
 export class VBox extends Container {
