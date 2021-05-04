@@ -24,16 +24,15 @@ async function init() {
                     new ToggleButton({text:'B', width:15, height:15}),
                 ]})
         ]})
-    // main_window.root.parent = main_window
 
     //attach actions
     main_window.root.find({id:'button'}).on('action',()=>{
-        // main_window.root.find({id:'button-target'}).text = 'clicked!'
-        // main_window.redraw()
+        main_window.root.find({id:'button-target'}).text = 'clicked!'
+        main_window.redraw()
     })
     main_window.root.find({id:'textbox'}).on('action',()=>{
-        // main_window.root.find({id:'button-target'}).text = 'committed'
-        // main_window.redraw()
+        main_window.root.find({id:'button-target'}).text = 'committed'
+        main_window.redraw()
     })
     main_window.redraw()
     app.on("ACTION",(e) => {

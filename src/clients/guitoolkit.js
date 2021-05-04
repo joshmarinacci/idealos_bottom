@@ -542,33 +542,21 @@ export class ToggleButton extends Button {
         super(opts);
         this.selected = false
     }
-    // input(mouse,keyboard) {
-    //     super.input(mouse,keyboard)
-    //     if(this.pressed) {
-    //         this.selected = !this.selected
-    //     }
-    // }
+    input(e) {
+        super.input(e)
+        if(e.type === INPUT.TYPE_MouseDown) {
+            this.selected = !this.selected
+            this.repaint()
+        }
+    }
+
     redraw(gfx) {
         let name = 'button'
-        // if(this.pressed) name = 'button:pressed'
         if(this.selected) name = 'button:selected'
         let bg = gfx.theme_bg_color(name,MAGENTA);
         let txt = gfx.theme_text_color(name,MAGENTA);
         gfx.rect(this.x, this.y, this.width, this.height, bg);
         gfx.text(this.padding.left + this.x, this.y, this.text, txt);
-
-        // if (this.pressed) {
-        //     gfx.rect(this.x, this.y, this.width, this.height,
-        //         gfx.theme_bg_color('button:pressed', MAGENTA))
-        //     gfx.text(this.padding.left + this.x, this.y, this.text,
-        //         gfx.theme_text_color('button:pressed', MAGENTA))
-        // } else {
-        //     gfx.rect(this.x, this.y, this.width, this.height,
-        //         gfx.theme_bg_color('button', 'magenta'))
-        //     gfx.text(this.padding.left + this.x, this.y, this.text,
-        //         gfx.theme_text_color('button', 'magenta'))
-        // }
-
     }
 }
 
@@ -580,7 +568,8 @@ export class TextBox extends Component {
         this.cursor = 2
     }
 
-    input(mouse, keyboard, win) {
+    input(evt) {
+        /*
         if(!mouse.inside(this.x, this.y, this.width, this.height)) return false
         if(mouse.down) win.set_focused(this)
         if(!win.is_focused(this)) return false
@@ -618,6 +607,7 @@ export class TextBox extends Component {
             keyboard.keyname = ""
         }
         return true
+         */
     }
 
     redraw(gfx) {
