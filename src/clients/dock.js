@@ -40,10 +40,11 @@ export class IconButton extends Component {
 let app = new App(process.argv)
 async function init() {
     await app.a_init()
-    let win = await app.open_window(0, 0, 16, 16 * 5, 'dock')
+    let win = await app.open_window(0, 0, 1+16+1, 16 * 5, 'dock')
     win.root = new VBox({
         width: 16,
         height: 16 * 5,
+        padding:1,
         children: [
             new IconButton({text: "s",appname:'fractal', font:app._symbol_font}),
             new IconButton({text: "t",appname:'guitest', font:app._symbol_font}),

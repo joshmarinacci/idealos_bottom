@@ -375,13 +375,6 @@ export class Container extends Component {
     }
 
     input(e) {
-        // mouse.translate(-this.x,-this.y)
-        // for(let ch of this.children) {
-        //     let handled = ch.input(mouse,keyboard, win)
-        //     if(handled) return true
-        // }
-        // mouse.translate(this.x,this.y)
-        // return false
     }
 
     layout(gfx) {
@@ -602,19 +595,26 @@ export class TextBox extends Component {
 export class VBox extends Container {
     constructor(opts) {
         super(opts);
+        this.border_width = opts.border_width || 0
+        this.padding = opts.padding || 0
     }
     layout(gfx) {
         this.children.forEach(ch => ch.layout(gfx))
-        let y = 0
-        let maxx = 0
+        let y = this.padding
+        let maxx = this.padding
         this.children.forEach(ch => {
-            ch.x = 0
+            ch.x = this.padding
             ch.y = y
             y += ch.height
-            maxx = Math.max(maxx,ch.width)
+            y += this.padding
+            maxx = Math.max(maxx,this.padding+ch.width+this.padding)
         })
         this.width = maxx
         this.height = y
+    }
+    redraw(gfx) {
+        gfx.rect(0,0,this.width,this.height,'black')
+        super.redraw(gfx)
     }
 }
 export class HBox extends Container {
