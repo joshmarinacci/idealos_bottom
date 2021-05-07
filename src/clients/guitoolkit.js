@@ -99,6 +99,8 @@ export class App {
             let handler = (e) => {
                 this.off(WINDOWS.TYPE_WindowOpenResponse,handler)
                 let win = new Window(this,width,height,e.payload.window,null,false)
+                win.base_font = this._font
+                win.symbol_font = this._symbol_font
                 this.windows.push(win)
                 res(win)
             }
@@ -265,6 +267,8 @@ export class Window {
             let handler = (e) => {
                 this.app.off(WINDOWS.TYPE_create_child_window_response,handler)
                 let win = new Window(this.app,width,height,e.payload.window.id,this,true)
+                win.base_font = this.app._font
+                win.symbol_font = this.app._symbol_font
                 this.app.windows.push(win)
                 res(win)
             }
@@ -525,7 +529,6 @@ export class PopupButton extends Button {
         this.items = opts.items
         this.on('action',()=>{
             let win = this.window()
-            console.log("opening popup", this.items,win._type)
             win.a_open_child_window(50,50,
                 40,80,
                 'menu').then(popup => {
@@ -549,6 +552,22 @@ export class PopupButton extends Button {
                 this.popup.repaint()
             })
         })
+    }
+    layout(gfx) {
+        let met = gfx.text_size(this.text,this.window().base_font)
+        let met2 = gfx.text_size('a',this.window().symbol_font)
+        this.width = this.padding.left + met.width + 2 + met2.width + this.padding.right
+        this.height = this.padding.top + met.height + this.padding.bottom
+    }
+    redraw(gfx) {
+        let bg = gfx.theme_bg_color("button",'magenta')
+        if(this.pressed) bg = gfx.theme_bg_color('button:pressed', MAGENTA)
+        let fg = gfx.theme_text_color('button', 'magenta')
+        if(this.pressed) fg = gfx.theme_text_color('button:pressed', MAGENTA)
+        gfx.rect(this.x, this.y, this.width, this.height, bg)
+        gfx.text(this.padding.left + this.x, this.y, this.text, fg, this.window().base_font)
+        let met = gfx.text_size(this.text,this.window().base_font)
+        gfx.text(this.padding.left + this.x + met.width + 2, this.y, 'g', fg, this.window().symbol_font)
     }
 }
 
