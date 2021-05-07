@@ -32,7 +32,7 @@ async function init() {
             new HBox({children:[
                     new ToggleButton({text:'A', width:15, height:15}),
                     new ToggleButton({text:'B', width:15, height:15}),
-                    new PopupButton({text:"choose", items:["Alabama","Alaska","Arizona","Arkansas"]}),
+                    new PopupButton({text:"Alabama", items:["Alabama","Alaska","Arizona","Arkansas"]}),
                 ]})
         ]})
 
