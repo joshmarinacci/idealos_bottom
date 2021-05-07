@@ -195,6 +195,7 @@ class EventDispatcher {
 
 export class Window {
     constructor(app, width,height,id,parent=null,is_child=false) {
+        this._type = 'window'
         this.app = app
         this._winid = id
         this.width = width
@@ -284,6 +285,9 @@ export class Window {
             }))
         }
     }
+    window() {
+        return this
+    }
 
 }
 
@@ -364,6 +368,9 @@ export class Component {
     repaint() {
         console.log("repaint up",this.constructor.name)
         if(this.parent && this.parent.repaint()) this.parent.repaint()
+    }
+    window() {
+        return this.parent.window()
     }
 }
 
@@ -451,6 +458,7 @@ export class Button extends Component {
         this.text = opts.text || "button"
         this.pressed = false
         this.padding = new Insets(5)
+        this.action = opts.action || null
     }
 
     input(e) {
@@ -462,12 +470,14 @@ export class Button extends Component {
             this.pressed = false
             this.repaint()
             this.fire('action', {})
+            if(this.action) this.action()
         }
     }
 
     layout(gfx) {
         let met = gfx.text_size(this.text)
         this.width = this.padding.left + met.width + this.padding.right
+        this.height = this.padding.top + met.height + this.padding.bottom
     }
 
     redraw(gfx) {
@@ -506,6 +516,39 @@ export class ToggleButton extends Button {
         let txt = gfx.theme_text_color(name,MAGENTA);
         gfx.rect(this.x, this.y, this.width, this.height, bg);
         gfx.text(this.padding.left + this.x, this.y, this.text, txt);
+    }
+}
+
+export class PopupButton extends Button {
+    constructor(opts) {
+        super(opts);
+        this.items = opts.items
+        this.on('action',()=>{
+            let win = this.window()
+            console.log("opening popup", this.items,win._type)
+            win.a_open_child_window(50,50,
+                40,80,
+                'menu').then(popup => {
+                this.popup = popup
+                this.popup.root = new VBox({
+                    width:40,
+                    height:80,
+                    hstretch:true,
+                    children:this.items.map(it => {
+                        return new Button({
+                            text:it,
+                            action:()=>{
+                                this.text = it
+                                this.repaint()
+                                this.popup.close()
+                            }
+                        })
+                    })
+                })
+                this.popup.root.parent = this.popup
+                this.popup.repaint()
+            })
+        })
     }
 }
 
@@ -597,6 +640,7 @@ export class VBox extends Container {
         super(opts);
         this.border_width = opts.border_width || 0
         this.padding = opts.padding || 0
+        this.hstretch = opts.hstretch || false
     }
     layout(gfx) {
         this.children.forEach(ch => ch.layout(gfx))
@@ -609,6 +653,9 @@ export class VBox extends Container {
             y += this.padding
             maxx = Math.max(maxx,this.padding+ch.width+this.padding)
         })
+        if(this.hstretch) {
+            this.children.forEach(ch => ch.width = maxx)
+        }
         this.width = maxx
         this.height = y
     }
@@ -617,6 +664,7 @@ export class VBox extends Container {
         super.redraw(gfx)
     }
 }
+
 export class HBox extends Container {
     constructor(opts) {
         super(opts);
