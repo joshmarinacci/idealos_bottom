@@ -1,7 +1,7 @@
 import {start_message_server} from './server.js'
 
-let server = start_message_server()
-server.screen_connected().then(()=>{
+async function doit() {
+    let server = await start_message_server()
     let apps = [
         {name:'dotclock', path:'src/clients/app1.js',args:[]},
         {name:'app2', path:'src/clients/app2.js',args:[]},
@@ -13,7 +13,8 @@ server.screen_connected().then(()=>{
 
     console.log('starting apps',apps)
     for(let app of apps) {
-        server.start_app(app)
+        await server.start_app(app)
     }
-})
+}
 
+doit().catch(e => console.error(e))

@@ -23,7 +23,7 @@ export class WindowTracker {
     }
 
     has_window_id(win_id) {
-        return this.windows[win_id]
+        return this.windows[win_id]?true:false
     }
 
     window_for_id(win_id) {
@@ -83,5 +83,11 @@ export class WindowTracker {
 
     close_child_window(id) {
         if(this.windows[id]) this.windows[id] = undefined
+    }
+
+    move_window(id, x, y) {
+        let win = this.window_for_id(id)
+        win.x = x
+        win.y = y
     }
 }

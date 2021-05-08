@@ -91,6 +91,8 @@ export class App {
     open_window(x,y,width,height,window_type) {
         return new Promise((res,rej)=>{
             this.send(WINDOWS.MAKE_WindowOpen({
+                x:50,
+                y:50,
                 width: width,
                 height: height,
                 sender: this._appid,

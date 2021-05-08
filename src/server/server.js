@@ -55,7 +55,7 @@ function handle_start_message(ws,msg) {
 function handle_open_window_message(ws,msg) {
     log("app is opening a window",msg)
     if(!msg.sender) return log("open window message with no sender")
-    if(!connections[CLIENT_TYPES.SCREEN]) return log("can't open a window because there is no screen")
+    // if(!connections[CLIENT_TYPES.SCREEN]) return log("can't open a window because there is no screen")
 
     if(!connections[msg.sender]) connections[msg.sender] = ws
     ws.target = msg.sender
@@ -173,7 +173,6 @@ function respond(msg,resp) {
     forward_to_target(resp)
 }
 
-
 function handle_set_window_focused(msg) {
     let win = wids.window_for_id(msg.window)
     if(!win) return log(`no such window ${msg.window}`)
@@ -188,7 +187,64 @@ function forward_to_focused(msg) {
     if(win && win.owner) return connections[win.owner].send(JSON.stringify(msg))
 }
 
+function set_window_position(msg) {
+    let win = wids.window_for_id(msg.window)
+    if(!win) return log(`no such window ${msg.window}`)
+    if(!win.owner) return log(`window has no owner ${win.owner}`)
+    wids.move_window(msg.window,msg.x,msg.y)
+    forward_to_app(msg)
+}
 
+function dispatch(msg,ws) {
+    try {
+        // console.log("server displatching",msg)
+        forward_to_debug(msg)
+        if(msg.type === GENERAL.TYPE_Heartbeat) return do_nothing(msg)
+        if(msg.type === GENERAL.TYPE_ScreenStart) return handle_start_message(ws,msg)
+
+        if(msg.type === WINDOWS.TYPE_WindowOpen) return handle_open_window_message(ws,msg)
+        if(msg.type === WINDOWS.TYPE_WindowOpenResponse) return forward_to_target(msg)
+        if(msg.type === WINDOWS.TYPE_window_refresh_request) return forward_to_target(msg)
+        if(msg.type === WINDOWS.TYPE_window_refresh_response) return forward_to_target(msg)
+        if(msg.type === WINDOWS.TYPE_window_close_response) return forward_to_screen(msg)
+        if(msg.type === WINDOWS.TYPE_window_close_request) return forward_to_target(msg)
+        if(msg.type === WINDOWS.TYPE_create_child_window)  return handle_open_child_window_message(msg)
+        if(msg.type === WINDOWS.TYPE_close_child_window)   return handle_close_child_window_message(msg)
+        if(msg.type === WINDOWS.TYPE_WindowSetPosition) return set_window_position(msg)
+
+        if(msg.type === GRAPHICS.TYPE_DrawPixel) return forward_to_screen(msg)
+        if(msg.type === GRAPHICS.TYPE_DrawRect) return forward_to_screen(msg)
+        if(msg.type === GRAPHICS.TYPE_DrawImage) return forward_to_screen(msg)
+
+        if(msg.type === INPUT.TYPE_MouseDown) return forward_to_app(msg)
+        if(msg.type === INPUT.TYPE_MouseMove) return forward_to_app(msg)
+        if(msg.type === INPUT.TYPE_MouseUp) return forward_to_app(msg)
+        if(msg.type === INPUT.TYPE_KeyboardDown) return forward_to_app(msg)
+        if(msg.type === INPUT.TYPE_KeyboardUp) return forward_to_app(msg)
+
+        if(msg.type === WINDOWS.TYPE_SetFocusedWindow) return handle_set_window_focused(msg)
+        if(msg.type === MENUS.TYPE_SetMenubar) return forward_to_menubar(msg)
+
+        if(msg.type === DEBUG.TYPE_ListAppsRequest) return list_apps(ws,msg)
+        if(msg.type === DEBUG.TYPE_RestartApp) return at.restart(msg.target)
+        if(msg.type === DEBUG.TYPE_StopApp) return at.stop(msg.target)
+        if(msg.type === DEBUG.TYPE_StartApp) return at.start(msg.target)
+        if(msg.type === DEBUG.TYPE_StartAppByName) return at.start_app_by_name(msg.name)
+
+        if(msg.type === DEBUG.TYPE_TestStart) return start_test(ws,msg)
+
+        if(msg.type === RESOURCES.TYPE_ResourceGet) return resources.get_resource(msg)
+        if(msg.type === INPUT.TYPE_Action) return forward_to_focused(msg)
+        // if (msg.type === RESOURCES.TYPE_ResourceSet) return resources.set_resource(msg)
+        // if (message_match(SCHEMAS.RESOURCE.SET, msg)) return resources.set_resource(msg)
+        // if(message_match('CREATE_MENU_TREE',msg)) return forward_to_menubar(msg)
+
+        log("SERVER: unknown incoming message", msg)
+    } catch (e) {
+        log("ERROR",e)
+    }
+
+}
 export function start_message_server() {
     const server = new WS.Server({
         port: websocket_port,
@@ -197,128 +253,48 @@ export function start_message_server() {
 
     server.on("connection", (ws) => {
         ws.on("message", (m) => {
-            try {
-                let msg = JSON.parse(m)
-                forward_to_debug(msg)
-                if(msg.type === GENERAL.TYPE_Heartbeat) return do_nothing(msg)
-                if(msg.type === GENERAL.TYPE_ScreenStart) return handle_start_message(ws,msg)
-
-                if(msg.type === WINDOWS.TYPE_WindowOpen) return handle_open_window_message(ws,msg)
-                if(msg.type === WINDOWS.TYPE_WindowOpenResponse) return forward_to_target(msg)
-                if(msg.type === WINDOWS.TYPE_window_refresh_request) return forward_to_target(msg)
-                if(msg.type === WINDOWS.TYPE_window_refresh_response) return forward_to_target(msg)
-                if(msg.type === WINDOWS.TYPE_window_close_response) return forward_to_screen(msg)
-                if(msg.type === WINDOWS.TYPE_window_close_request) return forward_to_target(msg)
-                if(msg.type === WINDOWS.TYPE_create_child_window)  return handle_open_child_window_message(msg)
-                if(msg.type === WINDOWS.TYPE_close_child_window)   return handle_close_child_window_message(msg)
-
-                if(msg.type === GRAPHICS.TYPE_DrawPixel) return forward_to_screen(msg)
-                if(msg.type === GRAPHICS.TYPE_DrawRect) return forward_to_screen(msg)
-                if(msg.type === GRAPHICS.TYPE_DrawImage) return forward_to_screen(msg)
-
-                if(msg.type === INPUT.TYPE_MouseDown) return forward_to_app(msg)
-                if(msg.type === INPUT.TYPE_MouseMove) return forward_to_app(msg)
-                if(msg.type === INPUT.TYPE_MouseUp) return forward_to_app(msg)
-                if(msg.type === INPUT.TYPE_KeyboardDown) return forward_to_app(msg)
-                if(msg.type === INPUT.TYPE_KeyboardUp) return forward_to_app(msg)
-
-                if(msg.type === WINDOWS.TYPE_SetFocusedWindow) return handle_set_window_focused(msg)
-                if(msg.type === MENUS.TYPE_SetMenubar) return forward_to_menubar(msg)
-
-                if(msg.type === DEBUG.TYPE_ListAppsRequest) return list_apps(ws,msg)
-                if(msg.type === DEBUG.TYPE_RestartApp) return at.restart(msg.target)
-                if(msg.type === DEBUG.TYPE_StopApp) return at.stop(msg.target)
-                if(msg.type === DEBUG.TYPE_StartApp) return at.start(msg.target)
-                if(msg.type === DEBUG.TYPE_StartAppByName) return at.start_app_by_name(msg.name)
-
-                if(msg.type === DEBUG.TYPE_TestStart) return start_test(ws,msg)
-
-                if(msg.type === RESOURCES.TYPE_ResourceGet) return resources.get_resource(msg)
-                if(msg.type === INPUT.TYPE_Action) return forward_to_focused(msg)
-                // if (msg.type === RESOURCES.TYPE_ResourceSet) return resources.set_resource(msg)
-                // if (message_match(SCHEMAS.RESOURCE.SET, msg)) return resources.set_resource(msg)
-                // if(message_match('CREATE_MENU_TREE',msg)) return forward_to_menubar(msg)
-
-                log("unknown incoming message", msg)
-            } catch (e) {
-                log("ERROR",e)
-            }
+            let msg = JSON.parse(m)
+            dispatch(msg,ws)
         })
         ws.on('close',(code)=>{
             delete connections[ws.target]
         })
         ws.send(JSON.stringify(GENERAL.MAKE_Connected({})))
     })
+    server.on("close",(m) => {
+        log('server closed',m)
+    })
+    server.on('error',(e)=>{
+        log("server error",e)
+    })
 
     return {
         wsserver:server,
-        screen_connected: () => {
-            log("waiting for the screen to connect. please refresh the page")
-            return new Promise((res,rej)=>{
-                let id = setInterval(()=>{
-                    if(connections[CLIENT_TYPES.SCREEN]) {
-                        log("screen attached")
-                        clearInterval(id)
-                        res()
-                    }
-                },500)
-            })
+        wids:wids,
+        start_app_cb:async (opts) => {
+            let app = at.create_app(opts)
+            return {
+                app:app,
+                info:at.start_cb(app.id)
+            }
         },
         start_app:async (opts) => {
             let app = at.create_app(opts)
             await sleep(250)
             at.start(app.id)
         },
+        shutdown:async() => {
+            log("stopping the server")
+            return new Promise((res,rej)=>{
+                server.close(()=>{
+                    console.log('close is done')
+                    res()
+                })
+                log("stopped")
+            })
+        },
+        send:async(msg) => {
+            dispatch(msg)
+        }
     }
 }
-export function stop_message_server(server) {
-    log('stopping the server');
-    server.wsserver.close()
-}
-function start_web_server() {
-    return new Promise((res,rej)=>{
-        const webserver = http.createServer((req, res) => {
-            let file = path.resolve(path.join('src/canvas/', req.url))
-            log(`${req.url}`)
-            // log(`sending: ${file}`)
-            fs.readFile(file, (err, data) => {
-                if (err) {
-                    log("error", err)
-                    res.statusCode = 404
-                    res.setHeader('Content-Type','text/plain')
-                    res.write("Error: " + err.toString())
-                    return
-                }
-                res.statusCode = 200
-                if (file.endsWith('.js')) res.setHeader('Content-Type', 'application/javascript')
-                if (file.endsWith('.html')) res.setHeader('Content-Type', 'text/html')
-                res.write(data)
-                res.end()
-            })
-        })
-        webserver.listen(webserver_port, hostname, () => {
-            log(`started webserver at http://${hostname}:${webserver_port}/screen.html`)
-            res()
-        })
-    })
-}
-
-
-// await start_message_server()
-// await start_web_server()
-
-function screen_connected() {
-    log("waiting for the screen to connect. please refresh the page")
-    return new Promise((res,rej)=>{
-        let id = setInterval(()=>{
-            if(connections[CLIENT_TYPES.SCREEN]) {
-                log("screen attached")
-                clearInterval(id)
-                res()
-            }
-        },500)
-    })
-}
-
-// await screen_connected()
-log('started everything')

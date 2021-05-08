@@ -6,9 +6,9 @@ import {
     websocket_port
 } from '../src/server/server.js'
 import {default as WebSocket} from 'ws'
-import {RESOURCES} from '../src/schemas/resources_schemas.js'
-import {GENERAL} from '../src/schemas/general_schemas.js'
-import {DEBUG} from '../src/schemas/debug_schemas.js'
+import {RESOURCES} from "idealos_schemas/js/resources.js"
+import {GENERAL} from "idealos_schemas/js/general.js"
+import {DEBUG} from "idealos_schemas/js/debug.js"
 
 
 async function connect_and_wait() {

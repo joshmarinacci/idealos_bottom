@@ -26,6 +26,17 @@ export class AppTracker {
     }
 
 
+
+    start_cb(id) {
+        let app = this.get_app_by_id(id)
+        if(!app) return console.error(`no such app ${id}`)
+        this.send(DEBUG.MAKE_AppStarted({target:app.id}))
+        return {
+            hostname:this.hostname,
+            websocket_port:this.websocket_port,
+            id:app.id,
+        }
+    }
     start(id) {
         let app = this.get_app_by_id(id)
         if(!app) return console.error(`no such app ${id}`)

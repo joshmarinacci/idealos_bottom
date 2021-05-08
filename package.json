@@ -15,7 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "idealos_schemas": "^0.1.7",
+    "idealos_schemas": "^0.1.8",
     "mocha": "^8.3.2",
     "pureimage": "^0.3.2",
     "raylib": "^0.7.0",
