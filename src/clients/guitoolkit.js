@@ -41,6 +41,9 @@ export class Bounds {
     translate_into(pt) {
         return new Point(pt.x-this.x,pt.y-this.y)
     }
+    position() {
+        return new Point(this.x,this.y)
+    }
 }
 
 export class App {
@@ -202,6 +205,8 @@ export class Window {
         this._type = 'window'
         this.app = app
         this._winid = id
+        this.x = -1
+        this.y = -1
         this.width = width
         this.height = height
         this.root = null
@@ -235,6 +240,11 @@ export class Window {
                 // app.win.redraw()
                 this.redraw()
             }
+        })
+        app.on(WINDOWS.TYPE_WindowSetPosition, (e)=>{
+            if(e.payload.window !== this._winid) return
+            this.x = e.payload.x
+            this.y = e.payload.y
         })
     }
     repaint() {
@@ -294,6 +304,9 @@ export class Window {
     window() {
         return this
     }
+    position_in_window() {
+        return new Point(0,0)
+    }
 
 }
 
@@ -350,6 +363,9 @@ export class Component {
 
     bounds() {
         return new Bounds(this.x,this.y,this.width,this.height)
+    }
+    position_in_window() {
+        return this.parent.position_in_window().add(this.bounds().position())
     }
     on(type, cb) {
         if (!this.listeners[type]) this.listeners[type] = []
@@ -531,7 +547,10 @@ export class PopupButton extends Button {
         this.items = opts.items
         this.on('action',()=>{
             let win = this.window()
-            win.a_open_child_window(50,50,
+            let pos = this.position_in_window()
+            let x = win.x + pos.x + this.bounds().width
+            let y = win.y + pos.y
+            win.a_open_child_window(x,y,
                 40,80,
                 'menu').then(popup => {
                 this.popup = popup
