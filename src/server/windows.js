@@ -77,7 +77,7 @@ export class WindowTracker {
             owner:msg.sender,
             window_type: msg.style
         }
-        this.log("making a child window",ch_win)
+        // this.log("making a child window",ch_win)
         return ch_win
     }
 

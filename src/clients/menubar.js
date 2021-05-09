@@ -87,9 +87,13 @@ class MenuItem extends Component {
             this.repaint()
         }
         if(e.type === INPUT.TYPE_MouseUp && this.pressed === true) {
-            if(this.action)this.action()
             this.pressed = false
             this.repaint()
+            try {
+                if (this.action) this.action()
+            } catch (e)  {
+                console.error(e)
+            }
         }
     }
 
@@ -111,8 +115,12 @@ class CustomMenuBar extends HBox {
         app.on(MENUS.TYPE_SetMenubar,(msg)=>{
             this.tree = msg.payload.menu
             this.children = this.tree.children.map((item,i) => {
-                return new MenuItem({text:item.label, item:item, win:win, action:()=>{
-                    win.a_open_child_window(this.x*20+10,20+10,40,80,'menu').then(popup => {
+                return new MenuItem({text:item.label, item:item, win:win, action:function() {
+                    let win = this.window()
+                    let pos = this.position_in_window()
+                    let x = win.x + pos.x
+                    let y = win.y + pos.y + this.bounds().height
+                    win.a_open_child_window(x,y,40,80,'menu').then(popup => {
                         this.popup = popup
                         this.popup.root = new CustomMenu(
                             {width:popup.width, height:popup.height},
