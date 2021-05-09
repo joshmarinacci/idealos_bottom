@@ -51,6 +51,7 @@ export class App {
         this._appid = argv[3]
         this.ws = new WebSocket(argv[2]);
         this.listeners = {}
+        this.listeners['ALL'] = []
         this.windows = []
         this.ws.on('open', () => {
             this.fireLater('start', {})
@@ -116,6 +117,9 @@ export class App {
         if(!this.listeners[type]) this.listeners[type] = []
         this.listeners[type].push(cb)
     }
+    on_all(cb) {
+        this.listeners['ALL'].push(cb)
+    }
     off(type,cb) {
         if(!this.listeners[type]) this.listeners[type] = []
         this.listeners[type] = this.listeners[type].filter(c => c !== cb)
@@ -130,6 +134,7 @@ export class App {
             if(this.listeners[type])  this.listeners[type].forEach(cb => {
                 cb(evt)
             })
+            this.listeners["ALL"].forEach(cb => cb(evt))
         },1)
     }
     send(msg) {

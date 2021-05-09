@@ -7,7 +7,7 @@ import {INPUT} from 'idealos_schemas/js/input.js'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
-import {App} from '../src/clients/guitoolkit.js'
+import {App, TextBox} from '../src/clients/guitoolkit.js'
 import {sleep} from '../src/common.js'
 
 class BaseAppWrapper {
@@ -81,6 +81,7 @@ class TestGUIApp extends  BaseAppWrapper {
     constructor(data, cb) {
         super()
         let ws_url = `ws://${data.info.hostname}:${data.info.websocket_port}`
+        this.name = "guiapp"
         this.app = new App([0,1,ws_url,data.app.id])
         this.app.a_init().then(()=>{
             console.log("done with init")
@@ -89,6 +90,9 @@ class TestGUIApp extends  BaseAppWrapper {
             } catch (e) {
                 console.log("error inside test app function", e)
             }
+        })
+        this.app.on_all((m)=>{
+            this.fire(m.type,m.payload)
         })
     }
 }
@@ -101,7 +105,6 @@ async function start_testguiapp(server, cb) {
         return new TestGUIApp(data,cb)
     }).catch(e => console.error(e))
 }
-
 
 class HeadlessDisplay extends BaseAppWrapper {
     constructor(hostname,port) {
@@ -134,7 +137,8 @@ class HeadlessDisplay extends BaseAppWrapper {
             this.log("sending out",msg)
             await this.send(msg)
         } else {
-            this.log("no window found")
+            this.log(`no window found at`,opts)
+            this.log(this.windows)
         }
     }
 
@@ -174,6 +178,11 @@ class HeadlessDisplay extends BaseAppWrapper {
         if(msg.type === WINDOWS.TYPE_window_list) return;
         if(msg.type === GRAPHICS.TYPE_DrawRect) return;
         if(msg.type === GRAPHICS.TYPE_DrawImage) return;
+        if(msg.type === WINDOWS.TYPE_WindowSetPosition) {
+            let win = this.windows.find(win => win.id === msg.window)
+            win.x = msg.x
+            win.y = msg.y
+        }
         this.log("unhandled",msg)
     }
 
@@ -387,15 +396,41 @@ describe("textboxes",function() {
         await server.shutdown()
     })
 
-    // it("types text",async function() {
-    //     let server = await start_message_server()
-    //     let display = await start_headless_display()
-    //     await display.wait_for_message(GENERAL.TYPE_Connected)
-    //     await display.send(GENERAL.MAKE_ScreenStart())
-    //     let app = await start_testguiapp(server,async (app)=> {
-    //         console.log("inside the app",app)
-    //     })
-    //     let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
-    // })
+    it("types text",async function() {
+        let server = await start_message_server()
+        let display = await start_headless_display()
+        await display.wait_for_message(GENERAL.TYPE_Connected)
+        await display.send(GENERAL.MAKE_ScreenStart())
+        let app = await start_testguiapp(server,async (wrapper)=> {
+            let main_window = await wrapper.app.open_window(0,0,100,120,'plain')
+            main_window.root = new TextBox({text:"hello"})
+            main_window.redraw()
+        })
+        //wait for the app window to fully open
+        let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
+        assert.strictEqual(app.app.windows[0].root.text,'hello')
+        await sleep(500)
+        log("sleept")
+        // assert.strictEqual(app.app.windows)
+        //send a keyboard event to the focused component
+        let win_move = WINDOWS.MAKE_WindowSetPosition({
+            window: open_msg.window,
+            app: open_msg.target,
+            x:0,
+            y:0,
+        })
+        display.handle(win_move)
+        display.send(win_move)
+        await app.wait_for_message(WINDOWS.TYPE_WindowSetPosition)
+
+        await display.dispatch_mousedown({x:10,y:10})
+        await app.wait_for_message(INPUT.TYPE_MouseDown)
+        await display.dispatch_keydown_to_window(open_msg.window,"A")
+        let msg = await app.wait_for_message(INPUT.TYPE_KeyboardDown)
+        assert.strictEqual(app.app.windows[0].root.text,'helloa')
+        log("yay. the text box is now helloa")
+
+        await server.shutdown()
+    })
 })
 
