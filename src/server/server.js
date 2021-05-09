@@ -278,12 +278,12 @@ export function start_message_server() {
                 info:at.start_cb(app.id)
             }
         },
-        start_app:async (opts) => {
+        start_app: async (opts) => {
             let app = at.create_app(opts)
             await sleep(250)
             at.start(app.id)
         },
-        shutdown:async() => {
+        shutdown: async() => {
             log("stopping the server")
             return new Promise((res,rej)=>{
                 server.close(()=>{

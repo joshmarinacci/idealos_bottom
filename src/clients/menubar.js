@@ -112,15 +112,15 @@ class CustomMenuBar extends HBox {
             this.tree = msg.payload.menu
             this.children = this.tree.children.map((item,i) => {
                 return new MenuItem({text:item.label, item:item, win:win, action:()=>{
-                        win.a_open_child_window(this.x*20+10,20+10,40,80,'menu').then(popup => {
-                            this.popup = popup
-                            this.popup.root = new CustomMenu(
-                                {width:popup.width, height:popup.height},
-                                item,app,popup)
-                            this.popup.root.parent = this.popup
-                            this.popup.repaint()
-                        })
-                    }})
+                    win.a_open_child_window(this.x*20+10,20+10,40,80,'menu').then(popup => {
+                        this.popup = popup
+                        this.popup.root = new CustomMenu(
+                            {width:popup.width, height:popup.height},
+                            item,app,popup)
+                        this.popup.root.parent = this.popup
+                        this.popup.repaint()
+                    })
+                }})
             })
             this.children.forEach(ch => ch.parent = this)
             this.repaint()

@@ -173,7 +173,7 @@ class EventDispatcher {
     dispatch_mousedown(evt,node) {
         console.log(`down`,evt.pos,node.constructor.name, node.children.length)
         for (let ch of node.children) {
-            console.log('checking',ch.constructor.name,ch.bounds(),ch.bounds().contains(evt.pos))
+            console.log('checking',ch.constructor.name,ch.bounds(),evt.pos,ch.bounds().contains(evt.pos))
             if(ch.bounds().contains(evt.pos)) {
                 return this.dispatch_mousedown({
                     type:evt.type,
