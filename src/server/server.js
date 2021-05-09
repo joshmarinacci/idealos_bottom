@@ -53,7 +53,7 @@ function handle_start_message(ws,msg) {
     forward_to_screen(WINDOWS.MAKE_window_list({windows:wids.windows}))
 }
 function handle_open_window_message(ws,msg) {
-    log("app is opening a window",msg)
+    // log("app is opening a window",msg)
     if(!msg.sender) return log("open window message with no sender")
     // if(!connections[CLIENT_TYPES.SCREEN]) return log("can't open a window because there is no screen")
 

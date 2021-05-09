@@ -173,8 +173,10 @@ class EventDispatcher {
     dispatch_mousedown(evt,node) {
         console.log(`down`,evt.pos,node.constructor.name, node.children.length)
         for (let ch of node.children) {
-            console.log('checking',ch.constructor.name,ch.bounds(),evt.pos,ch.bounds().contains(evt.pos))
+            console.log('mousedown inside?',ch.constructor.name,ch.bounds(),evt.pos,ch.bounds().contains(evt.pos))
             if(ch.bounds().contains(evt.pos)) {
+                node.window().log("inside child!")
+                if(ch.text) node.window().log("text",ch.text)
                 return this.dispatch_mousedown({
                     type:evt.type,
                     pos: ch.bounds().translate_into(evt.pos)
@@ -189,6 +191,7 @@ class EventDispatcher {
 
     dispatch_mouseup(evt,node) {
         if(this.mouse_target) {
+            this.window.log("sending mouseup to mouse_target",this.mouse_target.constructor.name)
             this.mouse_target.input(evt)
             this.mouse_target = null
         }
@@ -248,7 +251,7 @@ export class Window {
         })
     }
     repaint() {
-        console.log("repainting window")
+        console.log("repainting window", this.x,this.y,this.width,this.height)
         this.redraw()
     }
     redraw() {
@@ -306,6 +309,9 @@ export class Window {
     }
     position_in_window() {
         return new Point(0,0)
+    }
+    log(...args) {
+        this.app.log(...args)
     }
 
 }
@@ -388,7 +394,7 @@ export class Component {
         if (this.id === query.id) return this
     }
     repaint() {
-        console.log("repaint up",this.constructor.name)
+        console.log(this.constructor.name,"requesting a repaint")
         if(this.parent && this.parent.repaint()) this.parent.repaint()
     }
     window() {
@@ -411,6 +417,7 @@ export class Container extends Component {
     }
 
     redraw(gfx) {
+        this.window().log("drawing",this.constructor.name,this.x,this.y,this.width,this.height)
         gfx.translate(this.x,this.y)
         this.children.forEach(ch => ch.redraw(gfx))
         gfx.translate(-this.x,-this.y)

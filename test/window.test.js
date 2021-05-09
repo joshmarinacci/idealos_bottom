@@ -7,16 +7,48 @@ import {INPUT} from 'idealos_schemas/js/input.js'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
+import {App} from '../src/clients/guitoolkit.js'
+import {sleep} from '../src/common.js'
 
+class BaseAppWrapper {
+    constructor() {
+        this.listeners = {}
+    }
+    log(...args) {
+        console.log(this.name,...args)
+    }
+    async wait_for_message (type) {
+        return new Promise((res,rej)=>{
+            this.on(type,(msg)=>{
+                res(msg)
+            })
+        })
+    }
+    fire(type, msg) {
+        if(this.listeners[type]) this.listeners[type].forEach(cb => cb(msg))
+    }
 
-class TestApp {
+    on(type, cb) {
+        if(!this.listeners[type]) this.listeners[type] = []
+        this.listeners[type].push(cb)
+    }
+    async send(msg) {
+        return new Promise((res,rej) => {
+            this.ws.send(JSON.stringify(msg), () => {
+                res()
+            })
+        })
+    }
+}
+
+class TestApp extends BaseAppWrapper {
     constructor(data,cb) {
+        super()
         // console.log("data is",data)
         this.name = "APP:"+data.app.name
         this.id = data.app.id
         this.hostname = data.info.hostname
         this.port = data.info.websocket_port
-        this.listeners = {}
         this.ws = new WebSocket(`ws://${this.hostname}:${this.port}`)
         this.ws.on("open",()=>{
             console.log('client connected')
@@ -35,34 +67,6 @@ class TestApp {
 
         })
     }
-
-    log(...args) {
-        console.log(this.name,...args)
-    }
-
-    async wait_for_message (type) {
-        return new Promise((res,rej)=>{
-            this.on(type,(msg)=>{
-                res(msg)
-            })
-        })
-    }
-
-    fire(type, msg) {
-        if(this.listeners[type]) this.listeners[type].forEach(cb => cb(msg))
-    }
-
-    on(type, cb) {
-        if(!this.listeners[type]) this.listeners[type] = []
-        this.listeners[type].push(cb)
-    }
-    async send(msg) {
-        return new Promise((res,rej) => {
-            this.ws.send(JSON.stringify(msg), () => {
-                res()
-            })
-        })
-    }
 }
 
 async function start_testapp(server,cb) {
@@ -73,8 +77,35 @@ async function start_testapp(server,cb) {
     }).catch(e => console.error(e))
 }
 
-class HeadlessDisplay {
+class TestGUIApp extends  BaseAppWrapper {
+    constructor(data, cb) {
+        super()
+        let ws_url = `ws://${data.info.hostname}:${data.info.websocket_port}`
+        this.app = new App([0,1,ws_url,data.app.id])
+        this.app.a_init().then(()=>{
+            console.log("done with init")
+            try {
+                cb(this).catch(e => console.error(e))
+            } catch (e) {
+                console.log("error inside test app function", e)
+            }
+        })
+    }
+}
+
+
+async function start_testguiapp(server, cb) {
+    return server.start_app_cb({
+        name:'testapp'
+    }).then(data => {
+        return new TestGUIApp(data,cb)
+    }).catch(e => console.error(e))
+}
+
+
+class HeadlessDisplay extends BaseAppWrapper {
     constructor(hostname,port) {
+        super()
         this.name = 'DISPLAY'
         this.listeners = {}
         this.windows = []
@@ -90,30 +121,6 @@ class HeadlessDisplay {
             this.handle(msg)
         })
     }
-    log(...args) {
-        console.log(this.name,...args)
-    }
-    fire(type, msg) {
-        if(this.listeners[type]) this.listeners[type].forEach(cb => cb(msg))
-    }
-    on(type, cb) {
-        if(!this.listeners[type]) this.listeners[type] = []
-        this.listeners[type].push(cb)
-    }
-    async wait_for_message (type) {
-        return new Promise((res,rej)=>{
-            this.on(type,(msg)=>{
-                res(msg)
-            })
-        })
-    }
-    async send(msg) {
-        return new Promise((res,rej) => {
-            this.ws.send(JSON.stringify(msg), () => {
-                res()
-            })
-        })
-    }
 
     async dispatch_mousedown(opts) {
         let win = this.find_window_at(opts.x,opts.y)
@@ -124,8 +131,8 @@ class HeadlessDisplay {
                 x: opts.x-win.x,
                 y: opts.y-win.y
             })
+            this.log("sending out",msg)
             await this.send(msg)
-            return
         } else {
             this.log("no window found")
         }
@@ -142,8 +149,8 @@ class HeadlessDisplay {
                 x: opts.x-win.x,
                 y: opts.y-win.y
             })
+            this.log("sending out",msg)
             await this.send(msg)
-            return
         } else {
             this.log("no window found")
         }
@@ -179,16 +186,32 @@ class HeadlessDisplay {
             return true
         })
     }
+
+    async dispatch_keydown(keyname) {
+    }
+
+    async dispatch_keydown_to_window(id, keyname) {
+        console.log('dispatching keydown to window',id)
+        let win = this.windows.find(win => win.id === id)
+        let msg = INPUT.MAKE_KeyboardDown({
+            app:win.owner,
+            window:win.id,
+            keyname:keyname,
+            shift:false,
+        })
+        await this.send(msg)
+    }
 }
 
 async function start_headless_display() {
     return new HeadlessDisplay(hostname,websocket_port)
 }
 
+function log(...args) {
+    console.log("TEST",...args)
+}
+
 describe('window drag test',function() {
-    function log(...args) {
-        console.log("TEST",...args)
-    }
 
     it('creates a window', async function () {
         //start the server
@@ -297,7 +320,7 @@ describe('window drag test',function() {
                 }
                 app.send(MENUS.MAKE_SetMenubar({menu:menu}))
                     .then(()=>{
-                        app.log("app sending menubar")
+                        app.log("updating the menubar with ",menu)
                     })
             })
         })
@@ -312,9 +335,11 @@ describe('window drag test',function() {
             log("app is now the focused window")
         }
 
+        await sleep(100)
         //send menubar input
         {
             await display.dispatch_mousedown({x:5,y:5})
+            await sleep(100)
             await display.dispatch_mouseup({x:5,y:5})
             await display.wait_for_message(WINDOWS.TYPE_create_child_window_display)
             log("child window opened")
@@ -322,8 +347,8 @@ describe('window drag test',function() {
 
         //now click on the menubar item
         {
-            await display.dispatch_mousedown({x:15,y:35})
-            await display.dispatch_mouseup({x:15,y:35})
+            await display.dispatch_mousedown({x:5,y:25})
+            await display.dispatch_mouseup({x:5,y:25})
             await app.wait_for_message(INPUT.TYPE_Action)
             log("action sent to app")
         }
@@ -332,3 +357,45 @@ describe('window drag test',function() {
         await server.shutdown()
     })
 })
+
+
+describe("textboxes",function() {
+
+    it("sends keyboard events",async function () {
+        let server = await start_message_server()
+        let display = await start_headless_display()
+        await display.wait_for_message(GENERAL.TYPE_Connected)
+        await display.send(GENERAL.MAKE_ScreenStart())
+        let app = await start_testapp(server,async (app)=>{
+            app.ws.send(JSON.stringify(WINDOWS.MAKE_WindowOpen({
+                x:50,
+                y:50,
+                width:70,
+                height:80,
+                sender:app.id,
+                window_type:'plain'
+            })))
+        })
+        //wait for the app to receive it's open window
+        let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
+        await display.dispatch_keydown_to_window(open_msg.window,"ENTER")
+        let msg = await app.wait_for_message(INPUT.TYPE_KeyboardDown)
+        assert.deepStrictEqual(msg,{
+            type:INPUT.TYPE_KeyboardDown,
+            keyname:"ENTER",shift:false,app:app.id,window:open_msg.window}
+        )
+        await server.shutdown()
+    })
+
+    // it("types text",async function() {
+    //     let server = await start_message_server()
+    //     let display = await start_headless_display()
+    //     await display.wait_for_message(GENERAL.TYPE_Connected)
+    //     await display.send(GENERAL.MAKE_ScreenStart())
+    //     let app = await start_testguiapp(server,async (app)=> {
+    //         console.log("inside the app",app)
+    //     })
+    //     let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
+    // })
+})
+

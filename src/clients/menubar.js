@@ -113,6 +113,7 @@ class CustomMenuBar extends HBox {
         this.win = win
         this.padding = 1
         app.on(MENUS.TYPE_SetMenubar,(msg)=>{
+            app.log("got new menubar",msg.payload)
             this.tree = msg.payload.menu
             this.children = this.tree.children.map((item,i) => {
                 return new MenuItem({text:item.label, item:item, win:win, action:function() {
