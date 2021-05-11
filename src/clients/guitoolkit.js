@@ -4,6 +4,7 @@ import {INPUT} from 'idealos_schemas/js/input.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {default as WebSocket} from 'ws'
 import {PixelFont} from './app_utils.js'
+import {INFO} from "idealos_schemas/js/keyboard_map.js"
 
 export class Point {
     constructor(x,y) {
@@ -166,12 +167,7 @@ class EventDispatcher {
             return this.dispatch_mouseup(evt,this.window.root)
         }
         if(e.type === INPUT.TYPE_KeyboardDown) {
-            let evt = {
-                type:e.type,
-                keyname:e.keyname,
-                shift:e.shift,
-            }
-            return this.dispatch_keydown(evt,this.window.root)
+            return this.dispatch_keydown(e,this.window.root)
         }
     }
 
@@ -604,15 +600,6 @@ export class PopupButton extends Button {
     }
 }
 
-const WORD_KEYS = {
-    'A':true,
-}
-for(let i=48; i<=57; i++) {
-    WORD_KEYS[String.fromCharCode(i)] = true
-}
-for(let i=65; i<=90; i++) {
-    WORD_KEYS[String.fromCharCode(i)] = true
-}
 
 export class TextBox extends Component {
 
@@ -625,22 +612,15 @@ export class TextBox extends Component {
     }
 
     input(e) {
-        // console.log("textbox input",e)
-        if(e.type === INPUT.TYPE_MouseDown) {
+        if (e.type === INPUT.TYPE_MouseDown) {
             this.selected = true
-            console.log("textbox is selected")
             this.repaint()
             return
         }
-        if(this.is_word_char(e.keyname)) {
-            if(e.shift) {
-                return this.append_char(e.keyname.toUpperCase())
-            } else {
-                return this.append_char(e.keyname.toLowerCase())
-            }
+        if (this.is_word_char(e)) {
+            return this.append_char(e.key)
         }
-        if(e.keyname === 'SPACE') return this.append_char(' ')
-        if (e.keyname === 'BACKSPACE') {
+        if (e.code === INFO.KEY_NAMES.Backspace) {
             if (this.text.length > 0) {
                 let before = this.text.substring(0, this.cursor)
                 let after = this.text.substring(this.cursor)
@@ -649,17 +629,17 @@ export class TextBox extends Component {
                 this.repaint()
             }
         }
-        if(e.keyname === 'LEFT') {
+        if (e.code === INFO.KEY_NAMES.ArrowLeft) {
             this.cursor = Math.max(this.cursor - 1, 0)
             this.repaint()
         }
-        if(e.keyname === 'RIGHT') {
+        if (e.code === INFO.KEY_NAMES.ArrowRight) {
             this.cursor = Math.min(this.cursor + 1, this.text.length)
             this.repaint()
         }
-            // if (keyboard.keyname === 'Return') {
-            //     this.fire('action',{target:this})
-            // }
+        if (e.key === "Enter") {
+            this.fire('action', {target: this})
+        }
     }
 
     redraw(gfx) {
@@ -682,8 +662,12 @@ export class TextBox extends Component {
         this.repaint()
     }
 
-    is_word_char(key) {
-        return WORD_KEYS.hasOwnProperty(key)
+    is_word_char(evt) {
+        // console.log("checking key",evt)
+        // console.log(INFO.NAME_TO_KEY[evt.code])
+        if(!INFO.NAME_TO_KEY[evt.code]) return false
+        let first = INFO.NAME_TO_KEY[evt.code][0]
+        return first.type === "CHAR"
     }
 }
 
