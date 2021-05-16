@@ -1,7 +1,8 @@
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 
 export class WindowTracker {
-    constructor(sender) {
+    constructor(sender, cons) {
+        this.cons = cons
         this.windows = {}
         this.active_window = null
         this.send = sender

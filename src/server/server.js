@@ -2,6 +2,8 @@ import WS from "ws"
 import {WindowTracker} from './windows.js'
 import {AppTracker} from './apps.js'
 import {ResourceManager} from './resources.js'
+import {CLIENT_TYPES, ConnectionManager} from "./connections.js"
+
 import {sleep} from '../common.js'
 import {WINDOWS} from "idealos_schemas/js/windows.js"
 import {RESOURCES} from "idealos_schemas/js/resources.js"
@@ -20,21 +22,13 @@ function log(...args) {
     forward_to_debug(GENERAL.MAKE_Log({data:args}))
 }
 
-const connections = {}
-const wids = new WindowTracker(send_delegate)
-const at = new AppTracker(hostname,websocket_port,log,wids,send_delegate)
+const cons = new ConnectionManager()
+const wids = new WindowTracker(send_delegate,cons)
+const at = new AppTracker(hostname,websocket_port,log,wids,send_delegate,cons)
 function send_delegate(msg) {
     forward_to_screen(msg)
 }
 
-
-const CLIENT_TYPES = {
-    SCREEN:'SCREEN',
-    DEBUG:'DEBUG',
-    TEST:'TEST',
-    MENUBAR:'MENUBAR',
-    DOCK:'DOCK'
-}
 
 const WINDOW_TYPES = {
     MENUBAR:'menubar',
@@ -44,17 +38,13 @@ const WINDOW_TYPES = {
 
 let resources = new ResourceManager(log, respond)
 
-function handle_start_message(ws,msg) {
-    log("assigned to screen",CLIENT_TYPES.SCREEN)
-    connections[CLIENT_TYPES.SCREEN] = ws
-    forward_to_screen(WINDOWS.MAKE_window_list({windows:wids.windows}))
-}
 function handle_open_window_message(ws,msg) {
     // log("app is opening a window",msg)
     if(!msg.sender) return log("open window message with no sender")
     // if(!connections[CLIENT_TYPES.SCREEN]) return log("can't open a window because there is no screen")
 
-    if(!connections[msg.sender]) connections[msg.sender] = ws
+    // if(!connections[msg.sender]) connections[msg.sender] = ws
+    //make the window
     ws.target = msg.sender
     let win_id = "win_"+Math.floor(Math.random()*10000)
     let y = wids.length()+30
@@ -62,12 +52,15 @@ function handle_open_window_message(ws,msg) {
     if(msg.window_type === WINDOW_TYPES.MENUBAR) {
         x = 0
         y = 0
-        connections[CLIENT_TYPES.MENUBAR] = ws
-    }
-    if(msg.window_type === WINDOW_TYPES.DOCK) {
+        // connections[CLIENT_TYPES.MENUBAR] = ws
+        cons.add_connection(CLIENT_TYPES.MENUBAR,msg.sender,ws)
+    } else if(msg.window_type === WINDOW_TYPES.DOCK) {
         x = 0
         y = 20
-        connections[CLIENT_TYPES.DOCK] = ws
+        // connections[CLIENT_TYPES.DOCK] = ws
+        cons.add_connection(CLIENT_TYPES.DOCK,msg.sender,ws)
+    } else {
+        cons.add_app_connection(msg.sender,ws)
     }
     wids.add_window(win_id, {
         type:'root',
@@ -82,9 +75,9 @@ function handle_open_window_message(ws,msg) {
     })
 
     //send response to screen
-    forward_to_screen(WINDOWS.MAKE_WindowOpenDisplay({target:msg.sender, window:wids.window_for_id(win_id)}))
+    cons.forward_to_screen(WINDOWS.MAKE_WindowOpenDisplay({target:msg.sender, window:wids.window_for_id(win_id)}))
     //send response back to client
-    forward_to_target(WINDOWS.MAKE_WindowOpenResponse({target:msg.sender, window:win_id}))
+    cons.forward_to_app(msg.sender,WINDOWS.MAKE_WindowOpenResponse({target:msg.sender, window:win_id}))
 }
 
 function handle_open_child_window_message(msg) {
@@ -124,30 +117,32 @@ function handle_close_child_window_message(msg) {
 }
 
 function forward_to_screen(msg) {
-    if(connections[CLIENT_TYPES.SCREEN]) return connections[CLIENT_TYPES.SCREEN].send(JSON.stringify(msg))
+    cons.forward_to_screen(msg)
 }
 function forward_to_debug(msg) {
-    if(connections[CLIENT_TYPES.DEBUG]) return connections[CLIENT_TYPES.DEBUG].send(JSON.stringify(msg))
+    cons.forward_to_debug(msg)
 }
 function forward_to_menubar(msg) {
-    if(connections[CLIENT_TYPES.MENUBAR]) return connections[CLIENT_TYPES.MENUBAR].send(JSON.stringify(msg))
+    cons.forward_to_menubar(msg)
 }
 function do_nothing(msg) {}
 function forward_to_target(msg) {
     if(!msg.target) return log("NO TARGET!",msg)
-    if(!connections[msg.target]) {
-        let keys = Object.keys(connections).join(" ")
-        return log(`TARGET missing ${msg.target}. valid targets${keys}`)
-    }
-    return connections[msg.target].send(JSON.stringify(msg))
+    cons.forward_to_app(msg.target,msg)
+    // if(!connections[msg.target]) {
+    //     let keys = Object.keys(connections).join(" ")
+    //     return log(`TARGET missing ${msg.target}. valid targets${keys}`)
+    // }
+    // return connections[msg.target].send(JSON.stringify(msg))
 }
 function forward_to_app(msg) {
     if(!msg.app) return log("NO TARGET!",msg)
-    if(!connections[msg.app]) {
-        let keys = Object.keys(connections).join(" ")
-        return log(`TARGET missing ${msg.app}. valid targets${keys}`)
-    }
-    return connections[msg.app].send(JSON.stringify(msg))
+    cons.forward_to_app(msg.app,msg)
+    // if(!connections[msg.app]) {
+    //     let keys = Object.keys(connections).join(" ")
+    //     return log(`TARGET missing ${msg.app}. valid targets${keys}`)
+    // }
+    // return connections[msg.app].send(JSON.stringify(msg))
 }
 
 
@@ -167,7 +162,8 @@ function list_apps(ws,msg) {
 
 function respond(msg,resp) {
     resp.target = msg.sender
-    forward_to_target(resp)
+    cons.forward_to_app(msg.sender,msg)
+    // forward_to_target(resp)
 }
 
 function handle_set_window_focused(msg) {
@@ -175,13 +171,14 @@ function handle_set_window_focused(msg) {
     if(!win) return log(`no such window ${msg.window}`)
     if(!win.owner) return log(`window has no owner ${win.owner}`)
     wids.set_active_window(win)
-    if(!connections[win.owner]) return console.error(`no app is running for the window ${win.id}`)
-    return connections[win.owner].send(JSON.stringify(msg))
+    cons.forward_to_app(win.owner,msg)
+    // if(!connections[win.owner]) return console.error(`no app is running for the window ${win.id}`)
+    // return connections[win.owner].send(JSON.stringify(msg))
 }
 
 function forward_to_focused(msg) {
     let win = wids.get_active_window()
-    if(win && win.owner) return connections[win.owner].send(JSON.stringify(msg))
+    if(win && win.owner) return cons.forward_to_app(win.owner,msg)
 }
 
 function set_window_position(msg) {
@@ -189,7 +186,8 @@ function set_window_position(msg) {
     if(!win) return log(`no such window ${msg.window}`)
     if(!win.owner) return log(`window has no owner ${win.owner}`)
     wids.move_window(msg.window,msg.x,msg.y)
-    forward_to_app(msg)
+    cons.forward_to_app(win.owner,msg)
+    // forward_to_app(msg)
 }
 
 function dispatch(msg,ws) {
@@ -197,7 +195,7 @@ function dispatch(msg,ws) {
         // console.log("server displatching",msg)
         forward_to_debug(msg)
         if(msg.type === GENERAL.TYPE_Heartbeat) return do_nothing(msg)
-        if(msg.type === GENERAL.TYPE_ScreenStart) return handle_start_message(ws,msg)
+        if(msg.type === GENERAL.TYPE_ScreenStart) return cons.handle_start_message(ws,msg,wids)
 
         if(msg.type === WINDOWS.TYPE_WindowOpen) return handle_open_window_message(ws,msg)
         if(msg.type === WINDOWS.TYPE_WindowOpenResponse) return forward_to_target(msg)
@@ -254,7 +252,7 @@ export function start_message_server() {
             dispatch(msg,ws)
         })
         ws.on('close',(code)=>{
-            delete connections[ws.target]
+            cons.remove_connection(ws)
         })
         ws.send(JSON.stringify(GENERAL.MAKE_Connected({})))
     })
