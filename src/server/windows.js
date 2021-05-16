@@ -1,5 +1,11 @@
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 
+export const WINDOW_TYPES = {
+    MENUBAR:'menubar',
+    DOCK:'dock',
+    PLAIN:'plain',
+}
+
 export class WindowTracker {
     constructor(sender, cons) {
         this.cons = cons
@@ -90,5 +96,30 @@ export class WindowTracker {
         let win = this.window_for_id(id)
         win.x = x
         win.y = y
+    }
+
+    make_root_window(window_type,width,height,owner) {
+        let win_id = "win_"+Math.floor(Math.random()*10000)
+        let y = this.length()+30
+        let x = 40
+        if(window_type === WINDOW_TYPES.MENUBAR) {
+            x = 0
+            y = 0
+        }
+        if(window_type === WINDOW_TYPES.DOCK) {
+            x = 0
+            y = 20
+        }
+        this.add_window(win_id, {
+            type:'root',
+            id:win_id,
+            width:width,
+            height:height,
+            x:x,
+            y:y,
+            owner:owner,
+            window_type:window_type,
+        })
+        return win_id
     }
 }

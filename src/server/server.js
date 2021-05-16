@@ -3,6 +3,7 @@ import {WindowTracker} from './windows.js'
 import {AppTracker} from './apps.js'
 import {ResourceManager} from './resources.js'
 import {CLIENT_TYPES, ConnectionManager} from "./connections.js"
+import {EventRouter} from "./router.js"
 
 import {sleep} from '../common.js'
 import {WINDOWS} from "idealos_schemas/js/windows.js"
@@ -17,163 +18,55 @@ export const hostname = '127.0.0.1'
 export const webserver_port = 3000
 export const websocket_port = 8081
 
-function log(...args) {
-    console.log(...args)
-    forward_to_debug(GENERAL.MAKE_Log({data:args}))
-}
 
 const cons = new ConnectionManager()
 const wids = new WindowTracker(send_delegate,cons)
 const at = new AppTracker(hostname,websocket_port,log,wids,send_delegate,cons)
+const router = new EventRouter(cons,wids)
+
+
+function log(...args) {
+    console.log(...args)
+    cons.forward_to_debug(GENERAL.MAKE_Log({data:args}))
+}
 function send_delegate(msg) {
-    forward_to_screen(msg)
+    cons.forward_to_screen(msg)
 }
 
-
-const WINDOW_TYPES = {
-    MENUBAR:'menubar',
-    DOCK:'dock',
-    PLAIN:'plain',
-}
 
 let resources = new ResourceManager(log, respond)
 
-function handle_open_window_message(ws,msg) {
-    // log("app is opening a window",msg)
-    if(!msg.sender) return log("open window message with no sender")
-    // if(!connections[CLIENT_TYPES.SCREEN]) return log("can't open a window because there is no screen")
 
-    // if(!connections[msg.sender]) connections[msg.sender] = ws
-    //make the window
-    ws.target = msg.sender
-    let win_id = "win_"+Math.floor(Math.random()*10000)
-    let y = wids.length()+30
-    let x = 40
-    if(msg.window_type === WINDOW_TYPES.MENUBAR) {
-        x = 0
-        y = 0
-        // connections[CLIENT_TYPES.MENUBAR] = ws
-        cons.add_connection(CLIENT_TYPES.MENUBAR,msg.sender,ws)
-    } else if(msg.window_type === WINDOW_TYPES.DOCK) {
-        x = 0
-        y = 20
-        // connections[CLIENT_TYPES.DOCK] = ws
-        cons.add_connection(CLIENT_TYPES.DOCK,msg.sender,ws)
-    } else {
-        cons.add_app_connection(msg.sender,ws)
-    }
-    wids.add_window(win_id, {
-        type:'root',
-        id:win_id,
-        width:msg.width,
-        height:msg.height,
-        x:x,
-        y:y,
-        owner:msg.sender,
-        rects:[],
-        window_type:msg.window_type,
-    })
-
-    //send response to screen
-    cons.forward_to_screen(WINDOWS.MAKE_WindowOpenDisplay({target:msg.sender, window:wids.window_for_id(win_id)}))
-    //send response back to client
-    cons.forward_to_app(msg.sender,WINDOWS.MAKE_WindowOpenResponse({target:msg.sender, window:win_id}))
-}
-
-function handle_open_child_window_message(msg) {
-    if(!msg.sender) return log("open window message with no sender")
-    let ch_win = wids.make_child_window(msg)
-    wids.add_window(ch_win.id,ch_win)
-    forward_to_screen(WINDOWS.MAKE_create_child_window_display({
-        // type:'CREATE_CHILD_WINDOW_DISPLAY',
-        parent:msg.parent,
-        window:ch_win,
-        sender:msg.sender,
-    }));
-    forward_to_target(WINDOWS.MAKE_create_child_window_response({
-        // type:'CREATE_CHILD_WINDOW_RESPONSE',
-        target:msg.sender,
-        parent:msg.parent,
-        window:ch_win,
-        sender:msg.sender,
-    }))
-}
-
-function handle_close_child_window_message(msg) {
-    log("closing child window",msg.window)
-    wids.close_child_window(msg.window)
-    forward_to_screen(WINDOWS.MAKE_close_child_window_display({
-        target:msg.sender,
-        parent:msg.parent,
-        window:msg.window,
-        sender:msg.sender,
-    }))
-    forward_to_target(WINDOWS.MAKE_close_child_window_response({
-        target:msg.sender,
-        parent:msg.parent,
-        window:msg.window,
-        sender:msg.sender,
-    }))
-}
-
-function forward_to_screen(msg) {
-    cons.forward_to_screen(msg)
-}
 function forward_to_debug(msg) {
     cons.forward_to_debug(msg)
 }
-function forward_to_menubar(msg) {
-    cons.forward_to_menubar(msg)
-}
-function do_nothing(msg) {}
+
 function forward_to_target(msg) {
     if(!msg.target) return log("NO TARGET!",msg)
     cons.forward_to_app(msg.target,msg)
-    // if(!connections[msg.target]) {
-    //     let keys = Object.keys(connections).join(" ")
-    //     return log(`TARGET missing ${msg.target}. valid targets${keys}`)
-    // }
-    // return connections[msg.target].send(JSON.stringify(msg))
 }
 function forward_to_app(msg) {
     if(!msg.app) return log("NO TARGET!",msg)
     cons.forward_to_app(msg.app,msg)
-    // if(!connections[msg.app]) {
-    //     let keys = Object.keys(connections).join(" ")
-    //     return log(`TARGET missing ${msg.app}. valid targets${keys}`)
-    // }
-    // return connections[msg.app].send(JSON.stringify(msg))
 }
-
 
 function start_test(ws,msg) {
     log("attaching unit test runner")
-    connections[CLIENT_TYPES.TEST] = ws;
+    cons.add_connection(CLIENT_TYPES.TEST,msg.sender,msg)
 }
-function list_apps(ws,msg) {
-    log("listing apps for debug message",msg)
-    connections[CLIENT_TYPES.DEBUG] = ws
-    let response = DEBUG.MAKE_ListAppsResponse({
-        connection_count:Object.keys(connections).length,
-        apps:at.list_apps(),
-    })
-    if(connections[CLIENT_TYPES.DEBUG]) return connections[CLIENT_TYPES.DEBUG].send(JSON.stringify(response))
-}
+// function list_apps(ws,msg) {
+//     log("listing apps for debug message",msg)
+//     cons.add_connection(CLIENT_TYPES.DEBUG, ws.sender,msg)
+//     let response = DEBUG.MAKE_ListAppsResponse({
+//         connection_count:Object.keys(cons.count()).length,
+//         apps:at.list_apps(),
+//     })
+//     // if(connections[CLIENT_TYPES.DEBUG]) return connections[CLIENT_TYPES.DEBUG].send(JSON.stringify(response))
+// }
 
 function respond(msg,resp) {
     resp.target = msg.sender
     cons.forward_to_app(msg.sender,msg)
-    // forward_to_target(resp)
-}
-
-function handle_set_window_focused(msg) {
-    let win = wids.window_for_id(msg.window)
-    if(!win) return log(`no such window ${msg.window}`)
-    if(!win.owner) return log(`window has no owner ${win.owner}`)
-    wids.set_active_window(win)
-    cons.forward_to_app(win.owner,msg)
-    // if(!connections[win.owner]) return console.error(`no app is running for the window ${win.id}`)
-    // return connections[win.owner].send(JSON.stringify(msg))
 }
 
 function forward_to_focused(msg) {
@@ -181,52 +74,24 @@ function forward_to_focused(msg) {
     if(win && win.owner) return cons.forward_to_app(win.owner,msg)
 }
 
-function set_window_position(msg) {
-    let win = wids.window_for_id(msg.window)
-    if(!win) return log(`no such window ${msg.window}`)
-    if(!win.owner) return log(`window has no owner ${win.owner}`)
-    wids.move_window(msg.window,msg.x,msg.y)
-    cons.forward_to_app(win.owner,msg)
-    // forward_to_app(msg)
-}
 
 function dispatch(msg,ws) {
     try {
         // console.log("server displatching",msg)
-        forward_to_debug(msg)
-        if(msg.type === GENERAL.TYPE_Heartbeat) return do_nothing(msg)
+        cons.forward_to_debug(msg)
+        router.route(ws,msg)
         if(msg.type === GENERAL.TYPE_ScreenStart) return cons.handle_start_message(ws,msg,wids)
 
-        if(msg.type === WINDOWS.TYPE_WindowOpen) return handle_open_window_message(ws,msg)
-        if(msg.type === WINDOWS.TYPE_WindowOpenResponse) return forward_to_target(msg)
-        if(msg.type === WINDOWS.TYPE_window_refresh_request) return forward_to_target(msg)
-        if(msg.type === WINDOWS.TYPE_window_refresh_response) return forward_to_target(msg)
-        if(msg.type === WINDOWS.TYPE_window_close_response) return forward_to_screen(msg)
-        if(msg.type === WINDOWS.TYPE_window_close_request) return forward_to_target(msg)
-        if(msg.type === WINDOWS.TYPE_create_child_window)  return handle_open_child_window_message(msg)
-        if(msg.type === WINDOWS.TYPE_close_child_window)   return handle_close_child_window_message(msg)
-        if(msg.type === WINDOWS.TYPE_WindowSetPosition) return set_window_position(msg)
 
-        if(msg.type === GRAPHICS.TYPE_DrawPixel) return forward_to_screen(msg)
-        if(msg.type === GRAPHICS.TYPE_DrawRect) return forward_to_screen(msg)
-        if(msg.type === GRAPHICS.TYPE_DrawImage) return forward_to_screen(msg)
+        if(msg.type === MENUS.TYPE_SetMenubar) return cons.forward_to_menubar(msg)
 
-        if(msg.type === INPUT.TYPE_MouseDown) return forward_to_app(msg)
-        if(msg.type === INPUT.TYPE_MouseMove) return forward_to_app(msg)
-        if(msg.type === INPUT.TYPE_MouseUp) return forward_to_app(msg)
-        if(msg.type === INPUT.TYPE_KeyboardDown) return forward_to_app(msg)
-        if(msg.type === INPUT.TYPE_KeyboardUp) return forward_to_app(msg)
-
-        if(msg.type === WINDOWS.TYPE_SetFocusedWindow) return handle_set_window_focused(msg)
-        if(msg.type === MENUS.TYPE_SetMenubar) return forward_to_menubar(msg)
-
-        if(msg.type === DEBUG.TYPE_ListAppsRequest) return list_apps(ws,msg)
+        // if(msg.type === DEBUG.TYPE_ListAppsRequest) return list_apps(ws,msg)
         if(msg.type === DEBUG.TYPE_RestartApp) return at.restart(msg.target)
         if(msg.type === DEBUG.TYPE_StopApp) return at.stop(msg.target)
         if(msg.type === DEBUG.TYPE_StartApp) return at.start(msg.target)
         if(msg.type === DEBUG.TYPE_StartAppByName) return at.start_app_by_name(msg.name)
 
-        if(msg.type === DEBUG.TYPE_TestStart) return start_test(ws,msg)
+        // if(msg.type === DEBUG.TYPE_TestStart) return start_test(ws,msg)
 
         if(msg.type === RESOURCES.TYPE_ResourceGet) return resources.get_resource(msg)
         if(msg.type === INPUT.TYPE_Action) return forward_to_focused(msg)

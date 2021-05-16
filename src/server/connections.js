@@ -69,4 +69,11 @@ export class ConnectionManager {
         console.log("connections removing for ",ws.target)
     }
 
+    count() {
+        return -1
+    }
+
+    forward_to_target(msg) {
+        return this.forward_to_app(msg.target,msg)
+    }
 }
