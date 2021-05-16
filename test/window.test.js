@@ -9,6 +9,7 @@ import {MENUS} from 'idealos_schemas/js/menus.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {App, TextBox} from '../src/clients/guitoolkit.js'
 import {sleep} from '../src/common.js'
+import {INFO} from 'idealos_schemas/js/keyboard_map.js'
 
 class BaseAppWrapper {
     constructor() {
@@ -199,14 +200,14 @@ class HeadlessDisplay extends BaseAppWrapper {
     async dispatch_keydown(keyname) {
     }
 
-    async dispatch_keydown_to_window(id, keyname) {
-        console.log('dispatching keydown to window',id)
+    async dispatch_keydown_to_window(id, code, key) {
+        console.log('dispatching keydown to window',id,code, key)
         let win = this.windows.find(win => win.id === id)
         let msg = INPUT.MAKE_KeyboardDown({
+            code, key,
+            shift:false,
             app:win.owner,
             window:win.id,
-            keyname:keyname,
-            shift:false,
         })
         await this.send(msg)
     }
@@ -387,11 +388,15 @@ describe("textboxes",function() {
         })
         //wait for the app to receive it's open window
         let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
-        await display.dispatch_keydown_to_window(open_msg.window,"ENTER")
+        await display.dispatch_keydown_to_window(open_msg.window, INFO.KEY_NAMES.Enter, INFO.KEY_NAMES.Enter)
         let msg = await app.wait_for_message(INPUT.TYPE_KeyboardDown)
         assert.deepStrictEqual(msg,{
             type:INPUT.TYPE_KeyboardDown,
-            keyname:"ENTER",shift:false,app:app.id,window:open_msg.window}
+            code:INFO.KEY_NAMES.Enter,
+            key:INFO.KEY_NAMES.Enter,
+            shift:false,
+            app:app.id,
+            window:open_msg.window}
         )
         await server.shutdown()
     })
@@ -425,7 +430,7 @@ describe("textboxes",function() {
 
         await display.dispatch_mousedown({x:10,y:10})
         await app.wait_for_message(INPUT.TYPE_MouseDown)
-        await display.dispatch_keydown_to_window(open_msg.window,"A")
+        await display.dispatch_keydown_to_window(open_msg.window, INFO.KEY_NAMES.KeyA,"a")
         let msg = await app.wait_for_message(INPUT.TYPE_KeyboardDown)
         assert.strictEqual(app.app.windows[0].root.text,'helloa')
         log("yay. the text box is now helloa")
