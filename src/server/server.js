@@ -106,51 +106,60 @@ function dispatch(msg,ws) {
 }
 export class CentralServer {
     constructor(opts) {
-        console.log('starting with opts',opts)
-        if(!opts.websocket_port) throw new Error("no webssocket port set!")
-        this._websocket_port = opts.websocket_port
+        this.log('starting with opts', opts)
+        if (!opts.websocket_port) throw new Error("no webssocket port set!")
+        this.websocket_port = opts.websocket_port
+        this.hostname = opts.hostname
 
-        if(!opts.apps) throw new Error("no applist provided")
+        if (!opts.apps) throw new Error("no applist provided")
 
         this.cons = new ConnectionManager()
-        this.wids = new WindowTracker(send_delegate,cons)
-        this.at = new AppTracker(hostname,websocket_port,log,wids,send_delegate,cons)
-        this.router = new EventRouter(cons,wids)
+
+        let sender = (msg) => {
+            // console.log("RELAUYING BACK",msg.type)
+            this.cons.forward_to_screen(msg)
+        }
+        let log = (...args) => this.log(...args)
+        this.wids = new WindowTracker(sender, this.cons)
+        this.at = new AppTracker(this.hostname, this.websocket_port,
+            log, this.wids, sender, this.cons)
+        this.router = new EventRouter(this.cons, this.wids)
         this.apps = opts.apps
     }
+
     async start() {
         this._wsserver = new WS.Server({
-            port:this._websocket_port
+            port: this.websocket_port
         })
         this.log(`started websocket port on ws://${hostname}:${websocket_port}`)
-        this._wsserver.on('connection',(ws)=>{
+        this._wsserver.on('connection', (ws) => {
             ws.on("message", (m) => {
                 let msg = JSON.parse(m)
-                this.dispatch(msg,ws)
+                this.dispatch(msg, ws)
             })
-            ws.on('close',(code)=>{
+            ws.on('close', (code) => {
                 cons.remove_connection(ws)
             })
             ws.send(JSON.stringify(GENERAL.MAKE_Connected({})))
         })
-            this._wsserver.on("close",(m) => {
-            log('server closed',m)
+        this._wsserver.on("close", (m) => {
+            log('server closed', m)
         })
-        this._wsserver.on('error',(e)=>{
-            log("server error",e)
+        this._wsserver.on('error', (e) => {
+            log("server error", e)
         })
 
-        for(let app of this.apps.system) {
+        for (let app of this.apps.system) {
             await this.start_app(app)
         }
-        for(let app of this.apps.user) {
-            if(app.autostart === true) await this.start_app(app)
+        for (let app of this.apps.user) {
+            if (app.autostart === true) await this.start_app(app)
         }
 
     }
 
     log(...args) {
-        console.log(...args)
+        console.log('CENTRAL',...args)
     }
 
     async start_app(opts) {
@@ -159,14 +168,27 @@ export class CentralServer {
         this.at.start(app.id)
     }
 
+    async start_app_cb(opts) {
+        let app = this.at.create_app(opts)
+        return {
+            app: app,
+            info: this.at.start_cb(app.id)
+        }
+    }
+
+
     dispatch(msg, ws) {
         try {
-            this.log("server displatching", msg)
-            this.cons.forward_to_debug(msg)
-            router.route(ws, msg)
+            // this.log("SERVER dispatching", msg)
+            // this.cons.forward_to_debug(msg)
+            this.router.route(ws, msg)
         } catch (e) {
             this.log(e)
         }
+    }
+
+    async send(msg) {
+        this.dispatch(msg)
     }
 
     shutdown() {

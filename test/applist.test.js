@@ -30,7 +30,7 @@ async function load_checker(dir,schema_names) {
     }
 }
 
-async function load_applist(json_path) {
+export async function load_applist(json_path) {
     let checker = await load_checker("resources/schemas",["app.schema.json","applist.schema.json"])
     let data = JSON.parse((await fs.promises.readFile(json_path)).toString())
     let result = checker.validate(data,"applist.schema.json")

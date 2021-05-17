@@ -1,4 +1,9 @@
-import {hostname, start_message_server, websocket_port} from '../src/server/server.js'
+import {
+    CentralServer,
+    hostname,
+    start_message_server,
+    websocket_port
+} from '../src/server/server.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {default as WebSocket} from 'ws'
 import assert from 'assert'
@@ -10,6 +15,7 @@ import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {App, TextBox} from '../src/clients/guitoolkit.js'
 import {sleep} from '../src/common.js'
 import {INFO} from 'idealos_schemas/js/keyboard_map.js'
+import {load_applist} from './applist.test.js'
 
 class BaseAppWrapper {
     constructor() {
@@ -61,7 +67,7 @@ class TestApp extends BaseAppWrapper {
         })
         this.ws.on('message',txt => {
             let msg = JSON.parse(txt)
-            this.log("incoming message",msg)
+            // this.log("incoming message",msg)
             setTimeout(()=>{
                 this.fire(msg.type,msg)
             },10)
@@ -75,7 +81,10 @@ async function start_testapp(server,cb) {
         name:"testapp",
     }).then((data)=>{
         return new TestApp(data,cb)
-    }).catch(e => console.error(e))
+    }).catch(e => {
+        console.log("ERROR HAPPENED")
+        console.error(e)
+    })
 }
 
 class TestGUIApp extends  BaseAppWrapper {
@@ -225,11 +234,16 @@ describe('window drag test',function() {
 
     it('creates a window', async function () {
         //start the server
-        let server = await start_message_server()
+        let applist = await load_applist("test/resources/good.applist.json")
+        let server = new CentralServer({
+            hostname:'127.0.0.1',
+            websocket_port:8081,
+            apps:applist,
+        })
         try {
-
+            await server.start()
             //start the display
-            let display = await start_headless_display()
+            let display = await new HeadlessDisplay(server.hostname, server.websocket_port)
             await display.wait_for_message(GENERAL.TYPE_Connected)
             await display.send(GENERAL.MAKE_ScreenStart())
 
@@ -288,82 +302,94 @@ describe('window drag test',function() {
     })
 
     it('uses the menu', async function() {
-        let server = await start_message_server()
-
-        let display = await start_headless_display()
-        await display.wait_for_message(GENERAL.TYPE_Connected)
-        await display.send(GENERAL.MAKE_ScreenStart())
-
-        await server.start_app({name:'menubar', path:'src/clients/menubar.js',args:[]})
-        await display.wait_for_message(DEBUG.TYPE_AppStarted)
-        await display.wait_for_message(WINDOWS.TYPE_WindowOpenDisplay)
-        log("menubar started")
-
-        let app = await start_testapp(server,async (app)=>{
-            app.ws.send(JSON.stringify(WINDOWS.MAKE_WindowOpen({
-                x:50,
-                y:50,
-                width:70,
-                height:80,
-                sender:app.id,
-                window_type:'plain'
-            })))
-
-            app.on(WINDOWS.TYPE_SetFocusedWindow,()=>{
-                app.log("set focused window")
-                let menu = {
-                    type: "root",
-                    children: [
-                        {
-                            type: 'top',
-                            label: 'App',
-                            children: [
-                                {
-                                    type: 'item',
-                                    label: 'pause',
-                                    command: 'pause'
-                                },
-                            ]
-                        },
-                    ]
-                }
-                app.send(MENUS.MAKE_SetMenubar({menu:menu}))
-                    .then(()=>{
-                        app.log("updating the menubar with ",menu)
-                    })
-            })
+        // let applist = await load_applist("test/resources/good.applist.json")
+        let applist = {
+            system:[],
+            user:[]
+        }
+        let server = new CentralServer({
+            hostname:'127.0.0.1',
+            websocket_port:8081,
+            apps:applist,
         })
-        await display.wait_for_message(DEBUG.TYPE_AppStarted)
-        log("test app launched")
+        try {
+            await server.start()
 
-        {
-            let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
-            log("open message",open_msg)
-            server.send(WINDOWS.MAKE_SetFocusedWindow({window: open_msg.window}))
-            await app.wait_for_message(WINDOWS.TYPE_SetFocusedWindow)
-            log("app is now the focused window")
-        }
+            let display = await new HeadlessDisplay(server.hostname, server.websocket_port)
+            await display.wait_for_message(GENERAL.TYPE_Connected)
+            await display.send(GENERAL.MAKE_ScreenStart())
+            await server.start_app({name: 'menubar', entrypoint: 'src/clients/menubar.js', args: []})
+            await display.wait_for_message(DEBUG.TYPE_AppStarted)
+            await display.wait_for_message(WINDOWS.TYPE_WindowOpenDisplay)
+            let app = await start_testapp(server, async (app) => {
+                app.ws.send(JSON.stringify(WINDOWS.MAKE_WindowOpen({
+                    x: 50,
+                    y: 50,
+                    width: 70,
+                    height: 80,
+                    sender: app.id,
+                    window_type: 'plain'
+                })))
 
-        await sleep(100)
-        //send menubar input
-        {
-            await display.dispatch_mousedown({x:5,y:5})
+                app.on(WINDOWS.TYPE_SetFocusedWindow, () => {
+                    app.log("set focused window")
+                    let menu = {
+                        type: "root",
+                        children: [
+                            {
+                                type: 'top',
+                                label: 'App',
+                                children: [
+                                    {
+                                        type: 'item',
+                                        label: 'pause',
+                                        command: 'pause'
+                                    },
+                                ]
+                            },
+                        ]
+                    }
+                    app.send(MENUS.MAKE_SetMenubar({menu: menu}))
+                        .then(() => {
+                            app.log("updating the menubar with ", menu)
+                        })
+                })
+            })
+            await display.wait_for_message(DEBUG.TYPE_AppStarted)
+            log("test app launched")
+
+            {
+                let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
+                log("open message", open_msg)
+                server.send(WINDOWS.MAKE_SetFocusedWindow({window: open_msg.window}))
+                await app.wait_for_message(WINDOWS.TYPE_SetFocusedWindow)
+                log("app is now the focused window")
+            }
+
             await sleep(100)
-            await display.dispatch_mouseup({x:5,y:5})
-            await display.wait_for_message(WINDOWS.TYPE_create_child_window_display)
-            log("child window opened")
-        }
+            //send menubar input
+            {
+                await display.dispatch_mousedown({x: 5, y: 5})
+                await sleep(100)
+                await display.dispatch_mouseup({x: 5, y: 5})
+                await display.wait_for_message(WINDOWS.TYPE_create_child_window_display)
+                log("child window opened")
+            }
 
-        //now click on the menubar item
-        {
-            await display.dispatch_mousedown({x:5,y:25})
-            await display.dispatch_mouseup({x:5,y:25})
-            await app.wait_for_message(INPUT.TYPE_Action)
-            log("action sent to app")
-        }
+            //now click on the menubar item
+            {
+                await display.dispatch_mousedown({x: 5, y: 25})
+                await display.dispatch_mouseup({x: 5, y: 25})
+                await app.wait_for_message(INPUT.TYPE_Action)
+                log("action sent to app")
+            }
 
-        //start menubar
-        await server.shutdown()
+            //start menubar
+            await server.shutdown()
+        } catch (e) {
+            console.log(e)
+            await server.shutdown()
+        }
     })
 })
 

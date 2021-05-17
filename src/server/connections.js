@@ -25,7 +25,6 @@ export class ConnectionManager {
         this.by_type[CLIENT_TYPES.SCREEN].forEach(cl => {
             cl.send(JSON.stringify(msg))
         })
-        // if(connections[CLIENT_TYPES.SCREEN]) return connections[CLIENT_TYPES.SCREEN].send(JSON.stringify(msg))
     }
 
 
@@ -38,7 +37,6 @@ export class ConnectionManager {
         this.by_type[CLIENT_TYPES.MENUBAR].forEach(cl => {
             cl.send(JSON.stringify(msg))
         })
-        // if(connections[CLIENT_TYPES.MENUBAR]) return connections[CLIENT_TYPES.MENUBAR].send(JSON.stringify(msg))
     }
 
     log(...args) {
