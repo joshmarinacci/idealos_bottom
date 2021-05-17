@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "ajv": "^6.12.6",
     "idealos_schemas": "^0.2.0",
     "mocha": "^8.3.2",
     "pureimage": "^0.3.2",

@@ -13,6 +13,8 @@ import {DEBUG} from "idealos_schemas/js/debug.js"
 import {GRAPHICS} from "idealos_schemas/js/graphics.js"
 import {GENERAL} from "idealos_schemas/js/general.js"
 import {MENUS} from 'idealos_schemas/js/menus.js'
+import Ajv from "ajv"
+
 
 export const hostname = '127.0.0.1'
 export const webserver_port = 3000
