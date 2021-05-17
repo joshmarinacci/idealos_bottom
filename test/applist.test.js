@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import Ajv from 'ajv'
+import {CentralServer} from '../src/server/server.js'
 
 async function load_checker(dir,schema_names) {
     const ajv = new Ajv()
@@ -51,6 +52,12 @@ describe("load apps list", function() {
     })
     it("starts the server with a list of apps",async function () {
         let applist = await load_applist("test/resources/good.applist.json")
-        console.log("the applist is",applist)
+        let server = new CentralServer({
+            hostname:'127.0.0.1',
+            websocket_port:8081,
+            apps:applist,
+        })
+        await server.start()
+        await server.shutdown()
     })
 })

@@ -17,7 +17,7 @@ export class AppTracker {
     create_app(opts) {
         let app = {
             name:opts.name,
-            path:opts.path,
+            path:opts.entrypoint,
             args:opts.args,
             id: "app_"+(Math.floor(Math.random()*100000))
         }
@@ -43,6 +43,7 @@ export class AppTracker {
         if(app.subprocess) {
             return console.error(`app is already running, it seems ${id}`)
         }
+        console.log("spawning",app.path)
         app.subprocess = spawn('node', [
             app.path,
             `ws://${this.hostname}:${this.websocket_port}`,app.id

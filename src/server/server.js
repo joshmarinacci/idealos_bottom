@@ -6,14 +6,11 @@ import {CLIENT_TYPES, ConnectionManager} from "./connections.js"
 import {EventRouter} from "./router.js"
 
 import {sleep} from '../common.js'
-import {WINDOWS} from "idealos_schemas/js/windows.js"
 import {RESOURCES} from "idealos_schemas/js/resources.js"
 import {INPUT} from "idealos_schemas/js/input.js"
 import {DEBUG} from "idealos_schemas/js/debug.js"
-import {GRAPHICS} from "idealos_schemas/js/graphics.js"
 import {GENERAL} from "idealos_schemas/js/general.js"
 import {MENUS} from 'idealos_schemas/js/menus.js'
-import Ajv from "ajv"
 
 
 export const hostname = '127.0.0.1'
@@ -79,7 +76,7 @@ function forward_to_focused(msg) {
 
 function dispatch(msg,ws) {
     try {
-        // console.log("server displatching",msg)
+        console.log("server displatching",msg)
         cons.forward_to_debug(msg)
         router.route(ws,msg)
         if(msg.type === GENERAL.TYPE_ScreenStart) return cons.handle_start_message(ws,msg,wids)
@@ -106,6 +103,78 @@ function dispatch(msg,ws) {
         log("ERROR",e)
     }
 
+}
+export class CentralServer {
+    constructor(opts) {
+        console.log('starting with opts',opts)
+        if(!opts.websocket_port) throw new Error("no webssocket port set!")
+        this._websocket_port = opts.websocket_port
+
+        if(!opts.apps) throw new Error("no applist provided")
+
+        this.cons = new ConnectionManager()
+        this.wids = new WindowTracker(send_delegate,cons)
+        this.at = new AppTracker(hostname,websocket_port,log,wids,send_delegate,cons)
+        this.router = new EventRouter(cons,wids)
+        this.apps = opts.apps
+    }
+    async start() {
+        this._wsserver = new WS.Server({
+            port:this._websocket_port
+        })
+        this.log(`started websocket port on ws://${hostname}:${websocket_port}`)
+        this._wsserver.on('connection',(ws)=>{
+            ws.on("message", (m) => {
+                let msg = JSON.parse(m)
+                this.dispatch(msg,ws)
+            })
+            ws.on('close',(code)=>{
+                cons.remove_connection(ws)
+            })
+            ws.send(JSON.stringify(GENERAL.MAKE_Connected({})))
+        })
+            this._wsserver.on("close",(m) => {
+            log('server closed',m)
+        })
+        this._wsserver.on('error',(e)=>{
+            log("server error",e)
+        })
+
+        for(let app of this.apps.system) {
+            await this.start_app(app)
+        }
+
+    }
+
+    log(...args) {
+        console.log(...args)
+    }
+
+    async start_app(opts) {
+        let app = this.at.create_app(opts)
+        await sleep(250)
+        this.at.start(app.id)
+    }
+
+    dispatch(msg, ws) {
+        try {
+            this.log("server displatching", msg)
+            this.cons.forward_to_debug(msg)
+            router.route(ws, msg)
+        } catch (e) {
+            this.log(e)
+        }
+    }
+
+    shutdown() {
+        return new Promise((res,rej)=>{
+            this._wsserver.close(()=>{
+                console.log('close is done')
+                res()
+            })
+            log("stopped")
+        })
+    }
 }
 export function start_message_server() {
     const server = new WS.Server({

@@ -228,7 +228,6 @@ describe('window drag test',function() {
         let server = await start_message_server()
         try {
 
-
             //start the display
             let display = await start_headless_display()
             await display.wait_for_message(GENERAL.TYPE_Connected)

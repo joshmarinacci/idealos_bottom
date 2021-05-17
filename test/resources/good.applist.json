@@ -2,7 +2,7 @@
   "system": [
     {
       "name": "menubuar",
-      "entrypoint": "apps/menubar.js",
+      "entrypoint": "src/clients/menubar.js",
       "groups": [
         "secure",
         "menubar"
@@ -10,7 +10,7 @@
     },
     {
       "name": "dock",
-      "entrypoint": "apps/dock.js",
+      "entrypoint": "src/clients/dock.js",
       "groups": [
         "dock,",
         "secure"
