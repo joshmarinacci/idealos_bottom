@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import Ajv from 'ajv'
 import {CentralServer} from '../src/server/server.js'
+import assert from 'assert'
 
 async function load_checker(dir,schema_names) {
     const ajv = new Ajv()
@@ -57,7 +58,15 @@ describe("load apps list", function() {
             websocket_port:8081,
             apps:applist,
         })
-        await server.start()
-        await server.shutdown()
+        try {
+            await server.start()
+            let list = await server.get_app_list()
+            console.log("running app count",list.length)
+            assert.strictEqual(list.length, 4)
+            await server.shutdown()
+        } catch (e) {
+            console.log(e)
+            await server.shutdown()
+        }
     })
 })

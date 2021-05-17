@@ -84,7 +84,10 @@ export class AppTracker {
 
     list_apps() {
         return this.apps.slice().map(app => ({
-            id:app.id,name:app.name,path:app.path,args:app.args,
+            id:app.id,
+            name:app.name,
+            path:app.path,
+            args:app.args,
             running:(app.subprocess?true:false)
         }))
     }

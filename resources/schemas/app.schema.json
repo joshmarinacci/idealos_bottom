@@ -15,6 +15,9 @@
     "entrypoint": {
       "type": "string"
     },
+    "autostart": {
+      "type": "boolean"
+    },
     "groups": {
       "type": "array",
       "items": {

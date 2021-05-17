@@ -143,6 +143,9 @@ export class CentralServer {
         for(let app of this.apps.system) {
             await this.start_app(app)
         }
+        for(let app of this.apps.user) {
+            if(app.autostart === true) await this.start_app(app)
+        }
 
     }
 
@@ -174,6 +177,10 @@ export class CentralServer {
             })
             log("stopped")
         })
+    }
+
+    async get_app_list() {
+        return this.at.list_apps()
     }
 }
 export function start_message_server() {
