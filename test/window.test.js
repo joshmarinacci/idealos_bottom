@@ -1,7 +1,6 @@
 import {
     CentralServer,
     hostname,
-    start_message_server,
     websocket_port
 } from '../src/server/server.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
@@ -397,70 +396,99 @@ describe('window drag test',function() {
 describe("textboxes",function() {
 
     it("sends keyboard events",async function () {
-        let server = await start_message_server()
-        let display = await start_headless_display()
-        await display.wait_for_message(GENERAL.TYPE_Connected)
-        await display.send(GENERAL.MAKE_ScreenStart())
-        let app = await start_testapp(server,async (app)=>{
-            app.ws.send(JSON.stringify(WINDOWS.MAKE_WindowOpen({
-                x:50,
-                y:50,
-                width:70,
-                height:80,
-                sender:app.id,
-                window_type:'plain'
-            })))
+        let applist = {
+            system:[],
+            user:[]
+        }
+        let server = new CentralServer({
+            hostname:'127.0.0.1',
+            websocket_port:8081,
+            apps:applist,
         })
-        //wait for the app to receive it's open window
-        let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
-        await display.dispatch_keydown_to_window(open_msg.window, INFO.KEY_NAMES.Enter, INFO.KEY_NAMES.Enter)
-        let msg = await app.wait_for_message(INPUT.TYPE_KeyboardDown)
-        assert.deepStrictEqual(msg,{
-            type:INPUT.TYPE_KeyboardDown,
-            code:INFO.KEY_NAMES.Enter,
-            key:INFO.KEY_NAMES.Enter,
-            shift:false,
-            app:app.id,
-            window:open_msg.window}
-        )
-        await server.shutdown()
+        try {
+            await server.start()
+            let display = await new HeadlessDisplay(server.hostname, server.websocket_port)
+            await display.wait_for_message(GENERAL.TYPE_Connected)
+            await display.send(GENERAL.MAKE_ScreenStart())
+            let app = await start_testapp(server, async (app) => {
+                app.ws.send(JSON.stringify(WINDOWS.MAKE_WindowOpen({
+                    x: 50,
+                    y: 50,
+                    width: 70,
+                    height: 80,
+                    sender: app.id,
+                    window_type: 'plain'
+                })))
+            })
+            //wait for the app to receive it's open window
+            let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
+            await display.dispatch_keydown_to_window(open_msg.window, INFO.KEY_NAMES.Enter, INFO.KEY_NAMES.Enter)
+            let msg = await app.wait_for_message(INPUT.TYPE_KeyboardDown)
+            assert.deepStrictEqual(msg, {
+                    type: INPUT.TYPE_KeyboardDown,
+                    code: INFO.KEY_NAMES.Enter,
+                    key: INFO.KEY_NAMES.Enter,
+                    shift: false,
+                    app: app.id,
+                    window: open_msg.window
+                }
+            )
+            await server.shutdown()
+        } catch (e) {
+            console.log(e)
+            await server.shutdown()
+        }
     })
 
     it("types text",async function() {
-        let server = await start_message_server()
-        let display = await start_headless_display()
-        await display.wait_for_message(GENERAL.TYPE_Connected)
-        await display.send(GENERAL.MAKE_ScreenStart())
-        let app = await start_testguiapp(server,async (wrapper)=> {
-            let main_window = await wrapper.app.open_window(0,0,100,120,'plain')
-            main_window.root = new TextBox({text:"hello"})
-            main_window.redraw()
+        let applist = {
+            system:[],
+            user:[]
+        }
+        let server = new CentralServer({
+            hostname:'127.0.0.1',
+            websocket_port:8081,
+            apps:applist,
         })
-        //wait for the app window to fully open
-        let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
-        assert.strictEqual(app.app.windows[0].root.text,'hello')
-        await sleep(500)
-        log("sleept")
-        // assert.strictEqual(app.app.windows)
-        //send a keyboard event to the focused component
-        let win_move = WINDOWS.MAKE_WindowSetPosition({
-            window: open_msg.window,
-            app: open_msg.target,
-            x:0,
-            y:0,
-        })
-        display.handle(win_move)
-        display.send(win_move)
-        await app.wait_for_message(WINDOWS.TYPE_WindowSetPosition)
+        try {
+            await server.start()
+            let display = await start_headless_display()
+            await display.wait_for_message(GENERAL.TYPE_Connected)
+            await display.send(GENERAL.MAKE_ScreenStart())
+            let app = await start_testguiapp(server, async (wrapper) => {
+                let main_window = await wrapper.app.open_window(0, 0, 100, 120, 'plain')
+                main_window.root = new TextBox({text: "hello"})
+                main_window.redraw()
+            })
+            //wait for the app window to fully open
+            let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
+            assert.strictEqual(app.app.windows[0].root.text, 'hello')
+            await sleep(500)
+            log("sleept")
+            // assert.strictEqual(app.app.windows)
+            //send a keyboard event to the focused component
+            let win_move = WINDOWS.MAKE_WindowSetPosition({
+                window: open_msg.window,
+                app: open_msg.target,
+                x: 0,
+                y: 0,
+            })
+            display.handle(win_move)
+            display.send(win_move)
+            await app.wait_for_message(WINDOWS.TYPE_WindowSetPosition)
 
-        await display.dispatch_mousedown({x:10,y:10})
-        await app.wait_for_message(INPUT.TYPE_MouseDown)
-        await display.dispatch_keydown_to_window(open_msg.window, INFO.KEY_NAMES.KeyA,"a")
-        let msg = await app.wait_for_message(INPUT.TYPE_KeyboardDown)
-        assert.strictEqual(app.app.windows[0].root.text,'helloa')
-        log("yay. the text box is now helloa")
+            await display.dispatch_mousedown({x: 10, y: 10})
+            await app.wait_for_message(INPUT.TYPE_MouseDown)
+            await display.dispatch_keydown_to_window(open_msg.window, INFO.KEY_NAMES.KeyA, "a")
+            let msg = await app.wait_for_message(INPUT.TYPE_KeyboardDown)
+            assert.strictEqual(app.app.windows[0].root.text, 'helloa')
+            log("yay. the text box is now helloa")
 
-        await server.shutdown()
+            await server.shutdown()
+        } catch (e) {
+            console.log(e)
+            await server.shutdown()
+        }
     })
 })
 

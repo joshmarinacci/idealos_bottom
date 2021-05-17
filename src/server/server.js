@@ -205,56 +205,56 @@ export class CentralServer {
         return this.at.list_apps()
     }
 }
-export function start_message_server() {
-    const server = new WS.Server({
-        port: websocket_port,
-    })
-    log(`started websocket server on ws://${hostname}:${websocket_port}`)
-
-    server.on("connection", (ws) => {
-        ws.on("message", (m) => {
-            let msg = JSON.parse(m)
-            dispatch(msg,ws)
-        })
-        ws.on('close',(code)=>{
-            cons.remove_connection(ws)
-        })
-        ws.send(JSON.stringify(GENERAL.MAKE_Connected({})))
-    })
-    server.on("close",(m) => {
-        log('server closed',m)
-    })
-    server.on('error',(e)=>{
-        log("server error",e)
-    })
-
-    return {
-        wsserver:server,
-        wids:wids,
-        start_app_cb:async (opts) => {
-            let app = at.create_app(opts)
-            return {
-                app:app,
-                info:at.start_cb(app.id)
-            }
-        },
-        start_app: async (opts) => {
-            let app = at.create_app(opts)
-            await sleep(250)
-            at.start(app.id)
-        },
-        shutdown: async() => {
-            log("stopping the server")
-            return new Promise((res,rej)=>{
-                server.close(()=>{
-                    console.log('close is done')
-                    res()
-                })
-                log("stopped")
-            })
-        },
-        send:async(msg) => {
-            dispatch(msg)
-        }
-    }
-}
+// export function start_message_server() {
+//     const server = new WS.Server({
+//         port: websocket_port,
+//     })
+//     log(`started websocket server on ws://${hostname}:${websocket_port}`)
+//
+//     server.on("connection", (ws) => {
+//         ws.on("message", (m) => {
+//             let msg = JSON.parse(m)
+//             dispatch(msg,ws)
+//         })
+//         ws.on('close',(code)=>{
+//             cons.remove_connection(ws)
+//         })
+//         ws.send(JSON.stringify(GENERAL.MAKE_Connected({})))
+//     })
+//     server.on("close",(m) => {
+//         log('server closed',m)
+//     })
+//     server.on('error',(e)=>{
+//         log("server error",e)
+//     })
+//
+//     return {
+//         wsserver:server,
+//         wids:wids,
+//         start_app_cb:async (opts) => {
+//             let app = at.create_app(opts)
+//             return {
+//                 app:app,
+//                 info:at.start_cb(app.id)
+//             }
+//         },
+//         start_app: async (opts) => {
+//             let app = at.create_app(opts)
+//             await sleep(250)
+//             at.start(app.id)
+//         },
+//         shutdown: async() => {
+//             log("stopping the server")
+//             return new Promise((res,rej)=>{
+//                 server.close(()=>{
+//                     console.log('close is done')
+//                     res()
+//                 })
+//                 log("stopped")
+//             })
+//         },
+//         send:async(msg) => {
+//             dispatch(msg)
+//         }
+//     }
+// }
