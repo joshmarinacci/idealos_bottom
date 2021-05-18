@@ -11,9 +11,10 @@ import {INPUT} from 'idealos_schemas/js/input.js'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
-import {App, TextBox} from '../src/clients/guitoolkit.js'
+import {App} from '../src/clients/toolkit/guitoolkit.js'
 import {sleep} from '../src/common.js'
 import {INFO} from 'idealos_schemas/js/keyboard_map.js'
+import {TextBox} from '../src/clients/toolkit/text.js'
 
 class BaseAppWrapper {
     constructor() {

@@ -1,17 +1,10 @@
-import {
-    App,
-    Button,
-    HBox,
-    Label,
-    Panel,
-    PopupButton,
-    TextBox,
-    ToggleButton,
-    VBox
-} from './guitoolkit.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
+import {App} from './toolkit/guitoolkit.js'
+import {HBox, VBox} from './toolkit/panels.js'
+import {Label, TextBox} from './toolkit/text.js'
+import {Button, PopupButton, ToggleButton} from './toolkit/buttons.js'
 let app = new App(process.argv)
 
 async function init() {
@@ -107,5 +100,5 @@ app.on(WINDOWS.TYPE_SetFocusedWindow,()=>{
 
 app.on(WINDOWS.TYPE_window_close_request,(e) => {
     console.log("got a close on window",e)
-    app.a_shutdown().then("finished")
+    app.a_shutdown().then(()=>console.log("finished"))
 })

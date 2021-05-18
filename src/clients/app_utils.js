@@ -1,7 +1,7 @@
 import {default as WebSocket} from "ws"
 import * as PI from "pureimage"
 import fs from "fs"
-import {Window} from "./guitoolkit.js"
+import {Window} from "./toolkit/guitoolkit.js"
 import {WINDOWS} from "idealos_schemas/js/windows.js"
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 

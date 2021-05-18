@@ -1,6 +1,7 @@
-import {App, Button, Component, Container, HBox, Insets, Label, VBox} from './guitoolkit.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
+import {App, Component, Insets} from './toolkit/guitoolkit.js'
+import {HBox, VBox} from './toolkit/panels.js'
 let app = new App(process.argv)//,1024/4,10,'menubar')
 
 let menu_tree = MENUS.MAKE_root({

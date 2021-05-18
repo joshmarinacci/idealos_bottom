@@ -1,6 +1,7 @@
-import {App, Component, Label, VBox} from './guitoolkit.js'
+import {App, Component} from './toolkit/guitoolkit.js'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
+import {VBox} from './toolkit/panels.js'
 
 export class IconButton extends Component {
     constructor(opts) {
