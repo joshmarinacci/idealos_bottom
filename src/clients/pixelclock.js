@@ -5,25 +5,31 @@ import {MENUS} from 'idealos_schemas/js/menus.js'
 
 let app = new CommonApp(process.argv,10,5)
 
-let x = 0
+let min = 0
+let sec = 0
+let interval_id = -1
 
+function tick() {
+    sec++
+    if(sec >= 60) {
+        min++
+        sec = 0
+    }
+    draw()
+}
+function draw() {
+    app.send(GRAPHICS.MAKE_DrawRect({x:0,y:0,width:min,height:9,color:'red', window:app.win_id}))
+    app.send(GRAPHICS.MAKE_DrawRect({x:0,y:10,width:min,height:9,color:'green', window:app.win_id}))
+}
 app.on('start',()=>{
-
-    setInterval(()=>{
-        app.send(GRAPHICS.MAKE_DrawPixel({x,y:0,color:'red', window:app.win_id}))
-        x += 1
-        if(x >= app.width) x = 0
-    },5000)
+    interval_id = setInterval(tick,1000)
 })
 
 app.on(WINDOWS.TYPE_window_refresh_request, ()=>{
-    for (let i = 0; i < x; i++) {
-        app.send(GRAPHICS.MAKE_DrawPixel({x:i,y:0,color:'red', window:app.win_id}))
-    }
+    draw()
 })
 
 app.on(WINDOWS.TYPE_SetFocusedWindow, ()=>{
-    console.log("clock app received the focus")
     let menu = {
         type:"root",
         children:[
@@ -36,13 +42,11 @@ app.on(WINDOWS.TYPE_SetFocusedWindow, ()=>{
     }
     let msg =  MENUS.MAKE_SetMenubar({menu:menu})
     app.send(msg)
-    console.log("sent the message",msg)
-
 })
 
 app.on(WINDOWS.TYPE_window_close_request,(e) => {
-    console.log("got a close on window",e)
-    app.a_shutdown().then("finished")
+    clearInterval(interval_id)
+    app.a_shutdown().then(()=>console.log("finished"))
 })
 
 

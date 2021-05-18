@@ -31,13 +31,22 @@
       "name": "fractal",
       "title": "Fractal App",
       "icon": "mandlebrot",
-      "entrypoint": "src/clients/fractal.js"
+      "entrypoint": "src/clients/fractal.js",
+      "autostart": true
     },
     {
       "name": "guitest",
       "title": "Cool Gui Tester",
       "icon": "guitester",
-      "entrypoint": "src/clients/gui_test.js"
+      "entrypoint": "src/clients/gui_test.js",
+      "autostart": true
+    },
+    {
+      "name": "pixelclock",
+      "title": "Pixel clock",
+      "icon": "pixelclock",
+      "entrypoint":"src/clients/pixelclock.js",
+      "autostart": true
     }
   ],
   "services": [
