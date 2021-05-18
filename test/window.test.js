@@ -1,6 +1,6 @@
 import {
     CentralServer,
-    hostname,
+    hostname, load_applist,
     websocket_port
 } from '../src/server/server.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
@@ -14,7 +14,6 @@ import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {App, TextBox} from '../src/clients/guitoolkit.js'
 import {sleep} from '../src/common.js'
 import {INFO} from 'idealos_schemas/js/keyboard_map.js'
-import {load_applist} from './applist.test.js'
 
 class BaseAppWrapper {
     constructor() {

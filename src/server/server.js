@@ -11,6 +11,9 @@ import {INPUT} from "idealos_schemas/js/input.js"
 import {DEBUG} from "idealos_schemas/js/debug.js"
 import {GENERAL} from "idealos_schemas/js/general.js"
 import {MENUS} from 'idealos_schemas/js/menus.js'
+import Ajv from 'ajv'
+import fs from 'fs'
+import path from 'path'
 
 
 export const hostname = '127.0.0.1'
@@ -150,7 +153,7 @@ export class CentralServer {
         })
 
         for (let app of this.apps.system) {
-            await this.start_app(app)
+            if(app.disabled !== true) await this.start_app(app)
         }
         for (let app of this.apps.user) {
             if (app.autostart === true) await this.start_app(app)
@@ -205,56 +208,38 @@ export class CentralServer {
         return this.at.list_apps()
     }
 }
-// export function start_message_server() {
-//     const server = new WS.Server({
-//         port: websocket_port,
-//     })
-//     log(`started websocket server on ws://${hostname}:${websocket_port}`)
-//
-//     server.on("connection", (ws) => {
-//         ws.on("message", (m) => {
-//             let msg = JSON.parse(m)
-//             dispatch(msg,ws)
-//         })
-//         ws.on('close',(code)=>{
-//             cons.remove_connection(ws)
-//         })
-//         ws.send(JSON.stringify(GENERAL.MAKE_Connected({})))
-//     })
-//     server.on("close",(m) => {
-//         log('server closed',m)
-//     })
-//     server.on('error',(e)=>{
-//         log("server error",e)
-//     })
-//
-//     return {
-//         wsserver:server,
-//         wids:wids,
-//         start_app_cb:async (opts) => {
-//             let app = at.create_app(opts)
-//             return {
-//                 app:app,
-//                 info:at.start_cb(app.id)
-//             }
-//         },
-//         start_app: async (opts) => {
-//             let app = at.create_app(opts)
-//             await sleep(250)
-//             at.start(app.id)
-//         },
-//         shutdown: async() => {
-//             log("stopping the server")
-//             return new Promise((res,rej)=>{
-//                 server.close(()=>{
-//                     console.log('close is done')
-//                     res()
-//                 })
-//                 log("stopped")
-//             })
-//         },
-//         send:async(msg) => {
-//             dispatch(msg)
-//         }
-//     }
-// }
+
+async function load_checker(dir, schema_names) {
+    const ajv = new Ajv()
+    let ms = await fs.promises.readFile("node_modules/ajv/lib/refs/json-schema-draft-06.json")
+    ajv.addMetaSchema(JSON.parse(ms.toString()))
+    let _schemas = {}
+    for (let name of schema_names) {
+        // console.log(`loading ${name} from ${dir}`)
+        let json = JSON.parse((await fs.promises.readFile(path.join(dir, name))).toString())
+        ajv.addSchema(json)
+        _schemas[name] = json
+        // console.log("loading",name)
+    }
+    return {
+        validate: function (json_data, schema_name) {
+            if (!_schemas[schema_name]) throw new Error(`no such schema ${schema_name}`)
+            let sch = _schemas[schema_name]
+            console.log(typeof sch, typeof json_data, schema_name)
+            // console.log("compling",sch)
+            let validate_apps_schema = ajv.compile(sch)
+            let valid = validate_apps_schema(json_data)
+            if (!valid) console.warn("two errors", validate_apps_schema.errors)
+            return validate_apps_schema
+        }
+    }
+}
+
+export async function load_applist(json_path) {
+    let checker = await load_checker("resources/schemas", ["app.schema.json", "applist.schema.json"])
+    let data = JSON.parse((await fs.promises.readFile(json_path)).toString())
+    let result = checker.validate(data, "applist.schema.json")
+    // console.log("result is",result)
+    if (result === false) throw new Error("error loading " + checker.errors)
+    return data
+}

@@ -1,43 +1,5 @@
-import fs from 'fs'
-import path from 'path'
-import Ajv from 'ajv'
-import {CentralServer} from '../src/server/server.js'
+import {CentralServer, load_applist} from '../src/server/server.js'
 import assert from 'assert'
-
-async function load_checker(dir,schema_names) {
-    const ajv = new Ajv()
-    let ms = await fs.promises.readFile("node_modules/ajv/lib/refs/json-schema-draft-06.json")
-    ajv.addMetaSchema(JSON.parse(ms.toString()))
-    let _schemas = {}
-    for(let name of schema_names) {
-        // console.log(`loading ${name} from ${dir}`)
-        let json = JSON.parse((await fs.promises.readFile(path.join(dir,name))).toString())
-        ajv.addSchema(json)
-        _schemas[name] = json
-        // console.log("loading",name)
-    }
-    return {
-        validate: function(json_data,schema_name) {
-            if(!_schemas[schema_name]) throw new Error(`no such schema ${schema_name}`)
-            let sch = _schemas[schema_name]
-            console.log(typeof sch,typeof json_data,schema_name)
-            // console.log("compling",sch)
-            let validate_apps_schema = ajv.compile(sch)
-            let valid = validate_apps_schema(json_data)
-            if(!valid) console.warn("two errors",validate_apps_schema.errors)
-            return validate_apps_schema
-        }
-    }
-}
-
-export async function load_applist(json_path) {
-    let checker = await load_checker("resources/schemas",["app.schema.json","applist.schema.json"])
-    let data = JSON.parse((await fs.promises.readFile(json_path)).toString())
-    let result = checker.validate(data,"applist.schema.json")
-    // console.log("result is",result)
-    if(result === false) throw new Error("error loading " + checker.errors)
-    return data
-}
 
 describe("load apps list", function() {
     it("loads an invalid app list", async function() {
