@@ -1,0 +1,30 @@
+{
+  "$id": "https://josh.earth/idealos/uitheme-schema.json",
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "IdealOS App",
+  "description": "UI Theme file for IdealOS",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "entrypoint": {
+      "type": "string"
+    },
+    "autostart": {
+      "type": "boolean"
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    }
+  },
+  "required": ["name","entrypoint"]
+}

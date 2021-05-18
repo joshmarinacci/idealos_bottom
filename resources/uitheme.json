@@ -1,0 +1,39 @@
+{
+  "*": {
+    "background-color": "white",
+    "color": "black"
+  },
+  "button": {
+    "name": "button",
+    "border-color": "black",
+    "background-color": "white",
+    "color": "black",
+    "states": {
+      "hover": {
+        "background-color": "aqua"
+      },
+      "pressed": {
+        "background-color": "blue"
+      }
+    },
+    "styles": {
+      "toggle": {
+        "border-color": "red",
+        "background-color": "white",
+        "color": "red",
+        "styles": {
+          "hover": {
+            "background-color": "red",
+            "color": "black"
+          },
+          "selected": {
+            "background-color": "blue"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+

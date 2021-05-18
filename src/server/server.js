@@ -116,6 +116,8 @@ export class CentralServer {
 
         if (!opts.apps) throw new Error("no applist provided")
 
+        if(opts.uitheme) this.uitheme = opts.uitheme
+
         this.cons = new ConnectionManager()
 
         let sender = (msg) => {
@@ -239,7 +241,13 @@ export async function load_applist(json_path) {
     let checker = await load_checker("resources/schemas", ["app.schema.json", "applist.schema.json"])
     let data = JSON.parse((await fs.promises.readFile(json_path)).toString())
     let result = checker.validate(data, "applist.schema.json")
-    // console.log("result is",result)
-    if (result === false) throw new Error("error loading " + checker.errors)
+    if (result === false) throw new Error(`error loading ${json_path} ${checker.errors}`)
+    return data
+}
+export async function load_uitheme(json_path) {
+    // let checker = await load_checker("resources/schemas", ["uitheme.schema.json"])
+    let data = JSON.parse((await fs.promises.readFile(json_path)).toString())
+    // let result = checker.validate(data, "uitheme.schema.json")
+    // if (result === false) throw new Error(`error loading ${json_path} ${checker.errors}`)
     return data
 }
