@@ -7,9 +7,11 @@ import {WINDOW_TYPES} from './windows.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
 
 export class EventRouter {
-    constructor(cons,wids) {
+    constructor(cons,wids,apptracker,server) {
         this.cons = cons// || throw new Error("missing cons")
         this.wids = wids// || throw new Error("missing wids")
+        this.apptracker = apptracker
+        this.server = server
     }
 
     route(ws,msg) {
@@ -45,6 +47,8 @@ export class EventRouter {
         if(msg.type === INPUT.TYPE_KeyboardUp) return this.cons.forward_to_app(msg.app,msg)
 
         if(msg.type === INPUT.TYPE_Action) return forward_to_focused(msg,this.cons,this.wids)
+
+        if(msg.type === "LIST_ALL_APPS") return this.apptracker
 
         this.log("unhandled message",msg)
     }
