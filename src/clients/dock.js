@@ -62,7 +62,11 @@ app.on('start',()=>init())
 app.on('LIST_ALL_APPS_RESPONSE',(msg)=>{
     console.log("============ got the list of apps",msg.payload.apps.user, wind)
     wind.root.children = msg.payload.apps.user.map(app => {
-        return new IconButton({text:'a',appname:'b',font:wind.app._symbol_font})
+        return new IconButton({
+            text:'a',
+            appname:app.name,
+            font:wind.app._symbol_font
+        })
     })
     wind.redraw()
 })
