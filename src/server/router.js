@@ -48,7 +48,7 @@ export class EventRouter {
 
         if(msg.type === INPUT.TYPE_Action) return forward_to_focused(msg,this.cons,this.wids)
 
-        if(msg.type === "LIST_ALL_APPS") return this.apptracker
+        if(msg.type === "LIST_ALL_APPS") return handle_list_all_apps(msg,this.cons,this.server.apps)
 
         this.log("unhandled message",msg)
     }
@@ -133,4 +133,12 @@ function handle_set_window_focused(msg,cons,wids) {
 function forward_to_focused(msg, cons, wids) {
     let win = wids.get_active_window()
     if(win && win.owner) return cons.forward_to_app(win.owner,msg)
+}
+
+function handle_list_all_apps(msg, cons, apps) {
+    cons.forward_to_app(msg.app,{
+        type:"LIST_ALL_APPS_RESPONSE",
+        target:msg.sender,
+        apps:apps,
+    })
 }

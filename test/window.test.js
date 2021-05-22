@@ -107,7 +107,7 @@ class TestGUIApp extends  BaseAppWrapper {
 }
 
 
-async function start_testguiapp(server, cb) {
+export async function start_testguiapp(server, cb) {
     return server.start_app_cb({
         name:'testapp'
     }).then(data => {

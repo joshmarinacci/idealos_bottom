@@ -1,5 +1,9 @@
 import {CentralServer, load_applist} from '../src/server/server.js'
 import assert from 'assert'
+import {TextBox} from '../src/clients/toolkit/text.js'
+import {WINDOWS} from 'idealos_schemas/js/windows.js'
+import {start_testguiapp} from './window.test.js'
+import {sleep} from '../src/common.js'
 
 describe("load apps list", function() {
     it("loads an invalid app list", async function() {
@@ -30,5 +34,22 @@ describe("load apps list", function() {
             console.log(e)
             await server.shutdown()
         }
+    })
+    it("loads the doc", async function() {
+        let applist = await load_applist("test/resources/good.applist.json")
+        let server = new CentralServer({
+            hostname:'127.0.0.1',
+            websocket_port:8081,
+            apps:applist,
+        })
+        try {
+            await server.start()
+            await sleep(500)
+            await server.shutdown()
+        } catch (e) {
+            console.log(e)
+            await server.shutdown()
+        }
+
     })
 })

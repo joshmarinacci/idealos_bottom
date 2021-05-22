@@ -92,6 +92,7 @@ export class App {
     async a_init() {
         this._font = await PixelFont.load("src/clients/fonts/idealos_font@1.png", "src/clients/fonts/idealos_font@1.json")
         this._symbol_font = await PixelFont.load("src/clients/fonts/symbol_font@1.png","src/clients/fonts/symbol_font@1.json")
+        /*
         this.on(RESOURCES.TYPE_ResourceChanged, (e)=>{
             if(e.payload.resource === 'theme') {
                 this._theme = JSON.parse(String.fromCharCode(...e.payload.data.data))
@@ -99,6 +100,7 @@ export class App {
             }
         })
         this.send(RESOURCES.MAKE_ResourceGet({'resource':'theme','sender':this._appid}))
+         */
     }
     open_window(x,y,width,height,window_type) {
         return new Promise((res,rej)=>{

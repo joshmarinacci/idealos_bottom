@@ -46,12 +46,18 @@ async function init() {
         width: 16,
         height: 16 * 5,
         padding:1,
+        id:'vbox',
         children: [
-            new IconButton({text: "s",appname:'fractal', font:app._symbol_font}),
-            new IconButton({text: "t",appname:'guitest', font:app._symbol_font}),
-            new IconButton({text: "r",appname:'dotclock', font:app._symbol_font}),
+            // new IconButton({text: "s",appname:'fractal', font:app._symbol_font}),
+            // new IconButton({text: "t",appname:'guitest', font:app._symbol_font}),
+            // new IconButton({text: "r",appname:'dotclock', font:app._symbol_font}),
         ]
     })
+    app.send({ type:"LIST_ALL_APPS" })
 }
 
 app.on('start',()=>init())
+app.on('LIST_ALL_APPS_RESPONSE',(msg)=>{
+    console.log("============ got the list of apps",msg.payload.apps)
+    app.send({type:"TEST_END"})
+})
