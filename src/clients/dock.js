@@ -39,6 +39,7 @@ export class IconButton extends Component {
 }
 
 let app = new App(process.argv)
+let wind = null
 async function init() {
     await app.a_init()
     let win = await app.open_window(0, 0, 1+16+1, 16 * 5, 'dock')
@@ -53,11 +54,15 @@ async function init() {
             // new IconButton({text: "r",appname:'dotclock', font:app._symbol_font}),
         ]
     })
+    wind = win
     app.send({ type:"LIST_ALL_APPS" })
 }
 
 app.on('start',()=>init())
 app.on('LIST_ALL_APPS_RESPONSE',(msg)=>{
-    console.log("============ got the list of apps",msg.payload.apps)
-    app.send({type:"TEST_END"})
+    console.log("============ got the list of apps",msg.payload.apps.user, wind)
+    wind.root.children = msg.payload.apps.user.map(app => {
+        return new IconButton({text:'a',appname:'b',font:wind.app._symbol_font})
+    })
+    wind.redraw()
 })
