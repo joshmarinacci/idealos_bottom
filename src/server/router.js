@@ -49,6 +49,7 @@ export class EventRouter {
         if(msg.type === INPUT.TYPE_Action) return forward_to_focused(msg,this.cons,this.wids)
 
         if(msg.type === "LIST_ALL_APPS") return handle_list_all_apps(msg,this.cons,this.server.apps)
+        if(msg.type === "get_control_theme") return get_control_theme(msg,this.cons,this.server)
 
         this.log("unhandled message",msg)
     }
@@ -142,3 +143,30 @@ function handle_list_all_apps(msg, cons, apps) {
         apps:apps,
     })
 }
+
+function get_control_theme(msg, cons, server) {
+    console.log("doing get control theme",msg, server.uitheme)
+    if(!server.uitheme) {
+        //if no theme loaded, use a default
+        return cons.forward_to_app(msg.app, {
+            type:"get_control_theme_response",
+            theme:{
+                "background-color": "white",
+                "color": "black"
+            }
+        })
+    }
+    console.log('name is',msg.name)
+    if(server.uitheme[msg.name]) {
+        return cons.forward_to_app(msg.app, {
+            type:"get_control_theme_response",
+            theme: server.uitheme[msg.name]
+        })
+    } else {
+        return cons.forward_to_app(msg.app, {
+            type:"get_control_theme_response",
+            theme: server.uitheme['*']
+        })
+    }
+}
+

@@ -75,7 +75,7 @@ class TestApp extends BaseAppWrapper {
     }
 }
 
-async function start_testapp(server,cb) {
+export async function start_testapp(server,cb) {
     return server.start_app_cb({
         name:"testapp",
     }).then((data)=>{
