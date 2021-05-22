@@ -323,6 +323,9 @@ export class Window {
     log(...args) {
         this.app.log(...args)
     }
+    send(msg) {
+        this.app.send(msg)
+    }
 
 }
 
