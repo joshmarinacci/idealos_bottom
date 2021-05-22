@@ -5,6 +5,7 @@ import {INPUT} from 'idealos_schemas/js/input.js'
 import {CLIENT_TYPES} from './connections.js'
 import {WINDOW_TYPES} from './windows.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
+import {DEBUG} from 'idealos_schemas/js/debug.js'
 
 export class EventRouter {
     constructor(cons,wids,apptracker,server) {
@@ -17,6 +18,9 @@ export class EventRouter {
     route(ws,msg) {
         if(msg.type === GENERAL.TYPE_Heartbeat) return do_nothing(msg)
         if(msg.type === GENERAL.TYPE_ScreenStart) return this.cons.handle_start_message(ws,msg,this.wids)
+
+        if(msg.type === "LIST_ALL_APPS") return handle_list_all_apps(msg,this.cons,this.server.apps)
+        if(msg.type === DEBUG.TYPE_StartAppByName) return this.apptracker.start_app_by_name(msg.name);
 
         if(msg.type === WINDOWS.TYPE_WindowOpen) return handle_open_window_message(ws,msg,this.cons,this.wids)
         if(msg.type === WINDOWS.TYPE_WindowOpenResponse) return this.cons.forward_to_target(msg)
@@ -48,7 +52,6 @@ export class EventRouter {
 
         if(msg.type === INPUT.TYPE_Action) return forward_to_focused(msg,this.cons,this.wids)
 
-        if(msg.type === "LIST_ALL_APPS") return handle_list_all_apps(msg,this.cons,this.server.apps)
         if(msg.type === "get_control_theme") return get_control_theme(msg,this.cons,this.server)
 
         this.log("unhandled message",msg)

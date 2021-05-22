@@ -69,7 +69,11 @@ export class CentralServer {
             if(app.disabled !== true) await this.start_app(app)
         }
         for (let app of this.apps.user) {
-            if (app.autostart === true) await this.start_app(app)
+            if (app.autostart === true) {
+                await this.start_app(app)
+            } else {
+                await this.at.create_app(app)
+            }
         }
 
     }
