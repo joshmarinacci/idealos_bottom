@@ -20,7 +20,16 @@ export class EventRouter {
         if(msg.type === GENERAL.TYPE_ScreenStart) return this.cons.handle_start_message(ws,msg,this.wids)
 
         if(msg.type === "LIST_ALL_APPS") return handle_list_all_apps(msg,this.cons,this.server.apps)
+        if(msg.type === "DEBUG_LIST") return this.cons.add_connection(CLIENT_TYPES.DEBUG,msg.sender,ws)
         if(msg.type === DEBUG.TYPE_StartAppByName) return this.apptracker.start_app_by_name(msg.name);
+        if(msg.type === DEBUG.TYPE_ListAppsRequest) {
+            return this.cons.forward_to_debug(DEBUG.MAKE_ListAppsResponse({
+                connection_count:this.cons.count(),
+                apps:this.apptracker.list_apps(),
+            }))
+        }
+        if(msg.type === DEBUG.TYPE_StopApp)  return this.apptracker.stop(msg.target)
+        if(msg.type === DEBUG.TYPE_StartApp) return this.apptracker.start(msg.target)
 
         if(msg.type === WINDOWS.TYPE_WindowOpen) return handle_open_window_message(ws,msg,this.cons,this.wids)
         if(msg.type === WINDOWS.TYPE_WindowOpenResponse) return this.cons.forward_to_target(msg)
