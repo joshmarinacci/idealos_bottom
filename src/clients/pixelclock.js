@@ -3,7 +3,7 @@ import {WINDOWS} from "idealos_schemas/js/windows.js"
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
 
-let app = new CommonApp(process.argv,10,5)
+let app = new CommonApp(process.argv,60,20)
 
 let min = 0
 let sec = 0
@@ -18,7 +18,7 @@ function tick() {
     draw()
 }
 function draw() {
-    app.send(GRAPHICS.MAKE_DrawRect({x:0,y:0,width:min,height:9,color:'red', window:app.win_id}))
+    app.send(GRAPHICS.MAKE_DrawRect({x:0,y:0,width:sec,height:9,color:'red', window:app.win_id}))
     app.send(GRAPHICS.MAKE_DrawRect({x:0,y:10,width:min,height:9,color:'green', window:app.win_id}))
 }
 app.on('start',()=>{
