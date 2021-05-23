@@ -156,35 +156,44 @@ function handle_list_all_apps(msg, cons, apps) {
     })
 }
 
+function make_response(orig,settings) {
+    let msg = {
+        id: "msg_"+Math.floor((Math.random()*10000)),
+        response_to:orig.id,
+    }
+    Object.entries(settings).forEach(([key,value])=>{
+        msg[key] = value
+    })
+    return msg
+}
 function get_control_theme(msg, cons, server) {
     console.log("doing get control theme",msg, server.uitheme)
     if(!server.uitheme) {
         //if no theme loaded, use a default
-        return cons.forward_to_app(msg.app, {
-            id: "msg_"+Math.floor((Math.random()*10000)),
-            response_to:msg.id,
+        let msg2 = make_response(msg,{
             type:"get_control_theme_response",
             theme:{
                 "background-color": "white",
                 "color": "black"
             }
         })
+        return cons.forward_to_app(msg.app, msg2)
     }
-    console.log('name is',msg.name)
+    // console.log('name is',msg.name)
     if(server.uitheme[msg.name]) {
-        return cons.forward_to_app(msg.app, {
+        let msg2 = make_response(msg,{
             type:"get_control_theme_response",
-            id: "msg_"+Math.floor((Math.random()*10000)),
-            response_to:msg.id,
+            // id: "msg_"+Math.floor((Math.random()*10000)),
+            // response_to:msg.id,
             theme: server.uitheme[msg.name]
         })
+        return cons.forward_to_app(msg.app, msg2)
     } else {
-        return cons.forward_to_app(msg.app, {
+        let msg2 = make_response(msg,{
             type:"get_control_theme_response",
-            id: "msg_"+Math.floor((Math.random()*10000)),
-            response_to:msg.id,
             theme: server.uitheme['*']
         })
+        return cons.forward_to_app(msg.app, msg2)
     }
 }
 

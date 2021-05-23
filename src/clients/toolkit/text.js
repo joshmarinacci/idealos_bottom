@@ -11,7 +11,7 @@ export class Label extends Component {
     }
 
     input(e) {
-        console.log("label got event",e.type)
+        // console.log("label got event",e.type)
     }
 
     layout(gfx) {
@@ -36,6 +36,7 @@ export class TextBox extends Component {
         this.padding = new Insets(5)
         this.cursor = 2
         this.selected = false
+        this.name = 'textbox'
     }
 
     input(e) {
@@ -72,19 +73,22 @@ export class TextBox extends Component {
     redraw(gfx) {
         let name = "textbox"
         if (gfx.win.is_focused(this)) name = "textbox:focused"
-        gfx.rect(this.x, this.y, this.width, this.height, gfx.theme_border_color(name, MAGENTA))
-        gfx.rect(this.x + 1, this.y + 1, this.width - 2, this.height - 2, gfx.theme_bg_color(name, MAGENTA))
-        gfx.text(this.padding.left + this.x, this.y, this.text, gfx.theme_text_color(name, MAGENTA))
+        let state = (gfx.win.is_focused(this))?"focused":null
+        let bg = this.lookup_theme_part("background-color",state)
+        let co = this.lookup_theme_part('color',state)
+
+        gfx.rect(this.x + 1, this.y + 1, this.width - 2, this.height - 2, bg)
+        gfx.text(this.padding.left + this.x, this.y, this.text, co)
         if (gfx.win.is_focused(this)) {
             let before = this.text.substring(0, this.cursor)
             let before_metrics = gfx.text_size(before)
-            gfx.rect(this.x + this.padding.left + before_metrics.width, this.y + 2, 1, this.height - 4, gfx.theme_text_color(name, MAGENTA))
+            gfx.rect(this.x + this.padding.left + before_metrics.width, this.y + 2, 1, this.height - 4, co)
         }
     }
 
     append_char(ch) {
         this.text += ch
-        console.log("new text is",this.text)
+        // console.log("new text is",this.text)
         this.cursor += 1
         this.repaint()
     }

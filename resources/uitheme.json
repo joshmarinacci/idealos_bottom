@@ -8,6 +8,16 @@
     "background-color": "white",
     "color": "black"
   },
+  "textbox": {
+    "name": "textbox",
+    "background-color": "white",
+    "color": "black",
+    "states": {
+      "focused": {
+        "background-color": "yellow"
+      }
+    }
+  },
   "button": {
     "name": "button",
     "border-color": "black",

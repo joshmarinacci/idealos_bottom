@@ -60,6 +60,7 @@ export class App {
         this.ws = new WebSocket(argv[2]);
         this.listeners = {}
         this.listeners['ALL'] = []
+        this.listeners['PENDING_RESPONSE'] = []
         this.windows = []
         this.ws.on('open', () => {
             this.fireLater('start', {})
@@ -145,11 +146,26 @@ export class App {
                 cb(evt)
             })
             this.listeners["ALL"].forEach(cb => cb(evt))
+            if(payload.response_to) this.listeners["PENDING_RESPONSE"].forEach(cb => cb(evt))
         },1)
     }
     send(msg) {
         msg.app = this._appid
         this.ws.send(JSON.stringify(msg))
+    }
+    wait_for_response(id) {
+        return new Promise((res,rej) => {
+            let handler = (msg) => {
+                if(msg.payload.response_to === id) {
+                    setTimeout(()=>{
+                        this.listeners['PENDING_RESPONSE'] =
+                            this.listeners['PENDING_RESPONSE'].filter(cb => cb !== handler)
+                    },1)
+                    res(msg.payload)
+                }
+            }
+            this.listeners['PENDING_RESPONSE'].push(handler)
+        })
     }
 }
 
@@ -326,6 +342,11 @@ export class Window {
     send(msg) {
         this.app.send(msg)
     }
+    async send_and_wait(msg) {
+        msg.id = "msg_"+Math.floor((Math.random()*10000))
+        this.app.send(msg)
+        return await this.app.wait_for_response(msg.id)
+    }
 
 }
 
@@ -414,35 +435,31 @@ export class Component {
     }
 
     lookup_theme_part(name, state) {
+        if(!this.name)throw new Error("component has no name")
         if (!this.theme && !this.theme_loading) {
             this.theme_loading = true
-            // console.log("need to get a theme")
-            let msg_id = "msg_"+Math.floor((Math.random()*10000))
-            this.window().app.on("get_control_theme_response", (msg) => {
-                if(msg.payload.response_to !== msg_id) return
-                console.log("got the response finally", msg)
-                console.log("original is",msg_id)
-                this.theme = msg.payload.theme
-                this.theme_loading = false
-                this.repaint()
-            })
-            this.window().send({
-                type: "get_control_theme",//(name, style, state) style can be * state can be *"
-                id:msg_id,
+            this.window().send_and_wait({
+                type: "get_control_theme",
                 name: this.name,
                 style: "plain",
                 state: "normal"
+            }).then((msg)=>{
+                this.theme = msg.theme
+                this.theme_loading = false
+                this.repaint()
             })
             return 'black'
         }
         if (!this.theme && this.theme_loading) {
             return 'black'
         }
-        // console.log("using theme",this.theme,name,state)
-        if (state) {
-            // console.log("checking out state",state,this.name,name,this.theme)
+        // console.log("using theme",this.theme,name,state,this.theme.states)
+        if (state && this.theme.states) {
+            console.log("checking out state",this.name,state,name,this.theme)
             if (this.theme.states[state]) {
-                return this.theme.states[state][name]
+                if(this.theme.states[state][name]) {
+                    return this.theme.states[state][name]
+                }
             }
         }
         return this.theme[name]
