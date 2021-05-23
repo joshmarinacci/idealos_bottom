@@ -5,6 +5,7 @@ import {VBox} from './panels.js'
 export class Button extends Component {
     constructor(opts) {
         super(opts)
+        this.name = 'button'
         this.text = opts.text || "button"
         this.pressed = false
         this.padding = new Insets(5)
@@ -30,36 +31,6 @@ export class Button extends Component {
         this.height = this.padding.top + met.height + this.padding.bottom
     }
 
-    lookup_theme_part(name,state) {
-        if(!this.theme && !this.theme_loading) {
-            this.theme_loading = true
-            // console.log("need to get a theme")
-            this.window().app.on("get_control_theme_response", (msg) => {
-                // console.log("got the response finally", msg)
-                this.theme = msg.payload.theme
-                this.theme_loading = false
-                this.repaint()
-            })
-            this.window().send({
-                type: "get_control_theme",//(name, style, state) style can be * state can be *"
-                name: "button",
-                style: "plain",
-                state: "normal",
-            })
-            return 'black'
-        }
-        if(!this.theme && this.theme_loading) {
-            return 'black'
-        }
-        // console.log("using theme",this.theme,name,state)
-        if(state) {
-            // console.log("checking out state",state,name,this.theme)
-            if(this.theme.states[state]) {
-                return this.theme.states[state][name]
-            }
-        }
-        return this.theme[name]
-    }
     redraw(gfx) {
         let state = this.pressed?"pressed":null
         let bg = this.lookup_theme_part("background-color",state)

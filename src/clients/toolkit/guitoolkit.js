@@ -406,11 +406,46 @@ export class Component {
         if (this.id === query.id) return this
     }
     repaint() {
-        console.log(this.constructor.name,"requesting a repaint")
+        // console.log(this.constructor.name,"requesting a repaint")
         if(this.parent && this.parent.repaint()) this.parent.repaint()
     }
     window() {
         return this.parent.window()
+    }
+
+    lookup_theme_part(name, state) {
+        if (!this.theme && !this.theme_loading) {
+            this.theme_loading = true
+            // console.log("need to get a theme")
+            let msg_id = "msg_"+Math.floor((Math.random()*10000))
+            this.window().app.on("get_control_theme_response", (msg) => {
+                if(msg.payload.response_to !== msg_id) return
+                console.log("got the response finally", msg)
+                console.log("original is",msg_id)
+                this.theme = msg.payload.theme
+                this.theme_loading = false
+                this.repaint()
+            })
+            this.window().send({
+                type: "get_control_theme",//(name, style, state) style can be * state can be *"
+                id:msg_id,
+                name: this.name,
+                style: "plain",
+                state: "normal"
+            })
+            return 'black'
+        }
+        if (!this.theme && this.theme_loading) {
+            return 'black'
+        }
+        // console.log("using theme",this.theme,name,state)
+        if (state) {
+            // console.log("checking out state",state,this.name,name,this.theme)
+            if (this.theme.states[state]) {
+                return this.theme.states[state][name]
+            }
+        }
+        return this.theme[name]
     }
 }
 
@@ -429,7 +464,7 @@ export class Container extends Component {
     }
 
     redraw(gfx) {
-        this.window().log("drawing",this.constructor.name,this.x,this.y,this.width,this.height)
+        // this.window().log("drawing",this.constructor.name,this.x,this.y,this.width,this.height)
         gfx.translate(this.x,this.y)
         this.children.forEach(ch => ch.redraw(gfx))
         gfx.translate(-this.x,-this.y)

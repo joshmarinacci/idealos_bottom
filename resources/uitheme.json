@@ -3,17 +3,22 @@
     "background-color": "white",
     "color": "black"
   },
+  "label": {
+    "name": "label",
+    "background-color": "white",
+    "color": "black"
+  },
   "button": {
     "name": "button",
     "border-color": "black",
-    "background-color": "white",
+    "background-color": "blue",
     "color": "black",
     "states": {
       "hover": {
-        "background-color": "aqua"
+        "background-color": "white"
       },
       "pressed": {
-        "background-color": "blue"
+        "background-color": "aqua"
       }
     },
     "styles": {

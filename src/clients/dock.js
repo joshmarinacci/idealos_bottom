@@ -60,7 +60,7 @@ async function init() {
 
 app.on('start',()=>init())
 app.on('LIST_ALL_APPS_RESPONSE',(msg)=>{
-    console.log("============ got the list of apps",msg.payload.apps.user, wind)
+    // console.log("============ got the list of apps",msg.payload.apps.user, wind)
     wind.root.children = msg.payload.apps.user.map(app => {
         return new IconButton({
             text:'a',

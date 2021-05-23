@@ -7,6 +7,7 @@ export class Label extends Component {
     constructor(opts) {
         super(opts)
         this.text = opts.text || "label"
+        this.name = 'label'
     }
 
     input(e) {
@@ -20,10 +21,10 @@ export class Label extends Component {
     }
 
     redraw(gfx) {
-        gfx.rect(this.x, this.y, this.width, this.height,
-            gfx.theme_bg_color('label', 'green'))
-        gfx.text(this.x, this.y, this.text,
-            gfx.theme_text_color('label', 'yellow'), this.font)
+        let bg = this.lookup_theme_part("background-color",null)
+        let co = this.lookup_theme_part('color',null)
+        gfx.rect(this.x, this.y, this.width, this.height,bg)
+        gfx.text(this.x, this.y, this.text,co,this.font)
     }
 }
 

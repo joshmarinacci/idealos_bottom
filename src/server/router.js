@@ -161,6 +161,8 @@ function get_control_theme(msg, cons, server) {
     if(!server.uitheme) {
         //if no theme loaded, use a default
         return cons.forward_to_app(msg.app, {
+            id: "msg_"+Math.floor((Math.random()*10000)),
+            response_to:msg.id,
             type:"get_control_theme_response",
             theme:{
                 "background-color": "white",
@@ -172,11 +174,15 @@ function get_control_theme(msg, cons, server) {
     if(server.uitheme[msg.name]) {
         return cons.forward_to_app(msg.app, {
             type:"get_control_theme_response",
+            id: "msg_"+Math.floor((Math.random()*10000)),
+            response_to:msg.id,
             theme: server.uitheme[msg.name]
         })
     } else {
         return cons.forward_to_app(msg.app, {
             type:"get_control_theme_response",
+            id: "msg_"+Math.floor((Math.random()*10000)),
+            response_to:msg.id,
             theme: server.uitheme['*']
         })
     }
