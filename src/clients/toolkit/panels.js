@@ -3,6 +3,7 @@ import {Container} from './guitoolkit.js'
 export class Panel extends Container {
     constructor(opts) {
         super(opts)
+        this.name = 'panel'
     }
 
     redraw(gfx) {
@@ -17,6 +18,7 @@ export class VBox extends Container {
         this.border_width = opts.border_width || 0
         this.padding = opts.padding || 0
         this.hstretch = opts.hstretch || false
+        this.name = 'panel'
     }
     layout(gfx) {
         this.children.forEach(ch => ch.layout(gfx))
@@ -36,7 +38,8 @@ export class VBox extends Container {
         this.height = y
     }
     redraw(gfx) {
-        gfx.rect(0,0,this.width,this.height,'black')
+        let bg = this.lookup_theme_part("background-color")
+        gfx.rect(0,0,this.width,this.height,bg)
         super.redraw(gfx)
     }
 }
@@ -45,6 +48,7 @@ export class HBox extends Container {
     constructor(opts) {
         super(opts);
         this.padding = opts.padding || 0
+        this.name = 'panel'
     }
     layout(gfx) {
         this.children.forEach(ch => ch.layout(gfx))

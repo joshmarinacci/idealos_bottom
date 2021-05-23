@@ -74,9 +74,11 @@ export class TextBox extends Component {
         let name = "textbox"
         if (gfx.win.is_focused(this)) name = "textbox:focused"
         let state = (gfx.win.is_focused(this))?"focused":null
+        let bd = this.lookup_theme_part("border-color",state)
         let bg = this.lookup_theme_part("background-color",state)
         let co = this.lookup_theme_part('color',state)
 
+        gfx.rect(this.x , this.y, this.width , this.height, bd)
         gfx.rect(this.x + 1, this.y + 1, this.width - 2, this.height - 2, bg)
         gfx.text(this.padding.left + this.x, this.y, this.text, co)
         if (gfx.win.is_focused(this)) {

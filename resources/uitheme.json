@@ -1,7 +1,8 @@
 {
   "*": {
     "background-color": "white",
-    "color": "black"
+    "color": "black",
+    "border-color": "black"
   },
   "label": {
     "name": "label",
@@ -11,6 +12,7 @@
   "textbox": {
     "name": "textbox",
     "background-color": "white",
+    "border-color": "black",
     "color": "black",
     "states": {
       "focused": {
@@ -21,14 +23,17 @@
   "button": {
     "name": "button",
     "border-color": "black",
-    "background-color": "blue",
+    "background-color": "aqua",
     "color": "black",
     "states": {
       "hover": {
         "background-color": "white"
       },
       "pressed": {
-        "background-color": "aqua"
+        "background-color": "blue"
+      },
+      "selected": {
+        "background-color": "red"
       }
     },
     "styles": {

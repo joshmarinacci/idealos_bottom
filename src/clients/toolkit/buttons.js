@@ -33,9 +33,11 @@ export class Button extends Component {
 
     redraw(gfx) {
         let state = this.pressed?"pressed":null
+        let bd = this.lookup_theme_part("border-color",state)
         let bg = this.lookup_theme_part("background-color",state)
         let co = this.lookup_theme_part('color',state)
-        gfx.rect(this.x, this.y, this.width, this.height,bg)
+        gfx.rect(this.x, this.y, this.width, this.height,bd)
+        gfx.rect(this.x+1, this.y+1, this.width-2, this.height-2,bg)
         gfx.text(this.padding.left + this.x, this.y, this.text,co)
     }
 
@@ -55,10 +57,10 @@ export class ToggleButton extends Button {
     }
 
     redraw(gfx) {
-        let name = 'button'
-        if(this.selected) name = 'button:selected'
-        let bg = gfx.theme_bg_color(name,MAGENTA);
-        let txt = gfx.theme_text_color(name,MAGENTA);
+        let state = this.pressed?"pressed":null
+        if(this.selected) state = 'selected'
+        let bg = this.lookup_theme_part('background-color',state)
+        let txt = this.lookup_theme_part('color',state)
         gfx.rect(this.x, this.y, this.width, this.height, bg);
         gfx.text(this.padding.left + this.x, this.y, this.text, txt);
     }
@@ -104,10 +106,9 @@ export class PopupButton extends Button {
         this.height = this.padding.top + met.height + this.padding.bottom
     }
     redraw(gfx) {
-        let bg = gfx.theme_bg_color("button",'magenta')
-        if(this.pressed) bg = gfx.theme_bg_color('button:pressed', MAGENTA)
-        let fg = gfx.theme_text_color('button', 'magenta')
-        if(this.pressed) fg = gfx.theme_text_color('button:pressed', MAGENTA)
+        let state = this.pressed?"pressed":null
+        let bg = this.lookup_theme_part("background-color",state)
+        let fg = this.lookup_theme_part("color",state)
         gfx.rect(this.x, this.y, this.width, this.height, bg)
         gfx.text(this.padding.left + this.x, this.y, this.text, fg, this.window().base_font)
         let met = gfx.text_size(this.text,this.window().base_font)
