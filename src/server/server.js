@@ -27,7 +27,11 @@ export class CentralServer {
 
         if (!opts.apps) throw new Error("no applist provided")
 
-        if(opts.uitheme) this.uitheme = opts.uitheme
+        this.themes = null
+        if(opts.themes) {
+            this.themes = opts.themes
+            this.uitheme = this.themes['light']
+        }
 
         this.cons = new ConnectionManager()
 

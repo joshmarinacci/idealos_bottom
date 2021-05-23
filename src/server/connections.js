@@ -62,6 +62,11 @@ export class ConnectionManager {
         if(!app) throw new Error(`no such app for id ${id}`)
         app.ws.send(JSON.stringify(msg))
     }
+    forward_to_all_apps(msg) {
+        this.by_type[CLIENT_TYPES.APP].forEach(app => {
+            app.ws.send(JSON.stringify(msg))
+        })
+    }
 
     remove_connection(ws) {
         console.log("connections removing for ",ws.target)

@@ -75,6 +75,10 @@ export class App {
         });
         this._theme = null
         this._font = null
+
+        this.on("theme-changed",()=>{
+            this.windows.forEach(win => win.theme_changed())
+        })
     }
 
     async a_shutdown() {
@@ -342,12 +346,15 @@ export class Window {
     send(msg) {
         this.app.send(msg)
     }
+    theme_changed() {
+        this.root.theme_changed()
+        this.repaint()
+    }
     async send_and_wait(msg) {
         msg.id = "msg_"+Math.floor((Math.random()*10000))
         this.app.send(msg)
         return await this.app.wait_for_response(msg.id)
     }
-
 }
 
 class Gfx {
@@ -464,6 +471,9 @@ export class Component {
         }
         return this.theme[name]
     }
+    theme_changed() {
+        this.theme = null
+    }
 }
 
 export class Container extends Component {
@@ -485,6 +495,10 @@ export class Container extends Component {
         gfx.translate(this.x,this.y)
         this.children.forEach(ch => ch.redraw(gfx))
         gfx.translate(-this.x,-this.y)
+    }
+    theme_changed() {
+        super.theme_changed()
+        this.children.forEach(ch => ch.theme_changed())
     }
 
     find(query) {

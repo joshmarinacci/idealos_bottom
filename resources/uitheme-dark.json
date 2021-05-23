@@ -1,0 +1,59 @@
+{
+  "*": {
+    "background-color": "black",
+    "color": "white",
+    "border-color": "white"
+  },
+  "label": {
+    "name": "label",
+    "background-color": "black",
+    "color": "white"
+  },
+  "textbox": {
+    "name": "textbox",
+    "background-color": "black",
+    "border-color": "white",
+    "color": "white",
+    "states": {
+      "focused": {
+        "background-color": "black"
+      }
+    }
+  },
+  "button": {
+    "name": "button",
+    "border-color": "white",
+    "background-color": "green",
+    "color": "white",
+    "states": {
+      "hover": {
+        "background-color": "white"
+      },
+      "pressed": {
+        "background-color": "blue"
+      },
+      "selected": {
+        "background-color": "red"
+      }
+    },
+    "styles": {
+      "toggle": {
+        "border-color": "red",
+        "background-color": "white",
+        "color": "red",
+        "styles": {
+          "hover": {
+            "background-color": "red",
+            "color": "black"
+          },
+          "selected": {
+            "background-color": "blue"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+

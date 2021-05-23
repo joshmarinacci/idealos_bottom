@@ -28,6 +28,12 @@
   ],
   "user": [
     {
+      "name": "debug",
+      "title": "Debug App",
+      "entrypoint": "src/clients/debug.js",
+      "autostart": true
+    },
+    {
       "name": "fractal",
       "title": "Fractal App",
       "icon": "mandlebrot",

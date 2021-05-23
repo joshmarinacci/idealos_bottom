@@ -62,6 +62,7 @@ export class EventRouter {
         if(msg.type === INPUT.TYPE_Action) return forward_to_focused(msg,this.cons,this.wids)
 
         if(msg.type === "get_control_theme") return get_control_theme(msg,this.cons,this.server)
+        if(msg.type === "theme-set") return set_theme(msg,this.cons,this.server)
 
         this.log("unhandled message",msg)
     }
@@ -165,6 +166,16 @@ function make_response(orig,settings) {
         msg[key] = value
     })
     return msg
+}
+function set_theme(msg,cons,server) {
+    // console.log("vailable themese",server.themes)
+    // console.log("target is",msg.name)
+    if(!server.themes[msg.name]) {
+        console.log(`missing theme name ${msg.name}`)
+    } else {
+        server.uitheme = server.themes[msg.name]
+        return cons.forward_to_all_apps(make_response(msg,{type:"theme-changed",name:msg.name}))
+    }
 }
 function get_control_theme(msg, cons, server) {
     console.log("doing get control theme",msg, server.uitheme)
