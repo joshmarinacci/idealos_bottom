@@ -397,6 +397,7 @@ class Gfx {
 
 export class Component {
     constructor(opts) {
+        if(!opts) opts = {}
         this.id = opts.id || ""
         this.x = opts.x || 0
         this.y = opts.y || 0
@@ -479,6 +480,7 @@ export class Component {
 export class Container extends Component {
     constructor(opts) {
         super(opts)
+        if(!opts) opts = {}
         this.children = opts.children || []
         this.children.forEach(ch => ch.parent = this)
     }

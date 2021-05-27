@@ -10,8 +10,8 @@
     },
     {
       "name": "sidebar",
-      "entrypoint": "src/clients/sidebar.js",
-      "disabled": true,
+      "entrypoint": "src/clients/sidebar/sidebar.js",
+      "disabled": false,
       "groups": [
         "sidebar",
         "secure"
