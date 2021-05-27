@@ -15,7 +15,19 @@ import {Container} from '../toolkit/guitoolkit.js'
 let app = new App(process.argv)
 
 class TimeDatePanel extends Container {
+    constructor(opts) {
+        super(opts);
+    }
 
+    redraw(gfx) {
+        super.redraw(gfx)
+        let ts = new Date()
+        // time pm date
+        gfx.rect(this.x, this.y, this.width, this.height,'black')
+        gfx.rect(this.x+1, this.y+1, this.width-2, this.height-2,'white')
+        gfx.text(this.x+1, this.y+1, ts.toDateString(), 'black')
+        gfx.text(this.x+1, this.y+10, ts.toDateString(), 'black')
+    }
 }
 
 class MusicPlayerPanel extends Container {
@@ -30,14 +42,15 @@ class CPUInfoPanel extends Container {
     }
     layout(gfx) {
         this.width = 80
-        this.height = 30
+        this.height = 20
     }
     redraw(gfx) {
-        let bg = 'red'
+        super.redraw(gfx)
+        let bg = 'black'
         this.data.forEach((v,i)=>{
-            gfx.rect(i*2, 0, 1, Math.floor(v*30), bg)
+            let vv = Math.floor(v*this.height)
+            gfx.rect(this.x+i*2, this.y+this.height-vv, 1, vv, bg)
         })
-        // super.redraw(gfx)
     }
 
     updateTick() {
@@ -59,7 +72,10 @@ async function init() {
     await app.a_init()
     let win = await app.open_window(50,50,100,200,'plain')
     win.root = new VBox({width:100, height:300, children:[
-            // new TimeDatePanel(),
+            new TimeDatePanel({
+                width:80,
+                height:20,
+            }),
             // new MusicPlayerPanel(),
             new CPUInfoPanel({
                 width:80,
