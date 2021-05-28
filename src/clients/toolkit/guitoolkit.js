@@ -171,6 +171,11 @@ export class App {
             this.listeners['PENDING_RESPONSE'].push(handler)
         })
     }
+    send_and_wait_for_response(msg) {
+        if(!msg.id) msg.id = "msg_"+Math.floor((Math.random()*10000))
+        this.send(msg)
+        return this.wait_for_response(msg.id)
+    }
 }
 
 class EventDispatcher {

@@ -115,6 +115,8 @@ export class AppTracker {
         this.start(app.id)
         cons.forward_to_app(msg.app,{
             type:"START_SUB_APP_RESPONSE",
+            id: "msg_"+Math.floor((Math.random()*10000)),
+            response_to:msg.id,
             target:msg.app,
             appid:app.id,
         })

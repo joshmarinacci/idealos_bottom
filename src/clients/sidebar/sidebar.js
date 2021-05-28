@@ -75,54 +75,46 @@ async function init() {
             // new NotificationsPanel(),
         ]})
 
-    let y = 0
     let widgets = {}
-    app.on("START_SUB_APP_RESPONSE",(msg)=>{
-        console.log("response",msg.payload)
-        widgets[msg.payload.appid] = y
-        y+= 30
-    })
 
     app.on('MAKE_DrawRect_name',(msg)=>{
-        console.log("forwarded rect",msg.payload.app)
         let m = msg.payload
         let offset = widgets[m.app]
-        console.log(offset)
         app.send({
             type:m.type,
             window:win._winid,
             color:m.color,
-            x:m.x,
-            y:m.y+offset,
+            x:m.x+offset.x,
+            y:m.y+offset.y,
             width:m.width,
             height:m.height,
         })
     })
     app.on('MAKE_DrawImage_name',(msg)=>{
-        console.log("forwarded image",msg.payload)
         let m = msg.payload
         let offset = widgets[m.app]
-        console.log(offset)
         app.send({
             type:m.type,
             window:win._winid,
             color:m.color,
-            x:m.x,
-            y:m.y+offset,
+            x:m.x+offset.x,
+            y:m.y+offset.y,
             width:m.width,
             height:m.height,
             pixels:m.pixels,
         })
     })
 
-    await app.send({
+    let weather_response = await app.send_and_wait_for_response({
         type:"START_SUB_APP",
-        entrypoint:"src/clients/sidebar/weather.js"
+        entrypoint:"src/clients/sidebar/weather.js",
     })
-    await app.send({
+    widgets[weather_response.appid] = {x:0, y:1}
+    let clock_response = await app.send_and_wait_for_response({
         type:"START_SUB_APP",
-        entrypoint:"src/clients/sidebar/clock.js"
+        entrypoint:"src/clients/sidebar/clock.js",
     })
+    widgets[clock_response.appid] = {x:0, y:15}
 }
 app.on('start',()=>init())
 
