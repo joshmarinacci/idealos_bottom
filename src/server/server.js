@@ -1,16 +1,11 @@
 import WS from "ws"
 import {WindowTracker} from './windows.js'
 import {AppTracker} from './apps.js'
-import {ResourceManager} from './resources.js'
-import {CLIENT_TYPES, ConnectionManager} from "./connections.js"
+import {ConnectionManager} from "./connections.js"
 import {EventRouter} from "./router.js"
 
 import {sleep} from '../common.js'
-import {RESOURCES} from "idealos_schemas/js/resources.js"
-import {INPUT} from "idealos_schemas/js/input.js"
-import {DEBUG} from "idealos_schemas/js/debug.js"
 import {GENERAL} from "idealos_schemas/js/general.js"
-import {MENUS} from 'idealos_schemas/js/menus.js'
 import Ajv from 'ajv'
 import fs from 'fs'
 import path from 'path'
@@ -33,6 +28,14 @@ export class CentralServer {
             this.uitheme = this.themes['light']
         }
 
+        this.screens = [
+            {
+                width:250,
+                height:250,
+            }
+        ]
+        if(opts.screens) this.screens = opts.screens
+
         this.cons = new ConnectionManager()
 
         let sender = (msg) => {
@@ -40,7 +43,7 @@ export class CentralServer {
             this.cons.forward_to_screen(msg)
         }
         let log = (...args) => this.log(...args)
-        this.wids = new WindowTracker(sender, this.cons)
+        this.wids = new WindowTracker(sender, this.cons,this)
         this.at = new AppTracker(this.hostname, this.websocket_port,
             log, this.wids, sender, this.cons)
         this.router = new EventRouter(this.cons, this.wids, this.at, this)

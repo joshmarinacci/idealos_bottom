@@ -7,6 +7,7 @@ export const CLIENT_TYPES = {
     MENUBAR:'MENUBAR',
     DOCK:'DOCK',
     APP:'APP',
+    SIDEBAR:'SIDEBAR',
 }
 
 

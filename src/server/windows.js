@@ -4,14 +4,17 @@ export const WINDOW_TYPES = {
     MENUBAR:'menubar',
     DOCK:'dock',
     PLAIN:'plain',
+    SIDEBAR:'sidebar',
+    DEBUG:'debug',
 }
 
 export class WindowTracker {
-    constructor(sender, cons) {
+    constructor(sender, cons, server) {
         this.cons = cons
         this.windows = {}
         this.active_window = null
         this.send = sender
+        this.server = server
     }
     find(pt) {
         return Object.values(this.windows).find(win => {
@@ -109,6 +112,14 @@ export class WindowTracker {
         if(window_type === WINDOW_TYPES.DOCK) {
             x = 0
             y = 20
+        }
+        if(window_type === WINDOW_TYPES.SIDEBAR) {
+            x = this.server.screens[0].width - width
+            y = 20
+        }
+        if(window_type === WINDOW_TYPES.DEBUG) {
+            x = 20
+            y = this.server.screens[0].height - height
         }
         this.add_window(win_id, {
             type:'root',

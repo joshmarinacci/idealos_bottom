@@ -93,7 +93,10 @@ class NotificationsPanel extends Container {
 
 async function init() {
     await app.a_init()
-    let win = await app.open_window(50,50,80,200,'plain')
+    await app.send({
+        type:"SIDEBAR_START",
+    })
+    let win = await app.open_window(50,50,80,200,'sidebar')
     win.root = new VBox({width:80, height:300, children:[
             new TimeDatePanel({
                 width:80,

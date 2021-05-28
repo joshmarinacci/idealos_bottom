@@ -11,7 +11,13 @@ async function doit() {
         themes:{
             'light':uitheme_light,
             'dark':uitheme_dark,
-        }
+        },
+        screens:[
+            {
+                width:250,
+                height:250,
+            }
+        ]
     })
 
     await server.start()
