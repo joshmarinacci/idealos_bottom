@@ -185,7 +185,7 @@ class PixelFontImpl {
 
 export const PixelFont = {
     load: async function (image_source,metrics_source) {
-        console.log("loading font",image_source,metrics_source)
+        // console.log("loading font",image_source,metrics_source)
         let img = await PI.decodePNGFromStream(fs.createReadStream(image_source))
         let metrics_buffer = await fs.promises.readFile(metrics_source)
         let metrics = JSON.parse(metrics_buffer.toString())

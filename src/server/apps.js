@@ -16,6 +16,7 @@ export class AppTracker {
 
     create_app(opts) {
         let app = {
+            type:'plain',
             name:opts.name,
             path:opts.entrypoint,
             args:opts.args,
@@ -99,5 +100,23 @@ export class AppTracker {
 
     restart(target) {
         this.log("restarting not supported yet")
+    }
+
+    start_sub_app(msg,cons) {
+        // console.log('starting a sub app',msg)
+        let app = this.create_app({
+            name:"widgetname",
+            entrypoint:msg.entrypoint,
+            args:[],
+        })
+        app.type = "sub"
+        app.owner = msg.app
+        // console.log("app is",app)
+        this.start(app.id)
+        cons.forward_to_app(msg.app,{
+            type:"START_SUB_APP_RESPONSE",
+            target:msg.app,
+            appid:app.id,
+        })
     }
 }

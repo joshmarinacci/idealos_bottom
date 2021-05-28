@@ -22,6 +22,7 @@ export class EventRouter {
 
         if(msg.type === "LIST_ALL_APPS") return handle_list_all_apps(msg,this.cons,this.server.apps)
         if(msg.type === "DEBUG_LIST") return this.cons.add_connection(CLIENT_TYPES.DEBUG,msg.sender,ws)
+        if(msg.type === "START_SUB_APP") return this.apptracker.start_sub_app(msg,this.cons)
         if(msg.type === DEBUG.TYPE_StartAppByName) return this.apptracker.start_app_by_name(msg.name);
         if(msg.type === DEBUG.TYPE_ListAppsRequest) {
             return this.cons.forward_to_debug(DEBUG.MAKE_ListAppsResponse({
@@ -50,8 +51,22 @@ export class EventRouter {
 
 
         if(msg.type === GRAPHICS.TYPE_DrawPixel) return this.cons.forward_to_screen(msg)
-        if(msg.type === GRAPHICS.TYPE_DrawRect) return this.cons.forward_to_screen(msg)
-        if(msg.type === GRAPHICS.TYPE_DrawImage) return this.cons.forward_to_screen(msg)
+        if(msg.type === GRAPHICS.TYPE_DrawRect) {
+            let app = this.apptracker.get_app_by_id(msg.app)
+            if(app.type === 'sub') {
+                return this.cons.forward_to_parent_app(msg,app,this.apptracker.get_app_by_id(app.owner))
+            } else {
+                return this.cons.forward_to_screen(msg)
+            }
+        }
+        if(msg.type === GRAPHICS.TYPE_DrawImage) {
+            let app = this.apptracker.get_app_by_id(msg.app)
+            if(app.type === 'sub') {
+                return this.cons.forward_to_parent_app(msg,app,this.apptracker.get_app_by_id(app.owner))
+            } else {
+                return this.cons.forward_to_screen(msg)
+            }
+        }
 
 
         if(msg.type === INPUT.TYPE_MouseDown) return this.cons.forward_to_app(msg.app,msg)
@@ -179,7 +194,7 @@ function set_theme(msg,cons,server) {
     }
 }
 function get_control_theme(msg, cons, server) {
-    console.log("doing get control theme",msg, server.uitheme)
+    // console.log("doing get control theme",msg, server.uitheme)
     if(!server.uitheme) {
         //if no theme loaded, use a default
         let msg2 = make_response(msg,{

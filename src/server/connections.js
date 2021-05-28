@@ -27,6 +27,9 @@ export class ConnectionManager {
             cl.send(JSON.stringify(msg))
         })
     }
+    forward_to_parent_app(msg,app,parent) {
+        this.forward_to_app(parent.id,msg)
+    }
 
 
     forward_to_debug(msg) {

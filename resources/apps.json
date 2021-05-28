@@ -3,6 +3,7 @@
     {
       "name": "menbuar",
       "entrypoint": "src/clients/menubar.js",
+      "disabled": false,
       "groups": [
         "secure",
         "menubar"

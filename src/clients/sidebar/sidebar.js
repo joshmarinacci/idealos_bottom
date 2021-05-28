@@ -6,29 +6,12 @@
 * notifications
  */
 
-
 import {App, Component} from '../toolkit/guitoolkit.js'
 import {VBox} from '../toolkit/panels.js'
 import {Container} from '../toolkit/guitoolkit.js'
 
-
 let app = new App(process.argv)
 
-class TimeDatePanel extends Container {
-    constructor(opts) {
-        super(opts);
-    }
-
-    redraw(gfx) {
-        super.redraw(gfx)
-        let ts = new Date()
-        // time pm date
-        gfx.rect(this.x,this.y,this.width,this.height,'black')
-        gfx.rect(this.x+1,this.y+1,this.width-2,this.height-2,'white')
-        gfx.text(this.x+2, this.y+0, ts.toLocaleTimeString(), 'black')
-        gfx.text(this.x+2, this.y+9, ts.toLocaleDateString(), 'black')
-    }
-}
 
 class MusicPlayerPanel extends Component {
     constructor(opts) {
@@ -44,7 +27,7 @@ class MusicPlayerPanel extends Component {
     }
 }
 
-class CPUInfoPanel extends Container {
+class CPUInfoPanel extends Component {
     constructor(opts) {
         super(opts);
         this.data = []
@@ -55,7 +38,6 @@ class CPUInfoPanel extends Container {
         this.height = 15
     }
     redraw(gfx) {
-        super.redraw(gfx)
         gfx.rect(this.x,this.y,this.width,this.height,'black')
         gfx.rect(this.x+1,this.y,this.width-2,this.height-1,'white')
         let bg = 'black'
@@ -72,23 +54,7 @@ class CPUInfoPanel extends Container {
     }
 }
 
-class WeatherPanel extends Component {
-    constructor(opts) {
-        super(opts);
-    }
-    redraw(gfx) {
-        //fill white
-        gfx.rect(this.x,this.y,this.width,this.height,'black')
-        gfx.rect(this.x+1,this.y,this.width-2,this.height-1,'white')
-        //draw icon
-        gfx.rect(this.x+2,this.y+2,10,10,'black')
-        //show temp
-        gfx.text(this.x+20, this.y, '45o','black')
-    }
-}
-
-class NotificationsPanel extends Container {
-
+class NotificationsPanel extends Component {
 }
 
 async function init() {
@@ -98,24 +64,65 @@ async function init() {
     })
     let win = await app.open_window(50,50,80,200,'sidebar')
     win.root = new VBox({width:80, height:300, children:[
-            new TimeDatePanel({
-                width:80,
-                height:22,
-            }),
-            new MusicPlayerPanel({
-                width:80,
-                height:30,
-            }),
-            new CPUInfoPanel({
-                width:80,
-                height:15,
-            }),
-            new WeatherPanel({
-                width:80,
-                height:15,
-            }),
+            // new MusicPlayerPanel({
+            //     width:80,
+            //     height:30,
+            // }),
+            // new CPUInfoPanel({
+            //     width:80,
+            //     height:15,
+            // }),
             // new NotificationsPanel(),
         ]})
+
+    let y = 0
+    let widgets = {}
+    app.on("START_SUB_APP_RESPONSE",(msg)=>{
+        console.log("response",msg.payload)
+        widgets[msg.payload.appid] = y
+        y+= 30
+    })
+
+    app.on('MAKE_DrawRect_name',(msg)=>{
+        console.log("forwarded rect",msg.payload.app)
+        let m = msg.payload
+        let offset = widgets[m.app]
+        console.log(offset)
+        app.send({
+            type:m.type,
+            window:win._winid,
+            color:m.color,
+            x:m.x,
+            y:m.y+offset,
+            width:m.width,
+            height:m.height,
+        })
+    })
+    app.on('MAKE_DrawImage_name',(msg)=>{
+        console.log("forwarded image",msg.payload)
+        let m = msg.payload
+        let offset = widgets[m.app]
+        console.log(offset)
+        app.send({
+            type:m.type,
+            window:win._winid,
+            color:m.color,
+            x:m.x,
+            y:m.y+offset,
+            width:m.width,
+            height:m.height,
+            pixels:m.pixels,
+        })
+    })
+
+    await app.send({
+        type:"START_SUB_APP",
+        entrypoint:"src/clients/sidebar/weather.js"
+    })
+    await app.send({
+        type:"START_SUB_APP",
+        entrypoint:"src/clients/sidebar/clock.js"
+    })
 }
 app.on('start',()=>init())
 
