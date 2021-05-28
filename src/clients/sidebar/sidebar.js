@@ -14,65 +14,14 @@ import {WINDOWS} from 'idealos_schemas/js/windows.js'
 let app = new App(process.argv)
 
 
-class MusicPlayerPanel extends Component {
-    constructor(opts) {
-        super(opts);
-    }
-    redraw(gfx) {
-        gfx.rect(this.x,this.y,this.width,this.height,'black')
-        gfx.rect(this.x+1,this.y+0,5,this.height-1,'white')
-        gfx.rect(this.x+2,this.y+1,3,10,'black')
-
-        gfx.text(this.x+10,this.y+1,'Hey Jude','white')
-        gfx.text(this.x+10,this.y+15,'Past Masters - The Beatles','white')
-    }
-}
-
-class CPUInfoPanel extends Component {
-    constructor(opts) {
-        super(opts);
-        this.data = []
-        setInterval(()=> this.updateTick(),1000)
-    }
-    layout(gfx) {
-        this.width = 80
-        this.height = 15
-    }
-    redraw(gfx) {
-        gfx.rect(this.x,this.y,this.width,this.height,'black')
-        gfx.rect(this.x+1,this.y,this.width-2,this.height-1,'white')
-        let bg = 'black'
-        this.data.forEach((v,i)=>{
-            let vv = Math.floor(v*(this.height-2))
-            gfx.rect(this.x+i*2, this.y+this.height-vv-2, 1, vv, bg)
-        })
-    }
-
-    updateTick() {
-        this.data.push(Math.random())
-        if(this.data.length > 40) this.data.shift()
-        this.repaint()
-    }
-}
-
 class NotificationsPanel extends Component {
 }
 
 async function init() {
     await app.a_init()
-    await app.send({
-        type:"SIDEBAR_START",
-    })
-    let win = await app.open_window(50,50,80,200,'sidebar')
-    win.root = new VBox({width:80, height:300, children:[
-            new MusicPlayerPanel({
-                width:80,
-                height:30,
-            }),
-            new CPUInfoPanel({
-                width:80,
-                height:15,
-            }),
+    await app.send({ type:"SIDEBAR_START", })
+    let win = await app.open_window(50,50,82,200,'sidebar')
+    win.root = new VBox({width:82, height:300, children:[
             // new NotificationsPanel(),
         ]})
 
@@ -106,36 +55,29 @@ async function init() {
         })
     })
 
-    let weather_response = await app.send_and_wait_for_response({
-        type:"START_SUB_APP",
-        entrypoint:"src/clients/sidebar/weather.js",
-    })
-    widgets[weather_response.appid] = {
-        appid:weather_response.appid,
-        windows:[],
-        x:0, y:45
+    async function start_widget(opts) {
+        let resp = await app.send_and_wait_for_response({
+            type:"START_SUB_APP",
+            entrypoint:opts.entrypoint
+        })
+        widgets[resp.appid] = {
+            appid:resp.appid,
+            windows:[],
+            x:opts.x,y:opts.y,
+        }
     }
-    let clock_response = await app.send_and_wait_for_response({
-        type:"START_SUB_APP",
-        entrypoint:"src/clients/sidebar/clock.js",
-    })
-    widgets[clock_response.appid] = {
-        appid:clock_response.appid,
-        windows:[],
-        x:0, y:60
-    }
+
+    await start_widget({entrypoint:"src/clients/sidebar/clock.js", x:1, y:0})
+    await start_widget({entrypoint:"src/clients/sidebar/weather.js", x:1, y:23})
+    await start_widget({entrypoint:"src/clients/sidebar/cpuinfo.js", x:1, y:39})
+    await start_widget({entrypoint:"src/clients/sidebar/music.js", x:1, y:55})
 
     app.on("SUB_APP_WINDOW_OPEN",(msg)=>{
         let m = msg.payload
-        // app.log("sub app opened a window",m)
         widgets[m.app].windows.push(m.window)
-        // app.log("app is",widgets[m.app])
     })
     app.on(WINDOWS.TYPE_window_refresh_request,()=>{
-        // app.log("redrawing the whole window!")
-        //send message to redraw the sub windows
         Object.entries(widgets).forEach(([appid,info])=>{
-            // console.log("info is",info)
             info.windows.forEach(win => {
                 app.send(WINDOWS.MAKE_window_refresh_request({
                     target:appid,

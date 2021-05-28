@@ -6,8 +6,7 @@ class WeatherPanel extends Container {
     }
     redraw(gfx) {
         //fill white
-        gfx.rect(this.x,this.y,this.width,this.height,'black')
-        gfx.rect(this.x+1,this.y,this.width-2,this.height-1,'white')
+        gfx.rect(this.x,this.y,this.width,this.height,'white')
         //draw icon
         gfx.rect(this.x+2,this.y+2,10,10,'black')
         //show temp

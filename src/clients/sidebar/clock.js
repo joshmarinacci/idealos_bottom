@@ -8,8 +8,7 @@ class TimeDatePanel extends Container {
     redraw(gfx) {
         let ts = new Date()
         // time pm date
-        gfx.rect(this.x,this.y,this.width,this.height,'black')
-        gfx.rect(this.x+1,this.y+1,this.width-2,this.height-2,'white')
+        gfx.rect(this.x,this.y,this.width,this.height,'white')
         gfx.text(this.x+2, this.y+0, ts.toLocaleTimeString(), 'black')
         gfx.text(this.x+2, this.y+9, ts.toLocaleDateString(), 'black')
     }
