@@ -155,6 +155,7 @@ export class App {
     }
     send(msg) {
         msg.app = this._appid
+        // this.log("app sending out",msg)
         this.ws.send(JSON.stringify(msg))
     }
     wait_for_response(id) {
@@ -286,7 +287,7 @@ export class Window {
         })
     }
     repaint() {
-        console.log("repainting window", this.x,this.y,this.width,this.height)
+        // console.log("repainting window", this.x,this.y,this.width,this.height)
         this.redraw()
     }
     redraw() {

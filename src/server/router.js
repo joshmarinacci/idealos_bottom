@@ -33,7 +33,7 @@ export class EventRouter {
         if(msg.type === DEBUG.TYPE_StopApp)  return this.apptracker.stop(msg.target)
         if(msg.type === DEBUG.TYPE_StartApp) return this.apptracker.start(msg.target)
 
-        if(msg.type === WINDOWS.TYPE_WindowOpen) return handle_open_window_message(ws,msg,this.cons,this.wids)
+        if(msg.type === WINDOWS.TYPE_WindowOpen) return handle_open_window_message(ws,msg,this.cons,this.wids,this.apptracker)
         if(msg.type === WINDOWS.TYPE_WindowOpenResponse) return this.cons.forward_to_target(msg)
         if(msg.type === WINDOWS.TYPE_create_child_window)  return handle_open_child_window_message(msg,this.cons,this.wids)
         if(msg.type === WINDOWS.TYPE_close_child_window)   return handle_close_child_window_message(msg,this.cons,this.wids)
@@ -90,9 +90,19 @@ export class EventRouter {
 
 function do_nothing(msg) {}
 
-function handle_open_window_message(ws,msg,cons,wids) {
+function handle_open_window_message(ws,msg,cons,wids,apptracker) {
     if(!msg.sender) return log("open window message with no sender")
     ws.target = msg.sender
+    // console.log("app opening window is",msg.app)
+    if(apptracker.is_sub_app(msg.app)) {
+        // console.log("its embedded. skipping the normal flow")
+        cons.add_app_connection(msg.sender,ws)
+        let resp = WINDOWS.MAKE_WindowOpenResponse({target:msg.sender, window:"som_win_id"+Math.random()})
+        cons.forward_to_app(msg.sender,resp)
+        let parent = apptracker.get_parent_of_sub_app(msg.app)
+        cons.forward_to_app(parent.id,{type:"SUB_APP_WINDOW_OPEN",app:msg.app,window:resp.window})
+        return
+    }
     let win_id = wids.make_root_window(msg.window_type,msg.width,msg.height,msg.sender)
     if(msg.window_type === WINDOW_TYPES.MENUBAR) {
         cons.add_connection(CLIENT_TYPES.MENUBAR,msg.sender,ws)

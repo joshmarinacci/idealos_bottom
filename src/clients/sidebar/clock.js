@@ -22,6 +22,9 @@ async function init() {
     let win = await app.open_window(0,0,80,22,'plain')
     win.root = new TimeDatePanel({ width:80, height:22, })
     win.repaint()
+    setInterval(()=>{
+        win.repaint()
+    },60*1000)
     console.log("initted clock app")
 }
 app.on('start',()=>init())

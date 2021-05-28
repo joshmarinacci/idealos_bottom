@@ -102,6 +102,17 @@ export class AppTracker {
         this.log("restarting not supported yet")
     }
 
+    is_sub_app(id) {
+        let app = this.get_app_by_id(id)
+        if(app && app.type === 'sub') return true
+        return false
+    }
+
+    get_parent_of_sub_app(id) {
+        let app = this.get_app_by_id(id)
+        let owner = this.get_app_by_id(app.owner)
+        return owner
+    }
     start_sub_app(msg,cons) {
         // console.log('starting a sub app',msg)
         let app = this.create_app({

@@ -21,6 +21,7 @@
     {
       "name": "dock",
       "entrypoint": "src/clients/dock.js",
+      "disabled": false,
       "groups": [
         "dock,",
         "secure"
@@ -32,7 +33,7 @@
       "name": "debug",
       "title": "Debug App",
       "entrypoint": "src/clients/debug.js",
-      "autostart": true
+      "autostart": false
     },
     {
       "name": "fractal",

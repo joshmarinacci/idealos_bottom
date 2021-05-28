@@ -9,6 +9,7 @@
 import {App, Component} from '../toolkit/guitoolkit.js'
 import {VBox} from '../toolkit/panels.js'
 import {Container} from '../toolkit/guitoolkit.js'
+import {WINDOWS} from 'idealos_schemas/js/windows.js'
 
 let app = new App(process.argv)
 
@@ -64,14 +65,14 @@ async function init() {
     })
     let win = await app.open_window(50,50,80,200,'sidebar')
     win.root = new VBox({width:80, height:300, children:[
-            // new MusicPlayerPanel({
-            //     width:80,
-            //     height:30,
-            // }),
-            // new CPUInfoPanel({
-            //     width:80,
-            //     height:15,
-            // }),
+            new MusicPlayerPanel({
+                width:80,
+                height:30,
+            }),
+            new CPUInfoPanel({
+                width:80,
+                height:15,
+            }),
             // new NotificationsPanel(),
         ]})
 
@@ -109,12 +110,40 @@ async function init() {
         type:"START_SUB_APP",
         entrypoint:"src/clients/sidebar/weather.js",
     })
-    widgets[weather_response.appid] = {x:0, y:1}
+    widgets[weather_response.appid] = {
+        appid:weather_response.appid,
+        windows:[],
+        x:0, y:45
+    }
     let clock_response = await app.send_and_wait_for_response({
         type:"START_SUB_APP",
         entrypoint:"src/clients/sidebar/clock.js",
     })
-    widgets[clock_response.appid] = {x:0, y:15}
+    widgets[clock_response.appid] = {
+        appid:clock_response.appid,
+        windows:[],
+        x:0, y:60
+    }
+
+    app.on("SUB_APP_WINDOW_OPEN",(msg)=>{
+        let m = msg.payload
+        // app.log("sub app opened a window",m)
+        widgets[m.app].windows.push(m.window)
+        // app.log("app is",widgets[m.app])
+    })
+    app.on(WINDOWS.TYPE_window_refresh_request,()=>{
+        // app.log("redrawing the whole window!")
+        //send message to redraw the sub windows
+        Object.entries(widgets).forEach(([appid,info])=>{
+            // console.log("info is",info)
+            info.windows.forEach(win => {
+                app.send(WINDOWS.MAKE_window_refresh_request({
+                    target:appid,
+                    window:win,
+                }))
+            })
+        })
+    })
 }
 app.on('start',()=>init())
 
