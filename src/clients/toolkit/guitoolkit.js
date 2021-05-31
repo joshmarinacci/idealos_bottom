@@ -67,9 +67,10 @@ class JoshFont {
             let cp = text.codePointAt(i)
             let g = this.find_glyph_by_id(cp)
             let bitmap = this.get_bitmap_for_glyph(g)
+            // console.log(i,text,text[i],cp)
             app.send(GRAPHICS.MAKE_DrawImage({
-                x:x+dx,
-                y:y,
+                x:x+dx-g.left,
+                y:y-g.baseline+g.height,
                 width:g.width,
                 height:g.height,
                 pixels:bitmap,
