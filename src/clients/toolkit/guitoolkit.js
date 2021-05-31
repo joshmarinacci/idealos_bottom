@@ -60,27 +60,21 @@ class JoshFont {
     constructor(info) {
         this.info = info
     }
+
     draw_text(app,x,y,text,color,win) {
-        console.log("drawing text",text)
         let dx = 0
         for(let i=0; i<text.length; i++) {
             let cp = text.codePointAt(i)
-            // console.log(i,text[i],cp)
             let g = this.find_glyph_by_id(cp)
-            for (let i = g.left; i < g.width-g.right; i++) {
-                for (let j = 0; j < g.height; j++) {
-                    let pix = g.data[i + j * g.width]
-                    if (pix > 0) {
-                        // fillRect(i, j, 1, 1)
-                        app.send(GRAPHICS.MAKE_DrawPixel({
-                            x:x+i+dx,
-                            y:y+j,
-                            window:win._winid,
-                            color:color,
-                        }))
-                    }
-                }
-            }
+            let bitmap = this.get_bitmap_for_glyph(g)
+            app.send(GRAPHICS.MAKE_DrawImage({
+                x:x+dx,
+                y:y,
+                width:g.width,
+                height:g.height,
+                pixels:bitmap,
+                window:win._winid,
+            }))
             dx += (g.width-g.left-g.right)
         }
     }
@@ -105,6 +99,28 @@ class JoshFont {
         // console.log("looking up glpyh for ",id)
         // console.log(this.info.glyphs)
         return this.info.glyphs.find(g => g.id === id)
+    }
+
+    get_bitmap_for_glyph(a_glyph) {
+        if(a_glyph.image) return a_glyph.image
+        // console.log("generating image for ",a_glyph.name)
+        a_glyph.image = new Array(a_glyph.width*a_glyph.height*4)
+        a_glyph.image.fill(0)
+        for(let i=0; i<a_glyph.width; i++) {
+            for(let j=0; j<a_glyph.height; j++) {
+                let c = a_glyph.data[j*a_glyph.width+i]
+                let n = (j*a_glyph.width + i)*4
+                // a_glyph.image[n + 0] = 0
+                // a_glyph.image[n + 1] = 0
+                // a_glyph.image[n + 2] = 0
+                if(c) {
+                    a_glyph.image[n + 3] = 255
+                } else {
+                    a_glyph.image[n + 3] = 0
+                }
+            }
+        }
+        return a_glyph.image
     }
 }
 
