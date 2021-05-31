@@ -1,5 +1,8 @@
 import {App, Component, Container} from '../toolkit/guitoolkit.js'
-
+const WEATHER_ICONS = {
+    SUNNY:String.fromCodePoint(3),
+    RAIN:String.fromCodePoint(4)
+}
 class WeatherPanel extends Container {
     constructor(opts) {
         super(opts);
@@ -8,7 +11,8 @@ class WeatherPanel extends Container {
         //fill white
         gfx.rect(this.x,this.y,this.width,this.height,'white')
         //draw icon
-        gfx.rect(this.x+2,this.y+2,10,10,'black')
+        // gfx.rect(this.x+2,this.y+2,10,10,'black')
+        gfx.text(this.x+2, this.y+2,WEATHER_ICONS.RAIN,'black')
         //show temp
         gfx.text(this.x+20, this.y, '45o','black')
     }

@@ -1,16 +1,19 @@
 import {App, Component, Container} from '../toolkit/guitoolkit.js'
 
+const MUSIC_NOTE_ICON = String.fromCodePoint(13)
+
 class MusicPlayerPanel extends Component {
     constructor(opts) {
         super(opts);
     }
     redraw(gfx) {
-        gfx.rect(this.x,this.y,this.width,this.height,'black')
+        gfx.rect(this.x,this.y,this.width,this.height,'white')
         gfx.rect(this.x+1,this.y+0,5,this.height-1,'white')
         gfx.rect(this.x+2,this.y+1,3,10,'black')
 
         gfx.text(this.x+10,this.y+1,'Hey Jude','white')
         gfx.text(this.x+10,this.y+15,'Past Masters - The Beatles','white')
+        gfx.text(this.x+60,this.y+1,MUSIC_NOTE_ICON,'black')
     }
 }
 
