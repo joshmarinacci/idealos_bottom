@@ -50,8 +50,11 @@ export class EventRouter {
         if(msg.type === MENUS.TYPE_SetMenubar) return this.cons.forward_to_menubar(msg)
 
 
-        if(msg.type === GRAPHICS.TYPE_DrawPixel) return this.cons.forward_to_screen(msg)
-        if(msg.type === GRAPHICS.TYPE_DrawRect) {
+        // if(msg.type === GRAPHICS.TYPE_DrawPixel) return this.cons.forward_to_screen(msg)
+        if(msg.type === GRAPHICS.TYPE_DrawRect
+            || msg.type === GRAPHICS.TYPE_DrawPixel
+            || msg.type === GRAPHICS.TYPE_DrawImage
+        ) {
             let app = this.apptracker.get_app_by_id(msg.app)
             if(app.type === 'sub') {
                 return this.cons.forward_to_parent_app(msg,app,this.apptracker.get_app_by_id(app.owner))
@@ -59,15 +62,6 @@ export class EventRouter {
                 return this.cons.forward_to_screen(msg)
             }
         }
-        if(msg.type === GRAPHICS.TYPE_DrawImage) {
-            let app = this.apptracker.get_app_by_id(msg.app)
-            if(app.type === 'sub') {
-                return this.cons.forward_to_parent_app(msg,app,this.apptracker.get_app_by_id(app.owner))
-            } else {
-                return this.cons.forward_to_screen(msg)
-            }
-        }
-
 
         if(msg.type === INPUT.TYPE_MouseDown) return this.cons.forward_to_app(msg.app,msg)
         if(msg.type === INPUT.TYPE_MouseMove) return this.cons.forward_to_app(msg.app,msg)

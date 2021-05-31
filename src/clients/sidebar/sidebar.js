@@ -10,6 +10,7 @@ import {App, Component} from '../toolkit/guitoolkit.js'
 import {VBox} from '../toolkit/panels.js'
 import {Container} from '../toolkit/guitoolkit.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
+import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 
 let app = new App(process.argv)
 
@@ -40,7 +41,18 @@ async function init() {
             height:m.height,
         })
     })
-    app.on('MAKE_DrawImage_name',(msg)=>{
+    app.on(GRAPHICS.TYPE_DrawPixel,(msg)=>{
+        let m = msg.payload
+        let offset = widgets[m.app]
+        app.send({
+            type:m.type,
+            window:win._winid,
+            color:m.color,
+            x:m.x+offset.x,
+            y:m.y+offset.y,
+        })
+    })
+    app.on(GRAPHICS.TYPE_DrawImage,(msg)=>{
         let m = msg.payload
         let offset = widgets[m.app]
         app.send({

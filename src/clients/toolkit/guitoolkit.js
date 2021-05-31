@@ -4,6 +4,7 @@ import {INPUT} from 'idealos_schemas/js/input.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {default as WebSocket} from 'ws'
 import {PixelFont} from '../app_utils.js'
+import fs from 'fs'
 
 export class Point {
     constructor(x,y) {
@@ -54,6 +55,66 @@ export class Insets {
     }
 }
 
+
+class JoshFont {
+    constructor(info) {
+        this.info = info
+    }
+    draw_text(app,x,y,text,color,win) {
+        console.log("drawing text",text)
+        let dx = 0
+        for(let i=0; i<text.length; i++) {
+            let cp = text.codePointAt(i)
+            // console.log(i,text[i],cp)
+            let g = this.find_glyph_by_id(cp)
+            for (let i = g.left; i < g.width-g.right; i++) {
+                for (let j = 0; j < g.height; j++) {
+                    let pix = g.data[i + j * g.width]
+                    if (pix > 0) {
+                        // fillRect(i, j, 1, 1)
+                        app.send(GRAPHICS.MAKE_DrawPixel({
+                            x:x+i+dx,
+                            y:y+j,
+                            window:win._winid,
+                            color:color,
+                        }))
+                    }
+                }
+            }
+            dx += (g.width-g.left-g.right)
+        }
+    }
+    measure_text(app,text) {
+        // console.log("measuring text",text)
+        let dx = 0
+        let my = 0
+        for(let i=0; i<text.length; i++) {
+            let cp = text.codePointAt(i)
+            // console.log(i,text,text[i],cp)
+            let g = this.find_glyph_by_id(cp)
+            dx += g.width - g.left - g.right
+            my = Math.max(my,g.height)
+        }
+        return {
+            width:dx,
+            height:my,
+        }
+    }
+
+    find_glyph_by_id(id) {
+        // console.log("looking up glpyh for ",id)
+        // console.log(this.info.glyphs)
+        return this.info.glyphs.find(g => g.id === id)
+    }
+}
+
+async function load_josh_font(font_path) {
+    console.log("loading the font from",font_path)
+    let font_info = JSON.parse((await fs.promises.readFile(font_path)).toString())
+    // console.log("font info",font_info)
+    return new JoshFont(font_info)
+}
+
 export class App {
     constructor(argv) {
         this._appid = argv[3]
@@ -95,8 +156,9 @@ export class App {
         },500)
     }
     async a_init() {
-        this._font = await PixelFont.load("src/clients/fonts/idealos_font@1.png", "src/clients/fonts/idealos_font@1.json")
-        this._symbol_font = await PixelFont.load("src/clients/fonts/symbol_font@1.png","src/clients/fonts/symbol_font@1.json")
+        // this._font = await PixelFont.load("src/clients/fonts/idealos_font@1.png", "src/clients/fonts/idealos_font@1.json")
+        // this._symbol_font = await PixelFont.load("src/clients/fonts/symbol_font@1.png","src/clients/fonts/symbol_font@1.json")
+        this._font = await load_josh_font("resources/fonts/standard.font.json")
         /*
         this.on(RESOURCES.TYPE_ResourceChanged, (e)=>{
             if(e.payload.resource === 'theme') {
