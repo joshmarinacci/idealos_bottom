@@ -59,11 +59,22 @@ async function init() {
 }
 
 app.on('start',()=>init())
+
+function icon_for_app(name) {
+    console.log("checking for icon for name",name)
+    if(name === "debug") return String.fromCodePoint(12)
+    if(name === "fractal") return String.fromCodePoint(2)
+    if(name === "guitest") return String.fromCodePoint(11)
+    if(name === "pixelclock") return String.fromCodePoint(10)
+    return String.fromCodePoint(1)
+}
+
 app.on('LIST_ALL_APPS_RESPONSE',(msg)=>{
     // console.log("============ got the list of apps",msg.payload.apps.user, wind)
     wind.root.children = msg.payload.apps.user.map(app => {
+        let icon = icon_for_app(app.name)
         return new IconButton({
-            text:'a',
+            text:icon,
             appname:app.name,
             font:wind.app._symbol_font
         })

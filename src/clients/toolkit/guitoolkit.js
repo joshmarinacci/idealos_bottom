@@ -175,7 +175,7 @@ export class App {
     async a_init() {
         // this._font = await PixelFont.load("src/clients/fonts/idealos_font@1.png", "src/clients/fonts/idealos_font@1.json")
         // this._symbol_font = await PixelFont.load("src/clients/fonts/symbol_font@1.png","src/clients/fonts/symbol_font@1.json")
-        this._font = await load_josh_font("resources/fonts/standard.font.json")
+        this._font = await load_josh_font("resources/fonts/font.json")
         /*
         this.on(RESOURCES.TYPE_ResourceChanged, (e)=>{
             if(e.payload.resource === 'theme') {
