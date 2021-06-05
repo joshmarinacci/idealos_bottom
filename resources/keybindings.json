@@ -1,0 +1,13 @@
+{
+  "bindings": [
+    {
+      "code": "ArrowRight",
+      "command": "navigate-cursor-right"
+    },
+    {
+      "code": "KeyF",
+      "control": true,
+      "command": "navigate-cursor-right"
+    }
+  ]
+}

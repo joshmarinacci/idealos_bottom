@@ -6,6 +6,7 @@ import {CLIENT_TYPES} from './connections.js'
 import {WINDOW_TYPES} from './windows.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
+import {INFO} from 'idealos_schemas/js/keyboard_map.js'
 
 export class EventRouter {
     constructor(cons,wids,apptracker,server) {
@@ -66,7 +67,7 @@ export class EventRouter {
         if(msg.type === INPUT.TYPE_MouseDown) return this.cons.forward_to_app(msg.app,msg)
         if(msg.type === INPUT.TYPE_MouseMove) return this.cons.forward_to_app(msg.app,msg)
         if(msg.type === INPUT.TYPE_MouseUp) return this.cons.forward_to_app(msg.app,msg)
-        if(msg.type === INPUT.TYPE_KeyboardDown) return this.cons.forward_to_app(msg.app,msg)
+        if(msg.type === INPUT.TYPE_KeyboardDown) return this.handle_keybindings(msg,this.server)
         if(msg.type === INPUT.TYPE_KeyboardUp) return this.cons.forward_to_app(msg.app,msg)
 
         if(msg.type === INPUT.TYPE_Action) return forward_to_focused(msg,this.cons,this.wids)
@@ -79,6 +80,23 @@ export class EventRouter {
 
     log(...args) {
         console.log('ROUTER',...args)
+    }
+
+    handle_keybindings(msg) {
+        console.log("keybindings",this.server.keybindings)
+        if(msg.type === INPUT.TYPE_KeyboardDown) {
+            console.log("msg is",msg)
+            let binding = this.server.keybindings.bindings.find(e => e.code === msg.code)
+            if(binding) {
+                console.log('doing binding',binding)
+                if(!binding.command) throw new Error("binding missing command " + JSON.stringify(binding) )
+                this.server.cons.forward_to_app(msg.app,INPUT.MAKE_Action({
+                    command:binding.command,
+                    app:msg.app,
+                }))
+            }
+        }
+        this.server.cons.forward_to_app(msg.app,msg)
     }
 }
 

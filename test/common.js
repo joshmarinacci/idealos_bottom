@@ -202,12 +202,13 @@ export class HeadlessDisplay extends BaseAppWrapper {
     async dispatch_keydown(keyname) {
     }
 
-    async dispatch_keydown_to_window(id, code, key) {
+    async dispatch_keydown_to_window(id, code, key, shift, control) {
         console.log('dispatching keydown to window', id, code, key)
         let win = this.windows.find(win => win.id === id)
         let msg = INPUT.MAKE_KeyboardDown({
             code, key,
-            shift: false,
+            shift: shift?shift:false,
+            control:control?control:false,
             app: win.owner,
             window: win.id
         })

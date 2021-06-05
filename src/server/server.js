@@ -51,6 +51,8 @@ export class CentralServer {
     }
 
     async start() {
+        this.keybindings = await load_keybindings("resources/keybindings.json")
+
         this._wsserver = new WS.Server({
             port: this.websocket_port
         })
@@ -170,4 +172,7 @@ export async function load_uitheme(json_path) {
     // let result = checker.validate(data, "uitheme.schema.json")
     // if (result === false) throw new Error(`error loading ${json_path} ${checker.errors}`)
     return data
+}
+export async function load_keybindings(json_path) {
+    return JSON.parse((await fs.promises.readFile(json_path)).toString())
 }
