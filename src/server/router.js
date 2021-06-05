@@ -205,7 +205,8 @@ function get_control_theme(msg, cons, server) {
             type:"get_control_theme_response",
             theme:{
                 "background-color": "white",
-                "color": "black"
+                "color": "black",
+                "border-color":'black'
             }
         })
         return cons.forward_to_app(msg.app, msg2)

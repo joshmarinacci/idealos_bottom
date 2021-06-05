@@ -1,8 +1,5 @@
 import {CentralServer, load_applist} from '../src/server/server.js'
 import assert from 'assert'
-import {TextBox} from '../src/clients/toolkit/text.js'
-import {WINDOWS} from 'idealos_schemas/js/windows.js'
-import {start_testguiapp} from './window.test.js'
 import {sleep} from '../src/common.js'
 
 describe("load apps list", function() {

@@ -1,6 +1,6 @@
 import {CentralServer, load_applist, load_uitheme} from '../src/server/server.js'
 import assert from 'assert'
-import {start_testapp, start_testguiapp} from './window.test.js'
+import {start_testapp, start_testguiapp} from './common.js'
 
 describe("load apps list", function() {
     it("loads the gui theme", async function() {
