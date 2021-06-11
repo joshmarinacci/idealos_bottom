@@ -47,6 +47,8 @@ describe("keybindings",function() {
             assert.deepStrictEqual(msg1, {
                     command:'navigate-cursor-right',
                     type: INPUT.TYPE_Action,
+                    window:open_msg.window,
+                    app:app.id,
                 }
             )
             await display.dispatch_keydown_to_window(open_msg.window,
@@ -56,6 +58,8 @@ describe("keybindings",function() {
             assert.deepStrictEqual(msg2, {
                     command:'navigate-cursor-right',
                     type: INPUT.TYPE_Action,
+                    window:open_msg.window,
+                    app:app.id,
                 }
             )
             await sleep(250)
