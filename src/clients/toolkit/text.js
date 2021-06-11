@@ -42,6 +42,10 @@ export class TextBox extends Component {
     input(e) {
         if( e.type === INPUT.TYPE_Action) {
             console.log("textbox got an action")
+            if(e.command === "navigate-cursor-right") {
+                this.cursor = Math.min(this.cursor + 1, this.text.length)
+                this.repaint()
+            }
         }
         if (e.type === INPUT.TYPE_MouseDown) {
             this.selected = true
