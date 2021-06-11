@@ -41,15 +41,14 @@ export class TextBox extends Component {
 
     input(e) {
         if( e.type === INPUT.TYPE_Action) {
-            console.log("textbox got an action")
             if(e.command === "navigate-cursor-right") {
                 this.cursor = Math.min(this.cursor + 1, this.text.length)
-                this.repaint()
+                this.repaint(e)
             }
         }
         if (e.type === INPUT.TYPE_MouseDown) {
             this.selected = true
-            this.repaint()
+            this.repaint(e)
             return
         }
         if (this.is_word_char(e)) {
@@ -61,16 +60,16 @@ export class TextBox extends Component {
                 let after = this.text.substring(this.cursor)
                 this.text = before.substring(0, before.length - 1) + after
                 this.cursor = Math.max(this.cursor - 1, 0)
-                this.repaint()
+                this.repaint(e)
             }
         }
         if (e.code === INFO.KEY_NAMES.ArrowLeft) {
             this.cursor = Math.max(this.cursor - 1, 0)
-            this.repaint()
+            this.repaint(e)
         }
         if (e.code === INFO.KEY_NAMES.ArrowRight) {
             this.cursor = Math.min(this.cursor + 1, this.text.length)
-            this.repaint()
+            this.repaint(e)
         }
         if (e.key === "Enter") {
             this.fire('action', {target: this})

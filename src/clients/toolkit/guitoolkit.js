@@ -237,6 +237,12 @@ export class App {
         // this.log("app sending out",msg)
         this.ws.send(JSON.stringify(msg))
     }
+    send_with_trigger(msg,trigger) {
+        if(trigger && trigger.id) {
+            msg.trigger = trigger.id
+        }
+        this.send(msg)
+    }
     wait_for_response(id) {
         return new Promise((res,rej) => {
             let handler = (msg) => {
@@ -269,14 +275,16 @@ class EventDispatcher {
         if (e.type === INPUT.TYPE_MouseDown) {
             let evt = {
                 type:e.type,
-                pos: new Point(Math.floor(e.x),Math.floor(e.y))
+                pos: new Point(Math.floor(e.x),Math.floor(e.y)),
+                id:e.id?e.id:0,
             }
             return this.dispatch_mousedown(evt,this.window.root)
         }
         if (e.type === INPUT.TYPE_MouseUp) {
             let evt = {
                 type:e.type,
-                pos: new Point(Math.floor(e.x),Math.floor(e.y))
+                pos: new Point(Math.floor(e.x),Math.floor(e.y)),
+                id:e.id?e.id:0,
             }
             return this.dispatch_mouseup(evt,this.window.root)
         }
@@ -289,15 +297,16 @@ class EventDispatcher {
     }
 
     dispatch_mousedown(evt,node) {
-        console.log(`down`,evt.pos,node.constructor.name, node.children.length)
+        // console.log(`down`,evt.pos,node.constructor.name, node.children.length)
         for (let ch of node.children) {
-            console.log('mousedown inside?',ch.constructor.name,ch.bounds(),evt.pos,ch.bounds().contains(evt.pos))
+            // console.log('mousedown inside?',ch.constructor.name,ch.bounds(),evt.pos,ch.bounds().contains(evt.pos))
             if(ch.bounds().contains(evt.pos)) {
-                node.window().log("inside child!")
-                if(ch.text) node.window().log("text",ch.text)
+                // node.window().log("inside child!")
+                // if(ch.text) node.window().log("text",ch.text)
                 return this.dispatch_mousedown({
                     type:evt.type,
-                    pos: ch.bounds().translate_into(evt.pos)
+                    pos: ch.bounds().translate_into(evt.pos),
+                    id:evt.id,
                 },ch)
             }
         }
@@ -309,7 +318,7 @@ class EventDispatcher {
 
     dispatch_mouseup(evt,node) {
         if(this.mouse_target) {
-            this.window.log("sending mouseup to mouse_target",this.mouse_target.constructor.name)
+            // this.window.log("sending mouseup to mouse_target",this.mouse_target.constructor.name)
             this.mouse_target.input(evt)
             this.mouse_target = null
         }
@@ -354,7 +363,7 @@ export class Window {
         })
         app.on(INPUT.TYPE_Action,(e)=>{
             if(e.payload.window !== this._winid) return
-            console.log("sending action",e.payload)
+            // console.log("sending action",e.payload)
             this.dispatcher.dispatch(e.payload)
         })
         app.on(WINDOWS.TYPE_window_refresh_request, (e)=>{
@@ -378,14 +387,14 @@ export class Window {
             this.y = e.payload.y
         })
     }
-    repaint() {
+    repaint(trigger) {
         // console.log("repainting window", this.x,this.y,this.width,this.height)
-        this.redraw()
+        this.redraw(trigger)
     }
-    redraw() {
+    redraw(trigger) {
         if(!this.root) return
         this.root.parent = this
-        let gfx = new Gfx(this.app,this)
+        let gfx = new Gfx(this.app,this,trigger)
         this.root.layout(gfx)
         this.root.redraw(gfx)
     }
@@ -456,18 +465,19 @@ export class Window {
 }
 
 class Gfx {
-    constructor(app,win) {
+    constructor(app,win,trigger) {
         this.app = app
         this.win = win
         this.tx = 0
         this.ty = 0
+        this.trigger = trigger
     }
     translate(x,y) {
         this.tx += x
         this.ty += y
     }
     rect(x,y,width,height,color) {
-        return this.app.send(GRAPHICS.MAKE_DrawRect({x:this.tx+x, y:this.ty+y, width, height, color, window:this.win._winid}))
+        return this.app.send_with_trigger(GRAPHICS.MAKE_DrawRect({x:this.tx+x, y:this.ty+y, width, height, color, window:this.win._winid}),this.trigger)
     }
 
     text(x,y,text,color,font) {
@@ -532,9 +542,9 @@ export class Component {
     find(query) {
         if (this.id === query.id) return this
     }
-    repaint() {
+    repaint(trigger) {
         // console.log(this.constructor.name,"requesting a repaint")
-        if(this.parent && this.parent.repaint()) this.parent.repaint()
+        if(this.parent && this.parent.repaint) this.parent.repaint(trigger)
     }
     window() {
         return this.parent.window()

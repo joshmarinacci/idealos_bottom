@@ -15,11 +15,11 @@ export class Button extends Component {
     input(e) {
         if(e.type === INPUT.TYPE_MouseDown) {
             this.pressed = true
-            this.repaint()
+            this.repaint(e)
         }
         if(e.type === INPUT.TYPE_MouseUp) {
             this.pressed = false
-            this.repaint()
+            this.repaint(e)
             this.fire('action', {})
             if(this.action) this.action()
         }
