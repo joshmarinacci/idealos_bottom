@@ -283,6 +283,9 @@ class EventDispatcher {
         if(e.type === INPUT.TYPE_KeyboardDown) {
             return this.dispatch_keydown(e,this.window.root)
         }
+        if(e.type === INPUT.TYPE_Action) {
+            return this.dispatch_action(e,this.window.root)
+        }
     }
 
     dispatch_mousedown(evt,node) {
@@ -316,6 +319,11 @@ class EventDispatcher {
         if(!this.keyboard_target) return console.error("no keyboard target")
         this.keyboard_target.input(evt)
     }
+
+    dispatch_action(evt,root) {
+        if(!this.keyboard_target) return console.error("no keyboard action target")
+        this.keyboard_target.input(evt)
+    }
 }
 
 export class Window {
@@ -342,6 +350,11 @@ export class Window {
         })
         app.on(INPUT.TYPE_MouseUp,(e)=>{
             if(e.payload.window !== this._winid) return
+            this.dispatcher.dispatch(e.payload)
+        })
+        app.on(INPUT.TYPE_Action,(e)=>{
+            if(e.payload.window !== this._winid) return
+            console.log("sending action",e.payload)
             this.dispatcher.dispatch(e.payload)
         })
         app.on(WINDOWS.TYPE_window_refresh_request, (e)=>{
@@ -548,7 +561,7 @@ export class Component {
         }
         // console.log("using theme",this.theme,name,state,this.theme.states)
         if (state && this.theme.states) {
-            console.log("checking out state",this.name,state,name,this.theme)
+            // console.log("checking out state",this.name,state,name,this.theme)
             if (this.theme.states[state]) {
                 if(this.theme.states[state][name]) {
                     return this.theme.states[state][name]

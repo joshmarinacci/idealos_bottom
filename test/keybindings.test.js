@@ -5,6 +5,7 @@ import {INFO} from 'idealos_schemas/js/keyboard_map.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import assert from 'assert'
 import {HeadlessDisplay, start_testapp} from './common.js'
+import {sleep} from '../src/common.js'
 
 describe("keybindings",function() {
 
@@ -57,6 +58,7 @@ describe("keybindings",function() {
                     type: INPUT.TYPE_Action,
                 }
             )
+            await sleep(250)
             await server.shutdown()
         } catch (e) {
             console.log(e)

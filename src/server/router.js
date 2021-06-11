@@ -83,9 +83,9 @@ export class EventRouter {
     }
 
     handle_keybindings(msg) {
-        console.log("keybindings",this.server.keybindings)
+        // console.log("keybindings",this.server.keybindings,msg)
         if(msg.type === INPUT.TYPE_KeyboardDown) {
-            console.log("msg is",msg)
+            // console.log("msg is",msg)
             let binding = this.server.keybindings.bindings.find(e => e.code === msg.code)
             if(binding) {
                 console.log('doing binding',binding)
@@ -93,6 +93,7 @@ export class EventRouter {
                 this.server.cons.forward_to_app(msg.app,INPUT.MAKE_Action({
                     command:binding.command,
                     app:msg.app,
+                    window:msg.window,
                 }))
             }
         }

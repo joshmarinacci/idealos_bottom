@@ -40,6 +40,9 @@ export class TextBox extends Component {
     }
 
     input(e) {
+        if( e.type === INPUT.TYPE_Action) {
+            console.log("textbox got an action")
+        }
         if (e.type === INPUT.TYPE_MouseDown) {
             this.selected = true
             this.repaint()
