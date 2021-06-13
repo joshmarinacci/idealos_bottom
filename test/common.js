@@ -67,6 +67,14 @@ class TestApp extends BaseAppWrapper {
 
         })
     }
+    async send(msg) {
+        msg.app = this.app._appid
+        return new Promise((res, rej) => {
+            this.ws.send(JSON.stringify(msg), () => {
+                res()
+            })
+        })
+    }
 }
 
 export async function start_testapp(server, cb) {
@@ -96,6 +104,14 @@ class TestGUIApp extends BaseAppWrapper {
         })
         this.app.on_all((m) => {
             this.fire(m.type, m.payload)
+        })
+    }
+    async send(msg) {
+        return new Promise((res, rej) => {
+            msg.app = this.app._appid
+            this.app.ws.send(JSON.stringify(msg), () => {
+                res()
+            })
         })
     }
 }

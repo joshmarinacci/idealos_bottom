@@ -8,6 +8,7 @@ import {MENUS} from 'idealos_schemas/js/menus.js'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
 import {INFO} from 'idealos_schemas/js/keyboard_map.js'
 
+
 export class EventRouter {
     constructor(cons,wids,apptracker,server) {
         this.cons = cons// || throw new Error("missing cons")
@@ -74,6 +75,9 @@ export class EventRouter {
 
         if(msg.type === "get_control_theme") return get_control_theme(msg,this.cons,this.server)
         if(msg.type === "theme-set") return set_theme(msg,this.cons,this.server)
+
+        if(msg.type === "translation_get_value") return translation_get_value(msg,this.cons,this.server)
+        if(msg.type === "translation_set_language") return translation_set_language(msg,this.cons,this.server)
 
         this.log("unhandled message",msg)
     }
@@ -258,3 +262,41 @@ function get_control_theme(msg, cons, server) {
     }
 }
 
+function translation_get_value(msg, cons, server) {
+    if(!server.active_translation) {
+        return cons.forward_to_app(msg.app,{
+            type:"translation_get_value_response",
+            key:msg.key,
+            value:"[?]",
+            succeeded:false,
+        })
+    }
+    if(!server.active_translation[msg.key]) {
+        return cons.forward_to_app(msg.app,{
+            type:"translation_get_value_response",
+            key:msg.key,
+            value:"[?]",
+            succeeded:false,
+        })
+    }
+    let value = server.active_translation[msg.key]
+    return cons.forward_to_app(msg.app,{
+        type:"translation_get_value_response",
+        key:msg.key,
+        value:value,
+        succeeded:true,
+    })
+}
+
+function translation_set_language(msg,cons,server) {
+    console.log("hanlding message",msg)
+    let trans = server.translations.find(t => t.language === msg.language)
+    console.log("new trans is",trans)
+    server.active_translation = trans
+    console.log('sending to',msg.app)
+    return cons.forward_to_app(msg.app,{
+        type:"translation_language_changed",
+        language:msg.language,
+        succeeded:true,
+    })
+}

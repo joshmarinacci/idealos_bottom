@@ -35,6 +35,9 @@ export class CentralServer {
             }
         ]
         if(opts.screens) this.screens = opts.screens
+        this.translations = []
+        if(opts.translations) this.translations = opts.translations
+        this.active_translation = this.translations[0]
 
         this.cons = new ConnectionManager()
 
@@ -173,6 +176,10 @@ export async function load_uitheme(json_path) {
     // if (result === false) throw new Error(`error loading ${json_path} ${checker.errors}`)
     return data
 }
+export async function load_translation(json_path) {
+    return JSON.parse((await fs.promises.readFile(json_path)).toString())
+}
+
 export async function load_keybindings(json_path) {
     return JSON.parse((await fs.promises.readFile(json_path)).toString())
 }
