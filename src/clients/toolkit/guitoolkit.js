@@ -412,6 +412,7 @@ export class Window {
     }
     set_focused(el) {
         this.focused = el
+        this.child_windows.forEach(ch => ch.close())
     }
     lost_window_focus() {
         this.child_windows.forEach(ch => ch.close())
