@@ -264,37 +264,37 @@ function get_control_theme(msg, cons, server) {
 
 function translation_get_value(msg, cons, server) {
     if(!server.active_translation) {
-        return cons.forward_to_app(msg.app,{
+        return cons.forward_to_app(msg.app,make_response(msg,{
             type:"translation_get_value_response",
             key:msg.key,
             value:"[?]",
             succeeded:false,
-        })
+        }))
     }
     if(!server.active_translation[msg.key]) {
-        return cons.forward_to_app(msg.app,{
+        return cons.forward_to_app(msg.app,make_response(msg,{
             type:"translation_get_value_response",
             key:msg.key,
             value:"[?]",
             succeeded:false,
-        })
+        }))
     }
     let value = server.active_translation[msg.key]
-    return cons.forward_to_app(msg.app,{
+    return cons.forward_to_app(msg.app,make_response(msg,{
         type:"translation_get_value_response",
         key:msg.key,
         value:value,
         succeeded:true,
-    })
+    }))
 }
 
 function translation_set_language(msg,cons,server) {
-    console.log("hanlding message",msg)
+    // console.log("hanlding message",msg)
     let trans = server.translations.find(t => t.language === msg.language)
-    console.log("new trans is",trans)
+    // console.log("new trans is",trans)
     server.active_translation = trans
-    console.log('sending to',msg.app)
-    return cons.forward_to_app(msg.app,{
+    console.log('sending to all apps',msg.app)
+    return cons.forward_to_all_apps({
         type:"translation_language_changed",
         language:msg.language,
         succeeded:true,

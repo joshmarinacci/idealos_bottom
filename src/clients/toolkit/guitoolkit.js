@@ -157,6 +157,9 @@ export class App {
         this.on("theme-changed",()=>{
             this.windows.forEach(win => win.theme_changed())
         })
+        this.on('translation_language_changed',() => {
+            this.windows.forEach(win => win.translation_changed())
+        })
     }
 
     async a_shutdown() {
@@ -469,6 +472,10 @@ export class Window {
         this.root.theme_changed()
         this.repaint()
     }
+    translation_changed() {
+        this.root.translation_changed()
+        this.repaint()
+    }
     async send_and_wait(msg) {
         msg.id = "msg_"+Math.floor((Math.random()*10000))
         this.app.send(msg)
@@ -595,6 +602,29 @@ export class Component {
     theme_changed() {
         this.theme = null
     }
+
+    lookup_translated_text(key) {
+        if(!this._translations) this._translations = {}
+        if(this._translations[key]) {
+            return this._translations[key]
+        }
+        if(this.translation_loading) return "-----"
+        console.log('starting to load')
+        this.translation_loading = true
+        this.window().send_and_wait({
+            type: "translation_get_value",
+            key: key,
+        }).then((msg)=>{
+            console.log("got the response back")
+            this._translations[key] = msg.value
+            this.translation_loading = false
+            this.repaint()
+        })
+        return "-*---"
+    }
+    translation_changed() {
+        this._translations = {}
+    }
 }
 
 export class Container extends Component {
@@ -622,6 +652,11 @@ export class Container extends Component {
         super.theme_changed()
         this.children.forEach(ch => ch.theme_changed())
     }
+    translation_changed() {
+        super.translation_changed()
+        this.children.forEach(ch => ch.translation_changed())
+    }
+
 
     find(query) {
         if (this.id && this.id === query.id) {

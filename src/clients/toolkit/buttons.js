@@ -7,6 +7,7 @@ export class Button extends Component {
         super(opts)
         this.name = 'button'
         this.text = opts.text || "button"
+        this.text_key = opts.text_key
         this.pressed = false
         this.padding = new Insets(5)
         this.action = opts.action || null
@@ -26,6 +27,7 @@ export class Button extends Component {
     }
 
     layout(gfx) {
+        if(this.text_key) this.text = this.lookup_translated_text(this.text_key)
         let met = gfx.text_size(this.text)
         this.width = this.padding.left + met.width + this.padding.right
         this.height = this.padding.top + met.height + this.padding.bottom

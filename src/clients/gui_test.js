@@ -3,7 +3,7 @@ import {MENUS} from 'idealos_schemas/js/menus.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {App} from './toolkit/guitoolkit.js'
 import {HBox, VBox} from './toolkit/panels.js'
-import {Label, TextBox} from './toolkit/text.js'
+import {Label, TextBox, TranslatedLabel} from './toolkit/text.js'
 import {Button, PopupButton, ToggleButton} from './toolkit/buttons.js'
 let app = new App(process.argv)
 
@@ -15,16 +15,16 @@ async function init() {
         height:main_window.height,
         children:[
             new Label({text:"abc", font:app._symbol_font}),
-            new Label({text:"label"}),
-            new Button({text:'button'}),
+            new TranslatedLabel({text_key:"button.okay"}),
+            new Button({text_key:"button.okay"}),
             new HBox({children:[
-                    new Button({text:'button',id:'button'}),
+                    new Button({text:'cool button',id:'button'}),
                     new Label({text:'label',id:'button-target'}),
                 ]}),
             new TextBox({text:"hi",width:50, height: 15, id:'textbox'}),
             new HBox({children:[
-                    new ToggleButton({text:'A', width:15, height:15}),
-                    new ToggleButton({text:'B', width:15, height:15}),
+                    new ToggleButton({text_key:"button.yes"}),
+                    new ToggleButton({text:'No', text_key:"button.hello"}),
                     new PopupButton({text:"Alabama", items:["Alabama","Alaska","Arizona","Arkansas"]}),
                 ]})
         ]})

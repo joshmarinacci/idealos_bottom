@@ -1,4 +1,8 @@
 {
   "language": "base",
-  "button.okay": "okay"
+  "button.okay": "okay",
+  "button.yes": "yes",
+  "button.no": "no",
+  "button.cancel": "cancel",
+  "button.hello": "hello"
 }

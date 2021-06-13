@@ -28,6 +28,27 @@ export class Label extends Component {
     }
 }
 
+export class TranslatedLabel extends Component {
+    constructor(opts) {
+        super(opts)
+        this.text = "-----"
+        this.text_key = opts.text_key || "[?]"
+        this.name = 'translated-label'
+    }
+    layout(gfx) {
+        this.text = this.lookup_translated_text(this.text_key)
+        let met = gfx.text_size(this.text,this.font)
+        this.width = met.width
+        this.height = met.height
+    }
+    redraw(gfx) {
+        let bg = this.lookup_theme_part("background-color",null)
+        let co = this.lookup_theme_part('color',null)
+        gfx.rect(this.x, this.y, this.width, this.height,bg)
+        gfx.text(this.x, this.y, this.text,co,this.font)
+    }
+}
+
 export class TextBox extends Component {
 
     constructor(opts) {

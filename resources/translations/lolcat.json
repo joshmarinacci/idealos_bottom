@@ -1,4 +1,8 @@
 {
   "language": "lolcat",
-  "button.okay": "k"
+  "button.okay": "K",
+  "button.yes": "YEZ",
+  "button.no": "NO",
+  "button.cancel": "CANSUL",
+  "button.hello": "Y HALO THAR"
 }
