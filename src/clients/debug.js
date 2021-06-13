@@ -1,6 +1,4 @@
-import {App, Component} from './toolkit/guitoolkit.js'
-import {DEBUG} from 'idealos_schemas/js/debug.js'
-import {INPUT} from 'idealos_schemas/js/input.js'
+import {App} from './toolkit/guitoolkit.js'
 import {VBox} from './toolkit/panels.js'
 import {Button} from './toolkit/buttons.js'
 import {TranslatedLabel} from './toolkit/text.js'
