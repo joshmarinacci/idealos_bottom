@@ -338,6 +338,7 @@ class EventDispatcher {
 export class Window {
     constructor(app, width,height,id,parent=null,is_child=false) {
         this._type = 'window'
+        this.child_windows = []
         this.app = app
         this._winid = id
         this.x = -1
@@ -348,6 +349,9 @@ export class Window {
         this.focused = null
         this.is_child = is_child
         this.parent = parent
+        if(this.parent) {
+            this.parent.child_windows.push(this)
+        }
         this.dispatcher = new EventDispatcher(this)
         app.on(INPUT.TYPE_MouseDown,(e)=>{
             if(e.payload.window !== this._winid) return
@@ -357,6 +361,10 @@ export class Window {
             if(e.payload.window !== this._winid) return
             this.dispatcher.dispatch(e.payload)
         })
+        app.on("WINDOW_FOCUS_LOST",()=>{
+            this.lost_window_focus()
+        })
+
         app.on(INPUT.TYPE_MouseUp,(e)=>{
             if(e.payload.window !== this._winid) return
             this.dispatcher.dispatch(e.payload)
@@ -404,6 +412,9 @@ export class Window {
     }
     set_focused(el) {
         this.focused = el
+    }
+    lost_window_focus() {
+        this.child_windows.forEach(ch => ch.close())
     }
     a_open_child_window(x,y,width,height,style) {
         return new Promise((res,rej)=>{

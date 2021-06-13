@@ -180,6 +180,15 @@ function handle_set_window_focused(msg,cons,wids) {
     let win = wids.window_for_id(msg.window)
     if(!win) return log(`no such window ${msg.window}`)
     if(!win.owner) return log(`window has no owner ${win.owner}`)
+    //send focus lost to old window
+    if(wids.get_active_window()) {
+        let old_win = wids.get_active_window()
+        cons.forward_to_app(old_win.owner,{
+            type:"WINDOW_FOCUS_LOST",
+            app:old_win.owner,
+            window:old_win.id
+        })
+    }
     wids.set_active_window(win)
     cons.forward_to_app(win.owner,msg)
 }
