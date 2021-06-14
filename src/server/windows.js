@@ -100,6 +100,11 @@ export class WindowTracker {
         win.x = x
         win.y = y
     }
+    size_window(id, w,h) {
+        let win = this.window_for_id(id)
+        win.width = w
+        win.height = h
+    }
 
     make_root_window(window_type,width,height,owner) {
         let win_id = "win_"+Math.floor(Math.random()*10000)

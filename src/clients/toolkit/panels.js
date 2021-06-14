@@ -12,6 +12,10 @@ export class Panel extends Container {
     }
 }
 
+export const CONSTRAINTS = {
+    FILL:'fill',
+    WRAP:'wrap'
+}
 export class VBox extends Container {
     constructor(opts) {
         super(opts);
@@ -19,27 +23,51 @@ export class VBox extends Container {
         this.padding = opts.padding || 0
         this.hstretch = opts.hstretch || false
         this.name = 'panel'
+        this.fill_color = opts.fill_color
+        this.constraint = opts.constraint || CONSTRAINTS.WRAP
     }
     layout(gfx) {
-        this.children.forEach(ch => ch.layout(gfx))
-        let y = this.padding
-        let maxx = this.padding
-        this.children.forEach(ch => {
-            ch.x = this.padding
-            ch.y = y
-            y += ch.height
-            y += this.padding
-            maxx = Math.max(maxx,this.padding+ch.width+this.padding)
-        })
-        if(this.hstretch) {
-            this.children.forEach(ch => ch.width = maxx)
+        if(this.constraint === CONSTRAINTS.WRAP) {
+            this.children.forEach(ch => ch.layout(gfx))
+            let y = this.padding
+            let maxx = this.padding
+            this.children.forEach(ch => {
+                ch.x = this.padding
+                ch.y = y
+                y += ch.height
+                y += this.padding
+                maxx = Math.max(maxx, this.padding + ch.width + this.padding)
+            })
+            if (this.hstretch) {
+                this.children.forEach(ch => ch.width = maxx)
+            }
+            this.width = maxx
+            this.height = y
         }
-        this.width = maxx
-        this.height = y
+        if(this.constraint === CONSTRAINTS.FILL) {
+            this.width = this.parent.width
+            this.height = this.parent.height
+            this.children.forEach(ch => ch.layout(gfx))
+            let y = this.padding
+            this.children.forEach(ch => {
+                ch.x = this.padding
+                ch.y = y
+                y += ch.height
+                y += this.padding
+            })
+            let maxx = this.width - this.padding
+            if (this.hstretch) {
+                this.children.forEach(ch => ch.width = maxx)
+            }
+        }
     }
     redraw(gfx) {
-        let bg = this.lookup_theme_part("background-color")
-        gfx.rect(0,0,this.width,this.height,bg)
+        if(this.fill_color) {
+            gfx.rect(0,0,this.width,this.height,this.fill_color)
+        } else {
+            let bg = this.lookup_theme_part("background-color")
+            gfx.rect(0, 0, this.width, this.height, bg)
+        }
         super.redraw(gfx)
     }
 }

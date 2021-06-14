@@ -397,6 +397,12 @@ export class Window {
             this.x = e.payload.x
             this.y = e.payload.y
         })
+        app.on('window-set-size', (e)=>{
+            if(e.payload.window !== this._winid) return
+            this.width = e.payload.width
+            this.height = e.payload.height
+            this.redraw(e)
+        })
     }
     repaint(trigger) {
         // console.log("repainting window", this.x,this.y,this.width,this.height)

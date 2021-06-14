@@ -2,7 +2,7 @@ import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {App} from './toolkit/guitoolkit.js'
-import {HBox, VBox} from './toolkit/panels.js'
+import {CONSTRAINTS, HBox, VBox} from './toolkit/panels.js'
 import {Label, TextBox, TranslatedLabel} from './toolkit/text.js'
 import {Button, PopupButton, ToggleButton} from './toolkit/buttons.js'
 let app = new App(process.argv)
@@ -13,6 +13,8 @@ async function init() {
     main_window.root = new VBox({
         width:main_window.width,
         height:main_window.height,
+        fill_color:'magenta',
+        constraint:CONSTRAINTS.FILL,
         children:[
             new Label({text:"abc", font:app._symbol_font}),
             new TranslatedLabel({text_key:"button.okay"}),

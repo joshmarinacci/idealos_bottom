@@ -44,6 +44,7 @@ export class EventRouter {
         if(msg.type === WINDOWS.TYPE_window_refresh_response) return this.cons.forward_to_target(msg)
 
         if(msg.type === WINDOWS.TYPE_WindowSetPosition) return set_window_position(msg,this.cons,this.wids)
+        if(msg.type === 'window-set-size') return set_window_size(msg,this.cons,this.wids)
         if(msg.type === WINDOWS.TYPE_SetFocusedWindow) return handle_set_window_focused(msg,this.cons,this.wids)
 
         if(msg.type === WINDOWS.TYPE_window_close_response) return this.cons.forward_to_screen(msg)
@@ -177,6 +178,14 @@ function set_window_position(msg,cons,wids) {
     if(!win) return log(`no such window ${msg.window}`)
     if(!win.owner) return log(`window has no owner ${win.owner}`)
     wids.move_window(msg.window,msg.x,msg.y)
+    cons.forward_to_app(win.owner,msg)
+}
+
+function set_window_size(msg,cons,wids) {
+    let win = wids.window_for_id(msg.window)
+    if(!win) return log(`no such window ${msg.window}`)
+    if(!win.owner) return log(`window has no owner ${win.owner}`)
+    wids.size_window(msg.window,msg.width,msg.height)
     cons.forward_to_app(win.owner,msg)
 }
 
