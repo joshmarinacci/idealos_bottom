@@ -1,4 +1,5 @@
 import {CentralServer, load_applist, load_translation, load_uitheme} from './server.js'
+import fs from 'fs'
 
 async function doit() {
     let applist = await load_applist("resources/apps.json")
@@ -6,6 +7,10 @@ async function doit() {
     let uitheme_dark = await load_uitheme("resources/uitheme-dark.json")
     let base_translation = await load_translation("resources/translations/base.json")
     let lolcat_translation = await load_translation("resources/translations/lolcat.json")
+    let fonts = {
+        base: JSON.parse((await fs.promises.readFile("resources/fonts/font.json")).toString())
+    }
+
     let server = new CentralServer({
         hostname:'127.0.0.1',
         websocket_port:8081,
@@ -14,6 +19,7 @@ async function doit() {
             'light':uitheme_light,
             'dark':uitheme_dark,
         },
+        fonts:fonts,
         screens:[
             {
                 width:250,

@@ -39,6 +39,9 @@ export class CentralServer {
         if(opts.translations) this.translations = opts.translations
         this.active_translation = this.translations[0]
 
+        this.fonts = {}
+        if(opts.fonts) this.fonts = opts.fonts
+
         this.cons = new ConnectionManager()
 
         let sender = (msg) => {

@@ -9,6 +9,26 @@ import {DEBUG} from 'idealos_schemas/js/debug.js'
 import {INFO} from 'idealos_schemas/js/keyboard_map.js'
 
 
+function handle_font_load(msg, cons, server) {
+    let resp = null
+    if(!server.fonts[msg.name]) {
+        resp = make_response(msg, {
+            type: 'request-font-response',
+            name:msg.name,
+            succeeded: false,
+        })
+    } else {
+        resp = make_response(msg,{
+            type: 'request-font-response',
+            succeeded: true,
+            name:msg.name,
+            font:server.fonts[msg.name]
+        })
+    }
+    resp.app = msg.app
+    cons.forward_to_screen(resp)
+}
+
 export class EventRouter {
     constructor(cons,wids,apptracker,server) {
         this.cons = cons// || throw new Error("missing cons")
@@ -76,6 +96,8 @@ export class EventRouter {
 
         if(msg.type === "get_control_theme") return get_control_theme(msg,this.cons,this.server)
         if(msg.type === "theme-set") return set_theme(msg,this.cons,this.server)
+
+        if(msg.type === 'request-font') return handle_font_load(msg,this.cons,this.server)
 
         if(msg.type === "translation_get_value") return translation_get_value(msg,this.cons,this.server)
         if(msg.type === "translation_set_language") return translation_set_language(msg,this.cons,this.server)
