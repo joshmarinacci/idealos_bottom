@@ -2,13 +2,14 @@ import {spawn} from 'child_process'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
 
 export class AppTracker {
-    constructor(hostname,websocket_port, log_delegate, wids, sender) {
+    constructor(hostname,websocket_port, log_delegate, wids, sender, cons) {
         this.hostname = hostname
         this.websocket_port = websocket_port
         this.apps = []
         this.log_delegate = log_delegate
         this.wids = wids
         this.send = sender
+        this.cons = cons
     }
     log(...args) {
         if(this.log_delegate) this.log_delegate(...args)
@@ -51,11 +52,6 @@ export class AppTracker {
         ].concat(app.args))
         app.subprocess.stdout.on('data',(data)=>this.log(`STDOUT ${app.name} ${data}`))
         app.subprocess.stderr.on('data',(data)=>this.log(`STDERR ${app.name} ${data}`))
-        app.subprocess.on('exit',(code)=> {
-            this.log(`${app.name} ended with code = ${code}`)
-            app.subprocess = undefined
-        })
-
         this.send(DEBUG.MAKE_AppStarted({target:id}))
     }
 
@@ -71,16 +67,27 @@ export class AppTracker {
     }
 
     stop(id) {
-        let app = this.get_app_by_id(id)
-        if(!app) return console.error(`no such app ${id}`)
-        if(app.subprocess) {
-            app.subprocess.kill('SIGTERM')
-            app.subprocess = undefined
-        } else {
-            console.log("Looks like it was already killed")
-        }
-        this.wids.remove_windows_for_appid(id)
-        this.send(DEBUG.MAKE_AppStopped({target:id}))
+        return new Promise((res,rej)=>{
+            let app = this.get_app_by_id(id)
+            if(!app) return console.error(`no such app ${id}`)
+            try {
+                let ws = this.cons.find_connection_for_appid(app.id)
+                ws.on("close", () => {
+                    res()
+                })
+                if (app.subprocess) {
+                    app.subprocess.kill('SIGTERM')
+                    app.subprocess = undefined
+                } else {
+                    console.log("Looks like it was already killed")
+                }
+                this.wids.remove_windows_for_appid(id)
+                this.cons.remove_connection_for_appid(id)
+                this.send(DEBUG.MAKE_AppStopped({target: id}))
+            } catch (e) {
+                res()
+            }
+        })
     }
 
     list_apps() {

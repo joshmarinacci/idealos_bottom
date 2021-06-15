@@ -55,6 +55,11 @@ export class ConnectionManager {
     }
 
     add_app_connection(id,ws) {
+        let app = this.by_type[CLIENT_TYPES.APP].find(app => app.id === id)
+        if(app) {
+            console.warn("trying to add app that already exists " + app.id)
+            return
+        }
         this.by_type[CLIENT_TYPES.APP].push({
             id:id,
             ws:ws,
@@ -73,7 +78,20 @@ export class ConnectionManager {
     }
 
     remove_connection(ws) {
-        console.log("connections removing for ",ws.target)
+        this.remove_connection_for_appid(ws.target)
+    }
+
+    find_connection_for_appid(id) {
+        let app = this.by_type[CLIENT_TYPES.APP].find(app => app.id === id)
+        if(!app) throw new Error(`no such app for id ${id}`)
+        return app.ws
+    }
+    remove_connection_for_appid(id) {
+        let app = this.by_type[CLIENT_TYPES.APP].find(app => app.id === id)
+        if(app) {
+            let n = this.by_type[CLIENT_TYPES.APP].indexOf(app)
+            this.by_type[CLIENT_TYPES.APP].splice(n,1)
+        }
     }
 
     count() {

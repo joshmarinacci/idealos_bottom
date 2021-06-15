@@ -99,7 +99,6 @@ export class CentralServer {
 
     async start_app(opts) {
         let app = this.at.create_app(opts)
-        await sleep(250)
         this.at.start(app.id)
     }
 
@@ -136,6 +135,14 @@ export class CentralServer {
 
     async get_app_list() {
         return this.at.list_apps()
+    }
+
+    async stop_app(id) {
+        return this.at.stop(id)
+    }
+
+    start_app_by_id(id) {
+        return this.at.start(id)
     }
 }
 
