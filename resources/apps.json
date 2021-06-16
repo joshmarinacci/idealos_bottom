@@ -47,7 +47,7 @@
       "title": "Cool Gui Tester",
       "icon": "guitester",
       "entrypoint": "src/clients/gui_test.js",
-      "autostart": false
+      "autostart": true
     },
     {
       "name": "pixelclock",

@@ -3,20 +3,19 @@ import {MENUS} from 'idealos_schemas/js/menus.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {App} from './toolkit/guitoolkit.js'
 import {CONSTRAINTS, HBox, VBox} from './toolkit/panels.js'
-import {Label, MultilineLabel, TextBox, TranslatedLabel} from './toolkit/text.js'
+import {Label, MultilineLabel, MultilineTextBox, TextBox, TranslatedLabel} from './toolkit/text.js'
 import {Button, PopupButton, ToggleButton} from './toolkit/buttons.js'
 let app = new App(process.argv)
 
 async function init() {
     await app.a_init()
-    let main_window = await app.open_window(0,0,100,120,'plain')
+    let main_window = await app.open_window(0,0,110,200,'plain')
     main_window.root = new VBox({
         width:main_window.width,
         height:main_window.height,
         fill_color:'magenta',
         constraint:CONSTRAINTS.FILL,
         children:[
-            // new Label({text:"abc", font:app._symbol_font}),
             new TranslatedLabel({text_key:"button.okay"}),
             new MultilineLabel({text:"Some cool long text\nThat is super cool and\nLong and stuff"}),
             new Button({text_key:"button.okay"}),
@@ -28,8 +27,12 @@ async function init() {
             new HBox({children:[
                     new ToggleButton({text_key:"button.yes"}),
                     new ToggleButton({text:'No', text_key:"button.hello"}),
-                    new PopupButton({text:"Alabama", items:["Alabama","Alaska","Arizona","Arkansas"]}),
-                ]})
+                ]}),
+            new PopupButton({text:"Alabama", items:["Alabama","Alaska","Arizona","Arkansas"]}),
+            new MultilineTextBox({text:"This is some very long text that we need to wrap",
+                width:100,
+                height:50,
+            })
         ]})
 
     //attach actions
