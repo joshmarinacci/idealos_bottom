@@ -68,7 +68,7 @@
       "title": "Text Edit",
       "icon": "texteditor",
       "entrypoint":"src/clients/texteditor.js",
-      "autostart": true
+      "autostart": false
     }
   ],
   "services": [

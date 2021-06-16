@@ -1,7 +1,7 @@
 import {CONSTRAINTS, HBox, VBox} from './toolkit/panels.js'
 import {App} from './toolkit/guitoolkit.js'
 import {Label, MultilineTextBox} from './toolkit/text.js'
-import {Button} from './toolkit/buttons.js'
+import {Button, CheckButton, ToggleButton} from './toolkit/buttons.js'
 
 let app = new App(process.argv)
 
@@ -25,11 +25,12 @@ async function init() {
     ]
 
     let item_comps = items.map(it => {
+        let tb = new CheckButton({
+            selected:it.completed,
+            action:() => it.completed = tb.selected,
+        })
         return new HBox({
-            children:[
-                new Button({text:it.completed?"x":"o"}),
-                new Label({text:it.title})
-            ]
+            children:[ tb,  new Label({text:it.title}) ]
         })
     })
 

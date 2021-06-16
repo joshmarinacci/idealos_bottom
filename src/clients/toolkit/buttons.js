@@ -48,7 +48,7 @@ export class Button extends Component {
 export class ToggleButton extends Button {
     constructor(opts) {
         super(opts);
-        this.selected = false
+        this.selected = !!opts.selected
     }
     input(e) {
         super.input(e)
@@ -67,6 +67,24 @@ export class ToggleButton extends Button {
         gfx.rect(this.x, this.y, this.width, this.height,bd)
         gfx.rect(this.x+1, this.y+1, this.width-2, this.height-2,bg)
         gfx.text(this.padding.left + this.x, this.y, this.text, txt);
+    }
+}
+
+export class CheckButton extends ToggleButton {
+    constructor(opts) {
+        super(opts);
+    }
+    layout(gfx) {
+        this.width = 10 + this.padding.left + this.padding.right
+        this.height = 10 + this.padding.top + this.padding.bottom
+    }
+    redraw(gfx) {
+        let state = this.pressed?"pressed":null
+        if(this.selected) state = 'selected'
+        let color = this.lookup_theme_part('color',state)
+        gfx.text(this.padding.left + this.x, this.y,
+            this.selected?String.fromCharCode(21):String.fromCharCode(20),
+            color)
     }
 }
 
