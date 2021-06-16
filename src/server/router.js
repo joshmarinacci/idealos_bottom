@@ -102,6 +102,15 @@ export class EventRouter {
         if(msg.type === "translation_get_value") return translation_get_value(msg,this.cons,this.server)
         if(msg.type === "translation_set_language") return translation_set_language(msg,this.cons,this.server)
 
+        if(msg.type === 'group-message') {
+            msg.messages.forEach(msg2 => {
+                msg2.app = msg.app
+                msg2.trigger = msg.trigger
+                this.route(ws,msg2)
+            })
+            return
+        }
+
         this.log("unhandled message",msg)
     }
 

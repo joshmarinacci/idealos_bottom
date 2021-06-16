@@ -414,6 +414,12 @@ export class Window {
         let gfx = new Gfx(this.app,this,trigger)
         this.root.layout(gfx)
         this.root.redraw(gfx)
+        this.app.send({
+            type: 'group-message',
+            messages: gfx.messages,
+        })
+        return this.app.send_with_trigger(GRAPHICS.MAKE_DrawRect({
+            x:0, y:0, width:1, height:1, color:'red', window:this._winid}),trigger)
     }
     is_focused(el) {
         if(this.focused && this.focused === el) return true
@@ -496,18 +502,22 @@ class Gfx {
         this.tx = 0
         this.ty = 0
         this.trigger = trigger
+        this.messages = []
     }
     translate(x,y) {
         this.tx += x
         this.ty += y
     }
     rect(x,y,width,height,color) {
-        return this.app.send_with_trigger(GRAPHICS.MAKE_DrawRect({x:this.tx+x, y:this.ty+y, width, height, color, window:this.win._winid}),this.trigger)
+        this.send(GRAPHICS.MAKE_DrawRect({x: this.tx + x, y: this.ty + y, width, height, color, window: this.win._winid }))
     }
 
+    send(msg) {
+        this.messages.push(msg)
+    }
     text(x,y,text,color,font) {
-        if(font) return font.draw_text(this.app, this.tx+x, this.ty+y, text, color, this.win)
-        return this.app._font.draw_text(this.app,this.tx+x,this.ty+y,text,color,this.win)
+        if (font) return font.draw_text(this, this.tx + x, this.ty + y, text, color, this.win)
+        return this.app._font.draw_text(this, this.tx + x, this.ty + y, text, color, this.win)
     }
     text_size(text, font) {
         if(font) return font.measure_text(this.app,text)
