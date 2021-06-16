@@ -54,28 +54,30 @@ export class MultilineLabel extends Component {
         super(opts);
         this.text = opts.text || "-------"
         this.name = 'multiline-label'
+        this.padding = 2
     }
     layout(gfx) {
         let lines = this.text.split("\n")
         let maxw = 0
-        let h = 0
+        let h = this.padding
         lines.forEach(line => {
             let met = gfx.text_size(this.text,this.font)
             h += met.height
-            maxw = Math.max(maxw,met.width)
+            maxw = Math.max(maxw,met.width+this.padding*2)
         })
         this.width = maxw
-        this.height = h
+        this.height = h + this.padding
     }
     redraw(gfx) {
         let bg = this.lookup_theme_part("background-color",null)
         let co = this.lookup_theme_part('color',null)
         gfx.rect(this.x, this.y, this.width, this.height,bg)
         let lines = this.text.split("\n")
-        let h = 0
+        let h = this.padding
         lines.forEach(line => {
-            gfx.text(this.x, this.y+h, line,co,this.font)
-            h += 10
+            let met = gfx.text_size(this.text,this.font)
+            gfx.text(this.x+this.padding, this.y+h, line,co,this.font)
+            h += met.height
         })
     }
 }

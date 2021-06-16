@@ -100,10 +100,11 @@ export class PopupButton extends Button {
                 this.popup.repaint()
             })
         })
+        this.arrow = String.fromCharCode(16)
     }
     layout(gfx) {
         let met = gfx.text_size(this.text,this.window().base_font)
-        let met2 = gfx.text_size('a',this.window().symbol_font)
+        let met2 = gfx.text_size('z',this.window().base_font)
         this.width = this.padding.left + met.width + 2 + met2.width + this.padding.right
         this.height = this.padding.top + met.height + this.padding.bottom
     }
@@ -114,7 +115,7 @@ export class PopupButton extends Button {
         gfx.rect(this.x, this.y, this.width, this.height, bg)
         gfx.text(this.padding.left + this.x, this.y, this.text, fg, this.window().base_font)
         let met = gfx.text_size(this.text,this.window().base_font)
-        gfx.text(this.padding.left + this.x + met.width + 2, this.y, 'g', fg, this.window().symbol_font)
+        gfx.text(this.padding.left + this.x + met.width + 2, this.y, this.arrow, fg, this.window().symbol_font)
     }
 }
 

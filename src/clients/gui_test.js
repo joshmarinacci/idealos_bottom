@@ -18,7 +18,7 @@ async function init() {
         children:[
             // new Label({text:"abc", font:app._symbol_font}),
             new TranslatedLabel({text_key:"button.okay"}),
-            new MultilineLabel({text:"some cool long text\nthat is super cool and\nlong and stuff"}),
+            new MultilineLabel({text:"Some cool long text\nThat is super cool and\nLong and stuff"}),
             new Button({text_key:"button.okay"}),
             new HBox({children:[
                     new Button({text:'cool button',id:'button'}),
