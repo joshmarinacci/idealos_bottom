@@ -9,6 +9,7 @@ import {GENERAL} from "idealos_schemas/js/general.js"
 import Ajv from 'ajv'
 import fs from 'fs'
 import path from 'path'
+import {LiveDB} from './db.js'
 
 export const hostname = '127.0.0.1'
 export const websocket_port = 8081
@@ -54,6 +55,7 @@ export class CentralServer {
             log, this.wids, sender, this.cons)
         this.router = new EventRouter(this.cons, this.wids, this.at, this)
         this.apps = opts.apps
+        this.db = new LiveDB()
     }
 
     async start() {
