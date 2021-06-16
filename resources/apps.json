@@ -47,7 +47,7 @@
       "title": "Cool Gui Tester",
       "icon": "guitester",
       "entrypoint": "src/clients/gui_test.js",
-      "autostart": true
+      "autostart": false
     },
     {
       "name": "pixelclock",
@@ -55,6 +55,13 @@
       "icon": "pixelclock",
       "entrypoint":"src/clients/pixelclock.js",
       "autostart": false
+    },
+    {
+      "name": "texteditor",
+      "title": "Text Edit",
+      "icon": "textedit",
+      "entrypoint":"src/clients/texteditor.js",
+      "autostart": true
     }
   ],
   "services": [
