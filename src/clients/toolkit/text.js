@@ -49,6 +49,37 @@ export class TranslatedLabel extends Component {
     }
 }
 
+export class MultilineLabel extends Component {
+    constructor(opts) {
+        super(opts);
+        this.text = opts.text || "-------"
+        this.name = 'multiline-label'
+    }
+    layout(gfx) {
+        let lines = this.text.split("\n")
+        let maxw = 0
+        let h = 0
+        lines.forEach(line => {
+            let met = gfx.text_size(this.text,this.font)
+            h += met.height
+            maxw = Math.max(maxw,met.width)
+        })
+        this.width = maxw
+        this.height = h
+    }
+    redraw(gfx) {
+        let bg = this.lookup_theme_part("background-color",null)
+        let co = this.lookup_theme_part('color',null)
+        gfx.rect(this.x, this.y, this.width, this.height,bg)
+        let lines = this.text.split("\n")
+        let h = 0
+        lines.forEach(line => {
+            gfx.text(this.x, this.y+h, line,co,this.font)
+            h += 10
+        })
+    }
+}
+
 export class TextBox extends Component {
 
     constructor(opts) {

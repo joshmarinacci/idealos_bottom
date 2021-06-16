@@ -3,7 +3,7 @@ import {MENUS} from 'idealos_schemas/js/menus.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {App} from './toolkit/guitoolkit.js'
 import {CONSTRAINTS, HBox, VBox} from './toolkit/panels.js'
-import {Label, TextBox, TranslatedLabel} from './toolkit/text.js'
+import {Label, MultilineLabel, TextBox, TranslatedLabel} from './toolkit/text.js'
 import {Button, PopupButton, ToggleButton} from './toolkit/buttons.js'
 let app = new App(process.argv)
 
@@ -16,8 +16,9 @@ async function init() {
         fill_color:'magenta',
         constraint:CONSTRAINTS.FILL,
         children:[
-            new Label({text:"abc", font:app._symbol_font}),
+            // new Label({text:"abc", font:app._symbol_font}),
             new TranslatedLabel({text_key:"button.okay"}),
+            new MultilineLabel({text:"some cool long text\nthat is super cool and\nlong and stuff"}),
             new Button({text_key:"button.okay"}),
             new HBox({children:[
                     new Button({text:'cool button',id:'button'}),
