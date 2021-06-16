@@ -1,0 +1,32 @@
+import {CONSTRAINTS, HBox, VBox} from './toolkit/panels.js'
+import {App} from './toolkit/guitoolkit.js'
+import {Label, MultilineLabel, MultilineTextBox, TextBox} from './toolkit/text.js'
+import {Button, CheckButton, ToggleButton} from './toolkit/buttons.js'
+
+let app = new App(process.argv)
+
+async function init() {
+    await app.a_init()
+    let win = await app.open_window(0, 0, 100,100, 'plain')
+
+    let output = new MultilineLabel({
+        width:100,
+        height:50,
+        text:'58*20= 1160'
+    })
+    let input = new TextBox({
+        width:100,
+        text:"1+2",
+    })
+    input.on('action',e => {
+        output.text = output.text += "\n1+2= 3"
+        output.repaint()
+    })
+    win.root = new VBox({
+        constraint:CONSTRAINTS.FILL,
+        children:[output,input]
+    })
+}
+
+
+app.on('start',()=>init())
