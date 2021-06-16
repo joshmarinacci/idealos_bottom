@@ -53,7 +53,7 @@ async function init() {
             // new IconButton({text: "t",appname:'guitest', font:app._symbol_font}),
             // new IconButton({text: "r",appname:'dotclock', font:app._symbol_font}),
         ]
-    })
+    })a
     wind = win
     app.send({ type:"LIST_ALL_APPS" })
 }
@@ -66,6 +66,8 @@ function icon_for_app(name) {
     if(name === "fractal") return String.fromCodePoint(2)
     if(name === "guitest") return String.fromCodePoint(11)
     if(name === "pixelclock") return String.fromCodePoint(10)
+    if(name === "texteditor") return String.fromCodePoint(17)
+    if(name === "todolist") return String.fromCodePoint(18)
     return String.fromCodePoint(1)
 }
 
