@@ -416,9 +416,10 @@ export class Window {
         this.root.redraw(gfx)
         this.app.send({
             type: 'group-message',
+            category:"graphics",
             messages: gfx.messages,
         })
-        return this.app.send_with_trigger(GRAPHICS.MAKE_DrawRect({
+        this.app.send_with_trigger(GRAPHICS.MAKE_DrawRect({
             x:0, y:0, width:1, height:1, color:'red', window:this._winid}),trigger)
     }
     is_focused(el) {

@@ -28,44 +28,55 @@ async function init() {
 
     let widgets = {}
 
-    app.on('MAKE_DrawRect_name',(msg)=>{
-        let m = msg.payload
-        let offset = widgets[m.app]
-        app.send({
-            type:m.type,
-            window:win._winid,
-            color:m.color,
-            x:m.x+offset.x,
-            y:m.y+offset.y,
-            width:m.width,
-            height:m.height,
-        })
-    })
-    app.on(GRAPHICS.TYPE_DrawPixel,(msg)=>{
-        let m = msg.payload
-        let offset = widgets[m.app]
-        app.send({
-            type:m.type,
-            window:win._winid,
-            color:m.color,
-            x:m.x+offset.x,
-            y:m.y+offset.y,
-        })
-    })
-    app.on(GRAPHICS.TYPE_DrawImage,(msg)=>{
-        let m = msg.payload
-        let offset = widgets[m.app]
-        app.send({
-            type:m.type,
-            window:win._winid,
-            color:m.color,
-            x:m.x+offset.x,
-            y:m.y+offset.y,
-            width:m.width,
-            height:m.height,
-            pixels:m.pixels,
-        })
-    })
+    function redispatch(m) {
+        if(m.type === 'MAKE_DrawRect_name') {
+            let offset = widgets[m.app]
+            app.send({
+                type:m.type,
+                window:win._winid,
+                color:m.color,
+                x:m.x+offset.x,
+                y:m.y+offset.y,
+                width:m.width,
+                height:m.height,
+            })
+        }
+        if(m.type === GRAPHICS.TYPE_DrawPixel) {
+            let offset = widgets[m.app]
+            app.send({
+                type:m.type,
+                window:win._winid,
+                color:m.color,
+                x:m.x+offset.x,
+                y:m.y+offset.y,
+            })
+        }
+        if(m.type === GRAPHICS.TYPE_DrawImage) {
+            let offset = widgets[m.app]
+            app.send({
+                type:m.type,
+                window:win._winid,
+                color:m.color,
+                x:m.x+offset.x,
+                y:m.y+offset.y,
+                width:m.width,
+                height:m.height,
+                pixels:m.pixels,
+            })
+        }
+        if(m.type === "group-message") {
+            // console.log("got a group",m)
+            m.messages.forEach(msg2 => {
+                msg2.app = m.app
+                // msg2.trigger = msg.trigger
+                redispatch(msg2)
+            })
+        }
+    }
+    app.on('MAKE_DrawRect_name',(m)=>redispatch(m.payload))
+    app.on(GRAPHICS.TYPE_DrawPixel,(m)=>redispatch(m.payload))
+    app.on(GRAPHICS.TYPE_DrawImage,(m)=>redispatch(m.payload))
+    app.on("group-message",m => redispatch(m.payload))
 
     async function start_widget(opts) {
         let resp = await app.send_and_wait_for_response({

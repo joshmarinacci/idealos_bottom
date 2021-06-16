@@ -103,11 +103,21 @@ export class EventRouter {
         if(msg.type === "translation_set_language") return translation_set_language(msg,this.cons,this.server)
 
         if(msg.type === 'group-message') {
-            msg.messages.forEach(msg2 => {
-                msg2.app = msg.app
-                msg2.trigger = msg.trigger
-                this.route(ws,msg2)
-            })
+            if(msg.category === 'graphics') {
+                let app = this.apptracker.get_app_by_id(msg.app)
+                if(app.type === 'sub') {
+                    return this.cons.forward_to_parent_app(msg,app,
+                        this.apptracker.get_app_by_id(app.owner))
+                } else {
+                    return this.cons.forward_to_screen(msg)
+                }
+            } else {
+                msg.messages.forEach(msg2 => {
+                    msg2.app = msg.app
+                    msg2.trigger = msg.trigger
+                    this.route(ws, msg2)
+                })
+            }
             return
         }
 
