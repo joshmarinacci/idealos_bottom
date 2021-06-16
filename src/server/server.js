@@ -10,6 +10,7 @@ import Ajv from 'ajv'
 import fs from 'fs'
 import path from 'path'
 import {LiveDB} from './db.js'
+import {DOCS} from "../../resources/database/example_docs.js"
 
 export const hostname = '127.0.0.1'
 export const websocket_port = 8081
@@ -56,6 +57,7 @@ export class CentralServer {
         this.router = new EventRouter(this.cons, this.wids, this.at, this)
         this.apps = opts.apps
         this.db = new LiveDB()
+        this.db.importDocs(DOCS)
     }
 
     async start() {
