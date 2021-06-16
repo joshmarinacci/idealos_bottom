@@ -53,7 +53,7 @@ async function init() {
             // new IconButton({text: "t",appname:'guitest', font:app._symbol_font}),
             // new IconButton({text: "r",appname:'dotclock', font:app._symbol_font}),
         ]
-    })a
+    })
     wind = win
     app.send({ type:"LIST_ALL_APPS" })
 }
