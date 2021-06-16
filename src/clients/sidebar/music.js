@@ -14,12 +14,12 @@ class MusicPlayerPanel extends Component {
     input(e) {
         this.playing = !this.playing
         if(this.playing) {
-            this.app.send({
+            app.send({
                 type: "audio-server-play",
                 url: "url.mp3"
             })
         } else {
-            this.app.send({
+            app.send({
                 type: "audio-server-pause",
                 url: "url.mp3"
             })
