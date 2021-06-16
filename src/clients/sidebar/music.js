@@ -16,12 +16,14 @@ class MusicPlayerPanel extends Component {
         if(this.playing) {
             app.send({
                 type: "audio-server-play",
-                url: "https://joshondesign.com/p/music/And_-_Dans/And_-_02_-_Hilton_Orbital_Hotel.mp3"
+                //url: "https://joshondesign.com/p/music/And_-_Dans/And_-_02_-_Hilton_Orbital_Hotel.mp3"
+                url:"resources/hilton.mp3",
             })
         } else {
             app.send({
                 type: "audio-server-pause",
-                url: "https://joshondesign.com/p/music/And_-_Dans/And_-_02_-_Hilton_Orbital_Hotel.mp3"
+                // url: "https://joshondesign.com/p/music/And_-_Dans/And_-_02_-_Hilton_Orbital_Hotel.mp3"
+                url:"resources/hilton.mp3"
             })
         }
         this.repaint(e)
