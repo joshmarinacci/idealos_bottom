@@ -9,7 +9,7 @@ export class Button extends Component {
         this.text = opts.text || "button"
         this.text_key = opts.text_key
         this.pressed = false
-        this.padding = new Insets(5)
+        this.padding = new Insets(3)
         this.action = opts.action || null
     }
 
@@ -61,9 +61,11 @@ export class ToggleButton extends Button {
     redraw(gfx) {
         let state = this.pressed?"pressed":null
         if(this.selected) state = 'selected'
+        let bd = this.lookup_theme_part("border-color",state)
         let bg = this.lookup_theme_part('background-color',state)
         let txt = this.lookup_theme_part('color',state)
-        gfx.rect(this.x, this.y, this.width, this.height, bg);
+        gfx.rect(this.x, this.y, this.width, this.height,bd)
+        gfx.rect(this.x+1, this.y+1, this.width-2, this.height-2,bg)
         gfx.text(this.padding.left + this.x, this.y, this.text, txt);
     }
 }
@@ -110,9 +112,11 @@ export class PopupButton extends Button {
     }
     redraw(gfx) {
         let state = this.pressed?"pressed":null
+        let bd = this.lookup_theme_part("border-color",state)
         let bg = this.lookup_theme_part("background-color",state)
         let fg = this.lookup_theme_part("color",state)
-        gfx.rect(this.x, this.y, this.width, this.height, bg)
+        gfx.rect(this.x, this.y, this.width, this.height,bd)
+        gfx.rect(this.x+1, this.y+1, this.width-2, this.height-2,bg)
         gfx.text(this.padding.left + this.x, this.y, this.text, fg, this.window().base_font)
         let met = gfx.text_size(this.text,this.window().base_font)
         gfx.text(this.padding.left + this.x + met.width + 2, this.y, this.arrow, fg, this.window().symbol_font)
