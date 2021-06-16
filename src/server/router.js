@@ -115,6 +115,8 @@ export class EventRouter {
         if(msg.type === "translation_set_language") return translation_set_language(msg,this.cons,this.server)
 
         if(msg.type === "database-query") return perform_database_query(msg,this.cons,this.server)
+        if(msg.type === "audio-server-play") return this.server.audio.play(msg)
+        if(msg.type === "audio-server-pause") return this.server.audio.pause(msg)
 
         if(msg.type === 'group-message') {
             if(msg.category === 'graphics') {
