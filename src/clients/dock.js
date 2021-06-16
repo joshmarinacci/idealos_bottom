@@ -66,6 +66,8 @@ function icon_for_app(name) {
     if(name === "fractal") return String.fromCodePoint(2)
     if(name === "guitest") return String.fromCodePoint(11)
     if(name === "pixelclock") return String.fromCodePoint(10)
+    if(name === "texteditor") return String.fromCodePoint(17)
+    if(name === "todolist") return String.fromCodePoint(18)
     return String.fromCodePoint(1)
 }
 

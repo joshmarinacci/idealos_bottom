@@ -57,11 +57,18 @@
       "autostart": false
     },
     {
+      "name": "todolist",
+      "title": "Todo List",
+      "icon": "todolist",
+      "entrypoint":"src/clients/todolist.js",
+      "autostart": true
+    },
+    {
       "name": "texteditor",
       "title": "Text Edit",
-      "icon": "textedit",
+      "icon": "texteditor",
       "entrypoint":"src/clients/texteditor.js",
-      "autostart": true
+      "autostart": false
     }
   ],
   "services": [

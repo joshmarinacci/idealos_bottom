@@ -1,19 +1,32 @@
 import {App, Component, Container} from '../toolkit/guitoolkit.js'
 
 const MUSIC_NOTE_ICON = String.fromCodePoint(13)
+const PLAY_ICON = String.fromCodePoint(25)
+const PAUSE_ICON = String.fromCodePoint(26)
 
 class MusicPlayerPanel extends Component {
     constructor(opts) {
         super(opts);
+        this.playing = false
     }
+    input(e) {
+        this.playing = !this.playing
+        this.repaint(e)
+    }
+
     redraw(gfx) {
         gfx.rect(this.x,this.y,this.width,this.height,'white')
         gfx.rect(this.x+1,this.y+0,5,this.height-1,'white')
         gfx.rect(this.x+2,this.y+1,3,10,'black')
 
-        gfx.text(this.x+10,this.y+1,'Hey Jude','white')
+        if(this.playing) {
+            gfx.text(this.x + 10, this.y + 1, PAUSE_ICON, 'black')
+        } else {
+            gfx.text(this.x + 10, this.y + 1, PLAY_ICON, 'black')
+        }
+        gfx.text(this.x+20,this.y+1,'Hey Jude','white')
         gfx.text(this.x+10,this.y+15,'Past Masters - The Beatles','white')
-        gfx.text(this.x+60,this.y+1,MUSIC_NOTE_ICON,'black')
+        gfx.text(this.x+65,this.y+1,MUSIC_NOTE_ICON,'black')
     }
 }
 
