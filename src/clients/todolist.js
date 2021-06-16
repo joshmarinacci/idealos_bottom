@@ -38,6 +38,7 @@ async function init() {
         constraint:CONSTRAINTS.FILL,
         children:item_comps,
     })
+    win.redraw()
 }
 
 

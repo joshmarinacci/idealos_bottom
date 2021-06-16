@@ -26,6 +26,7 @@ async function init() {
         constraint:CONSTRAINTS.FILL,
         children:[output,input]
     })
+    win.redraw()
 }
 
 

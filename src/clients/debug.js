@@ -25,6 +25,7 @@ async function init() {
             new TranslatedLabel({text_key:"button.okay"})
         ]
     })
+    win.redraw()
 }
 
 app.on('start',()=>init())

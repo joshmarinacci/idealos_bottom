@@ -42,7 +42,7 @@ let app = new App(process.argv)
 let wind = null
 async function init() {
     await app.a_init()
-    let win = await app.open_window(0, 0, 1+16+1, 16 * 6, 'dock')
+    let win = await app.open_window(0, 0, 1+16+1, 16 * 8, 'dock')
     win.root = new VBox({
         width: 16,
         height: 16 * 5,
@@ -56,6 +56,7 @@ async function init() {
     })
     wind = win
     app.send({ type:"LIST_ALL_APPS" })
+    win.redraw()
 }
 
 app.on('start',()=>init())
@@ -68,6 +69,7 @@ function icon_for_app(name) {
     if(name === "pixelclock") return String.fromCodePoint(10)
     if(name === "texteditor") return String.fromCodePoint(17)
     if(name === "todolist") return String.fromCodePoint(18)
+    if(name === "jessecalc") return String.fromCodePoint(19)
     return String.fromCodePoint(1)
 }
 
