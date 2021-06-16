@@ -11,6 +11,7 @@ import {VBox} from '../toolkit/panels.js'
 import {Container} from '../toolkit/guitoolkit.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
+import {INPUT} from 'idealos_schemas/js/input.js'
 
 let app = new App(process.argv)
 
@@ -78,6 +79,23 @@ async function init() {
     app.on(GRAPHICS.TYPE_DrawImage,(m)=>redispatch(m.payload))
     app.on("group-message",m => redispatch(m.payload))
 
+    function forward_to_widget(m,wid) {
+        let msg = m.payload
+        msg.window = wid.windows[0]
+        msg.x = Math.floor(msg.x - wid.x)
+        msg.y = Math.floor(msg.y - wid.y)
+        msg.app = wid.appid
+        // app.log("sending",msg,'to widget',wid)
+        app.ws.send(JSON.stringify(msg))
+    }
+    app.on(INPUT.TYPE_MouseDown, m => {
+        Object.values(widgets).forEach(wid =>  {
+            if(wid.y <= m.payload.y && wid.y+wid.h > m.payload.y) {
+                forward_to_widget(m,wid)
+            }
+        })
+    })
+
     async function start_widget(opts) {
         let resp = await app.send_and_wait_for_response({
             type:"START_SUB_APP",
@@ -86,14 +104,14 @@ async function init() {
         widgets[resp.appid] = {
             appid:resp.appid,
             windows:[],
-            x:opts.x,y:opts.y,
+            x:opts.x,y:opts.y,h:opts.h,w:opts.w,
         }
     }
 
-    await start_widget({entrypoint:"src/clients/sidebar/clock.js", x:1, y:0})
-    await start_widget({entrypoint:"src/clients/sidebar/weather.js", x:1, y:23})
-    await start_widget({entrypoint:"src/clients/sidebar/cpuinfo.js", x:1, y:39})
-    await start_widget({entrypoint:"src/clients/sidebar/music.js", x:1, y:55})
+    await start_widget({entrypoint:"src/clients/sidebar/clock.js", x:1, y:0,w:80,h:22})
+    await start_widget({entrypoint:"src/clients/sidebar/weather.js", x:1, y:23,w:80,h:39-23})
+    await start_widget({entrypoint:"src/clients/sidebar/cpuinfo.js", x:1, y:39,w:80,h:55-39})
+    await start_widget({entrypoint:"src/clients/sidebar/music.js", x:1, y:55,w:80,h:82-55})
 
     app.on("SUB_APP_WINDOW_OPEN",(msg)=>{
         let m = msg.payload
