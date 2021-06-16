@@ -4,6 +4,8 @@ const MUSIC_NOTE_ICON = String.fromCodePoint(13)
 const PLAY_ICON = String.fromCodePoint(25)
 const PAUSE_ICON = String.fromCodePoint(26)
 
+let app = new App(process.argv)
+
 class MusicPlayerPanel extends Component {
     constructor(opts) {
         super(opts);
@@ -11,6 +13,17 @@ class MusicPlayerPanel extends Component {
     }
     input(e) {
         this.playing = !this.playing
+        if(this.playing) {
+            app.send({
+                type: "audio-server-play",
+                url: "https://joshondesign.com/p/music/And_-_Dans/And_-_02_-_Hilton_Orbital_Hotel.mp3"
+            })
+        } else {
+            app.send({
+                type: "audio-server-pause",
+                url: "https://joshondesign.com/p/music/And_-_Dans/And_-_02_-_Hilton_Orbital_Hotel.mp3"
+            })
+        }
         this.repaint(e)
     }
 
@@ -30,7 +43,6 @@ class MusicPlayerPanel extends Component {
     }
 }
 
-let app = new App(process.argv)
 
 async function init() {
     await app.a_init()

@@ -29,6 +29,18 @@ function handle_font_load(msg, cons, server) {
     cons.forward_to_screen(resp)
 }
 
+function perform_database_query(msg, cons, server) {
+    console.log("searching database for",msg)
+    server.db.query(msg.query).then(res => {
+        console.log("result is",res)
+        server.cons.forward_to_app(msg.app,{
+            type:"database-query-response",
+            app:msg.app,
+            docs:res.docs,
+        })
+    })
+}
+
 export class EventRouter {
     constructor(cons,wids,apptracker,server) {
         this.cons = cons// || throw new Error("missing cons")
@@ -101,6 +113,10 @@ export class EventRouter {
 
         if(msg.type === "translation_get_value") return translation_get_value(msg,this.cons,this.server)
         if(msg.type === "translation_set_language") return translation_set_language(msg,this.cons,this.server)
+
+        if(msg.type === "database-query") return perform_database_query(msg,this.cons,this.server)
+        if(msg.type === "audio-server-play") return this.server.audio.play(msg)
+        if(msg.type === "audio-server-pause") return this.server.audio.pause(msg)
 
         if(msg.type === 'group-message') {
             if(msg.category === 'graphics') {
