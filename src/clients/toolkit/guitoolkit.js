@@ -152,7 +152,6 @@ export class App {
             this.a_shutdown().then("done shutting down")
         });
         this._theme = null
-        this._font = null
 
         this.on("theme-changed",()=>{
             this.windows.forEach(win => win.theme_changed())
@@ -176,18 +175,6 @@ export class App {
         },500)
     }
     async a_init() {
-        // this._font = await PixelFont.load("src/clients/fonts/idealos_font@1.png", "src/clients/fonts/idealos_font@1.json")
-        // this._symbol_font = await PixelFont.load("src/clients/fonts/symbol_font@1.png","src/clients/fonts/symbol_font@1.json")
-        this._font = await load_josh_font("resources/fonts/font.json")
-        /*
-        this.on(RESOURCES.TYPE_ResourceChanged, (e)=>{
-            if(e.payload.resource === 'theme') {
-                this._theme = JSON.parse(String.fromCharCode(...e.payload.data.data))
-                this.fireLater(e)
-            }
-        })
-        this.send(RESOURCES.MAKE_ResourceGet({'resource':'theme','sender':this._appid}))
-         */
     }
     open_window(x,y,width,height,window_type) {
         return new Promise((res,rej)=>{
@@ -202,8 +189,13 @@ export class App {
             let handler = (e) => {
                 this.off(WINDOWS.TYPE_WindowOpenResponse,handler)
                 let win = new Window(this,width,height,e.payload.window,null,false)
-                win.base_font = this._font
-                win.symbol_font = this._symbol_font
+                win.send_and_wait({
+                    type: "request-font",
+                    name: 'base',
+                }).then(r  => {
+                    console.log("got the font",r.name)
+                    win.base_font = new JoshFont(r.font)
+                })
                 this.windows.push(win)
                 res(win)
             }
@@ -410,6 +402,10 @@ export class Window {
     }
     redraw(trigger) {
         if(!this.root) return
+        if(!this.base_font) {
+            this.app.log("no base font yet!")
+            return
+        }
         this.root.parent = this
         let gfx = new Gfx(this.app,this,trigger)
         this.root.layout(gfx)
@@ -448,7 +444,6 @@ export class Window {
                 this.app.off(WINDOWS.TYPE_create_child_window_response,handler)
                 let win = new Window(this.app,width,height,e.payload.window.id,this,true)
                 win.base_font = this.app._font
-                win.symbol_font = this.app._symbol_font
                 this.app.windows.push(win)
                 res(win)
             }

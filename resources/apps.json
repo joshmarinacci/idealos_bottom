@@ -12,7 +12,7 @@
     {
       "name": "sidebar",
       "entrypoint": "src/clients/sidebar/sidebar.js",
-      "disabled": false,
+      "disabled": true,
       "groups": [
         "sidebar",
         "secure"
@@ -21,7 +21,7 @@
     {
       "name": "dock",
       "entrypoint": "src/clients/dock.js",
-      "disabled": false,
+      "disabled": true,
       "groups": [
         "dock,",
         "secure"
@@ -47,7 +47,7 @@
       "title": "Cool Gui Tester",
       "icon": "guitester",
       "entrypoint": "src/clients/gui_test.js",
-      "autostart": false
+      "autostart": true
     },
     {
       "name": "pixelclock",
@@ -75,7 +75,7 @@
       "title": "jessecalc",
       "icon": "jessecalc",
       "entrypoint":"src/clients/jessecalc.js",
-      "autostart": true
+      "autostart": false
     }
   ],
   "services": [
