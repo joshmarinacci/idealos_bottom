@@ -3,8 +3,6 @@ import {RESOURCES} from 'idealos_schemas/js/resources.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {default as WebSocket} from 'ws'
-import {PixelFont} from '../app_utils.js'
-import fs from 'fs'
 
 export class Point {
     constructor(x,y) {
@@ -125,13 +123,6 @@ class JoshFont {
     }
 }
 
-async function load_josh_font(font_path) {
-    console.log("loading the font from",font_path)
-    let font_info = JSON.parse((await fs.promises.readFile(font_path)).toString())
-    // console.log("font info",font_info)
-    return new JoshFont(font_info)
-}
-
 export class App {
     constructor(argv) {
         this._appid = argv[3]
@@ -193,8 +184,8 @@ export class App {
                     type: "request-font",
                     name: 'base',
                 }).then(r  => {
-                    console.log("got the font",r.name)
                     win.base_font = new JoshFont(r.font)
+                    win.repaint()
                 })
                 this.windows.push(win)
                 res(win)
@@ -443,7 +434,13 @@ export class Window {
             let handler = (e) => {
                 this.app.off(WINDOWS.TYPE_create_child_window_response,handler)
                 let win = new Window(this.app,width,height,e.payload.window.id,this,true)
-                win.base_font = this.app._font
+                win.send_and_wait({
+                    type: "request-font",
+                    name: 'base',
+                }).then(r  => {
+                    win.base_font = new JoshFont(r.font)
+                    win.repaint()
+                })
                 this.app.windows.push(win)
                 res(win)
             }
@@ -513,11 +510,11 @@ class Gfx {
     }
     text(x,y,text,color,font) {
         if (font) return font.draw_text(this, this.tx + x, this.ty + y, text, color, this.win)
-        return this.app._font.draw_text(this, this.tx + x, this.ty + y, text, color, this.win)
+        return this.win.base_font.draw_text(this, this.tx + x, this.ty + y, text, color, this.win)
     }
     text_size(text, font) {
         if(font) return font.measure_text(this.app,text)
-        return this.app._font.measure_text(this.app,text)
+        return this.win.base_font.measure_text(this.app,text)
     }
     theme_bg_color(name, def) {
         return this.theme_part(name,'background_color',def)

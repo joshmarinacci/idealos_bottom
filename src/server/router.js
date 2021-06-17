@@ -10,7 +10,6 @@ import {INFO} from 'idealos_schemas/js/keyboard_map.js'
 
 
 function handle_font_load(msg, cons, server) {
-    console.log("hanlding font load",msg)
     let resp = null
     if(!server.fonts[msg.name]) {
         resp = make_response(msg, {
@@ -27,8 +26,12 @@ function handle_font_load(msg, cons, server) {
         })
     }
     resp.app = msg.app
-    console.log("sending to app",resp.app)
-    cons.forward_to_app(resp.app,resp)
+    console.log("sending font to app",resp.app)
+    if(resp.app) {
+        cons.forward_to_app(resp.app,resp)
+    } else {
+        cons.forward_to_screen(resp)
+    }
     // cons.forward_to_screen(resp)
 }
 
