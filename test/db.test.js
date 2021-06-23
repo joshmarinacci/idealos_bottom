@@ -1,13 +1,18 @@
 import {CATEGORIES} from "../src/server/db/schema.js"
-import {makeDB, sort} from '../src/server/db/db.js'
+import {makeDB, makeDB_with_json_files, sort} from '../src/server/db/db.js'
 import {compareAsc} from "date-fns"
 import expect from "expect"
 import {DATA} from './resources/db.test.data.js'
 
+
 describe("db tests",() => {
     let db = makeDB(DATA)
 
-    it('will find all chat messages', () => {
+    it('will find all chat messages', async () => {
+        let db = await makeDB_with_json_files([
+            "test/resources/db.chats.json",
+            "test/resources/db.tasks.json"
+        ])
         //find all chat messages
         let res = db.QUERY({
             and: [

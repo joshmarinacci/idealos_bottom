@@ -1,3 +1,8 @@
+export const SORTS = {
+    ASCENDING:"ASCENDING",
+    DESCENDING:"DESCENDING",
+}
+
 export const STRING = 'STRING'
 export const INTEGER = 'INTEGER'
 export const ENUM = 'ENUM'
@@ -7,7 +12,7 @@ export const TIMESTAMP = 'TIMESTAMP'
 export const ID = 'ID'
 export const OBJECT = 'OBJECT'
 
-export const CATEGORIES = {
+const categories = {
     CONTACT:{
         ID:'CONTACT',
         TITLE:'contacts',
@@ -715,20 +720,31 @@ export const CATEGORIES = {
     }
 }
 
+Object.entries(categories).forEach(([cat_name,cat_def]) => {
+    cat_def.ID = `CATEGORIES.${cat_name}.ID`
+    // console.log('cat def is',cat_def)
+    if(cat_def.TYPES) {
+        Object.entries(cat_def.TYPES).forEach(([type_name, type_def]) => {
+            cat_def.TYPES[type_name] = `CATEGORIES.${cat_name}.TYPES.${type_name}`
+        })
+    } else {
+        console.warn("WARNING. MISSING TYPES or move to SCHEMAS for",cat_name)
+    }
+})
+
+export const CATEGORIES = categories
+
+
+
 const SCHEMAS = {}
-Object.values(CATEGORIES).forEach(val => {
+Object.values(categories).forEach(val => {
     if(val.SCHEMAS) {
         Object.keys(val.SCHEMAS).forEach(key => {
-            let schema = val.SCHEMAS[key]
-            SCHEMAS[key] = schema
+            SCHEMAS[key] = val.SCHEMAS[key]
         })
     }
 })
 
-export const SORTS = {
-    ASCENDING:"ASCENDING",
-    DESCENDING:"DESCENDING",
-}
 
 function propMissing(obj, key) {
     if(!obj) return true
@@ -752,14 +768,14 @@ export function validateData(data) {
         })
     }
 
-    data.forEach(o => {
-        if(o.type === CATEGORIES.CONTACT.TYPES.PERSON) {
-            fix_with_schema(o)
-        }
-        if(o.type === CATEGORIES.APP.TYPES.APP) {
-            fix_with_schema(o)
-        }
-    })
+    // data.forEach(o => {
+    //     if(o.type === CATEGORIES.CONTACT.TYPES.PERSON) {
+    //         fix_with_schema(o)
+    //     }
+    //     if(o.type === CATEGORIES.APP.TYPES.APP) {
+    //         fix_with_schema(o)
+    //     }
+    // })
 }
 
 export function getEnumPropValues(obj,prop) {
@@ -840,5 +856,3 @@ export function lookup_types_for_category(domain, category) {
         return schemas[key]
     })
 }
-
-

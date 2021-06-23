@@ -1,0 +1,72 @@
+[
+  {
+    "id":11,
+    "category": "CATEGORIES.CHAT.ID",
+    "type": "CATEGORIES.CHAT.TYPES.MESSAGE",
+    "props": {
+      "sender":1,
+      "receivers":[1,2,3],
+      "contents":"hi jesse",
+      "timestamp":2
+    }
+  },
+  {
+    "id":12,
+    "category": "CATEGORIES.CHAT.ID",
+    "type": "CATEGORIES.CHAT.TYPES.MESSAGE",
+    "props": {
+      "sender":2,
+      "receivers":[1,2,3],
+      "contents":"hi daddy",
+      "timestamp":1
+    }
+  },
+  {
+    "id":13,
+    "category": "CATEGORIES.CHAT.ID",
+    "type": "CATEGORIES.CHAT.TYPES.MESSAGE",
+    "props": {
+      "sender":3,
+      "receivers":[1,2,3],
+      "contents":"meow",
+      "timestamp":5
+    }
+  },
+  {
+    "id":14,
+    "category": "CATEGORIES.CHAT.ID",
+    "type": "CATEGORIES.CHAT.TYPES.CONVERSATION",
+    "props": {
+      "title":"cat chat",
+      "people":[1,2,3]
+    }
+  },
+  {
+    "id":15,
+    "category": "CATEGORIES.CHAT.ID",
+    "type": "CATEGORIES.CHAT.TYPES.CONVERSATION",
+    "props": {
+      "title":"kid chat",
+      "people":[1,2]
+    }
+  },
+  {
+    "id":16,
+    "category": "CATEGORIES.CHAT.ID",
+    "type": "CATEGORIES.CHAT.TYPES.MESSAGE",
+    "props": {
+      "sender":1,
+      "receivers":[1,2],
+      "contents":"have you done your homework?",
+      "timestamp":5
+    }
+  },
+  {
+    "id":17,
+    "category": "CATEGORIES.SETTINGS.ID",
+    "type": "CATEGORIES.CHAT.TYPES.MESSAGE",
+    "props": {
+      "contact":1
+    }
+  }
+]

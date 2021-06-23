@@ -2,6 +2,7 @@ import {DATA} from '../../../resources/database/testdata.js'
 import {query} from './query.js'
 import {CATEGORIES, makeNewObject, SORTS, validateData} from './schema.js'
 import {compareAsc, compareDesc} from "date-fns/index.js"
+import fs from 'fs'
 
 export function sort(items,sortby,sortorder) {
     if(!Array.isArray(sortby)) throw new Error("sort(items, sortby) sortby must be an array of key names")
@@ -423,6 +424,17 @@ class DB {
 export function makeDB(EXISTING_DATA) {
     return new DB(EXISTING_DATA)
 }
+
+export async function makeDB_with_json_files(files) {
+    let data = []
+    for(let file of files) {
+        let raw = await fs.promises.readFile(file)
+        let json = JSON.parse(raw.toString())
+        data.push(...json)
+    }
+    return new DB(data)
+}
+
 
 // TODO: extend this to use the real schemas
 export function encode_props_with_types(value) {
