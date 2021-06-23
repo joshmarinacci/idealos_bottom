@@ -274,7 +274,10 @@ export class DataBase {
     }
 
 
-    start() {
+    async start() {
+
+    }
+    async stop() {
 
     }
     addEventListener(cat,listener) {

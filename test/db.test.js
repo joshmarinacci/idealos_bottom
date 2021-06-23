@@ -1,6 +1,7 @@
 import {CATEGORIES} from "../src/server/db/schema.js"
 import {DataBase} from '../src/server/db/db.js'
 import expect from "expect"
+import {AND, IS_PROP_TRUE, IS_TYPE} from '../src/server/db/query.js'
 
 
 describe("db tests",() => {
@@ -22,6 +23,7 @@ describe("db tests",() => {
         })
         // assert.strictEqual(res.length, 4)
         expect(res.length).toBe(4)
+        await db.stop()
     })
 
     it('find all items where first or last contains the substring "mar"', async () => {
@@ -45,6 +47,7 @@ describe("db tests",() => {
             ]
         })
         expect(res.length).toBe(2)
+        await db.stop()
     })
 
     it("succeed even with a broken json file", async () => {
@@ -65,6 +68,7 @@ describe("db tests",() => {
         })
         // assert.strictEqual(res.length, 4)
         expect(res.length).toBe(4)
+        await db.stop()
     })
 
     it("don't let invalid data in", async () => {
@@ -83,11 +87,15 @@ describe("db tests",() => {
             ]
         })
         expect(res.length).toBe(1)
+        await db.stop()
     })
-    /*
+
 
     //compound AND and OR query
-    it('find all contacts.people where first or last contains the substring "Mar"', () => {
+    it('find all contacts.people where first or last contains the substring "Mar"', async () => {
+        let db = new DataBase()
+        await db.watch_json("test/resources/db.contacts.json")
+        await db.start()
         let res = db.QUERY({
             and: [
                 {
@@ -118,7 +126,7 @@ describe("db tests",() => {
         expect(res.length).toBe(2)
     })
 
-
+    /*
     it('query building', () => {
 
         const and = (...args) => ({and: args})
@@ -132,20 +140,23 @@ describe("db tests",() => {
 
         expect(res.length).toBe(2)
     })
-
+    */
 
 
     //find all notes where archived is true
-    it('archived notes', () => {
-        const and = (...args) => ({and: args})
-        const isNote = () => ({TYPE: CATEGORIES.NOTES.TYPES.NOTE})
-        const isArchived = () => ({equal: {prop: 'archived', value: true}})
-
-        const res = db.QUERY(and(isNote(), isArchived()))
-        expect(res.length).toBe(2)
+    it('archived tasks', async () => {
+        let db = new DataBase()
+        await db.watch_json("test/resources/db.tasks.json")
+        await db.start()
+        const res = db.QUERY(AND(
+            IS_TYPE(CATEGORIES.TASKS.TYPES.TASK),
+            IS_PROP_TRUE("archived"),
+        ))
+        expect(res.length).toBe(1)
+        await db.stop()
     })
 
-
+    /*
     it('sort by date', () => {
         const and = (...args) => ({and: args})
         const isEmail = () => ({TYPE: CATEGORIES.EMAIL.TYPES.MESSAGE})
