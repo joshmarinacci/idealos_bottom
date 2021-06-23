@@ -1,0 +1,63 @@
+[
+  {
+    "id":48,
+    "category": "CATEGORIES.EMAIL.ID",
+    "type": "CATEGORIES.EMAIL.TYPES.MESSAGE",
+    "props": {
+      "sender":"jessemarinacci@icloud.com",
+      "receivers":["josh@josh.earth"],
+      "subject":"New Lego Set!",
+      "body": "There's a crazy new LEGO set for us to buy.\n I can't wait!",
+      "read":false,
+      "tags":["inbox"],
+      "timestamp": "october 8th 10pm"
+    }
+  },
+
+  {
+    "id": 49,
+    "category": "CATEGORIES.EMAIL.ID",
+    "type": "CATEGORIES.EMAIL.TYPES.MESSAGE",
+    "props": {
+      "sender": "jessemarinacci@icloud.com",
+      "receivers": ["joshua@marinacci.org","jennifer@marinacci.org"],
+      "subject": "Homework done",
+      "body": "Hi Mommy and Daddy.\nI finished my homework.",
+      "read": true,
+      "timestamp": "october 8th 10pm",
+      "tags": ["inbox"]
+    }
+  },
+
+  {
+    "id":50,
+    "category": "CATEGORIES.EMAIL.ID",
+    "type": "CATEGORIES.EMAIL.TYPES.MESSAGE",
+    "props": {
+      "sender":"junk@junk.com",
+      "receiver":[
+        "josh@josh.earth"],
+      "subject":"Awesome Junk For Sale!",
+      "body": "Please buy our crap. It's awesome. With links!",
+      "read":false,
+      "tags":[
+        "junk"],
+      "timestamp": "october 8th 10pm"
+    }
+  },
+
+  {
+    "id":51,
+    "category": "CATEGORIES.EMAIL.ID",
+    "type": "CATEGORIES.EMAIL.TYPES.MESSAGE",
+    "props": {
+      "sender":"jessemarinacci@icloud.com",
+      "receiver":["josh@josh.earth"],
+      "subject":"Email should be deleted",
+      "body": "Lets delete this email",
+      "read":false,
+      "tags":["junk","trash"],
+      "timestamp": "october 8th 10pm"
+    }
+  }
+]

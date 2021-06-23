@@ -1,0 +1,45 @@
+[
+  {
+    "id":18,
+    "category": "CATEGORIES.CALENDAR.ID",
+    "type": "CATEGORIES.CALENDAR.TYPES.EVENT",
+    "props": {
+      "title": "give the cats fleameds",
+      "repeats": "never",
+      "start": "new Date(2020 9 8 12 10 0)"
+      "duration":""
+    }
+  },
+  {
+    "id":19,
+    "category": "CATEGORIES.CALENDAR.ID",
+    "type": "CATEGORIES.CALENDAR.TYPES.EVENT",
+    "props": {
+      "title": "go to sleep",
+      "repeats": "daily",
+      "start": "new Date(2020 9 8 12) 11 0)"
+    }
+  },
+  {
+    "id":1901,
+    "category": "CATEGORIES.CALENDAR.ID",
+    "type": "CATEGORIES.CALENDAR.TYPES.EVENT",
+    "props": {
+      "title": "interview",
+      "repeats": "never",
+      "start": "new Date(2020 9 14 9 0)",
+      "duration":""
+    }
+  },
+  {
+    "id":1902,
+    "category": "CATEGORIES.CALENDAR.ID",
+    "type": "CATEGORIES.CALENDAR.TYPES.EVENT",
+    "props": {
+      "title": "interview2",
+      "repeats": "never",
+      "start": "new Date(2020 9 14 8 0)",
+      "duration":""
+    }
+  }
+]

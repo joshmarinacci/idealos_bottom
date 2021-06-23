@@ -1,0 +1,12 @@
+[
+  {
+    "id":300,
+    "category": "CATEGORIES.NOTIFICATION.ID",
+    "type": "CATEGORIES.NOTIFICATION.TYPES.ALERT",
+    "props": {
+      "title": "launched desktop",
+      "icon":"info",
+      "read":false
+    }
+  }
+]

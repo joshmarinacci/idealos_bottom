@@ -1,0 +1,26 @@
+[
+  {
+    "id":36,
+    "category": "CATEGORIES.ALARM.ID",
+    "type":"CATEGORIES.ALARM.TYPES.ALARM",
+    "props": {
+      "time": "0 0 0 9 55",
+      "repeat":"none",
+      "enabled":true,
+      "title":"wake up",
+      "alerted":false,
+    }
+  },
+
+  {
+    "id":37,
+    "category": "CATEGORIES.ALARM.ID",
+    "type":"CATEGORIES.ALARM.TYPES.ALARM",
+    "props": {
+      "time": "0 0 0 12 2",
+      "repeat":"weekdays",
+      "enabled":false,
+      "title":"afternoon coffee"
+    }
+  }
+]
