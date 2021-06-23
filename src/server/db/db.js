@@ -421,8 +421,7 @@ class DB {
 }
 
 export function makeDB(EXISTING_DATA) {
-    if(EXISTING_DATA) return new DB(EXISTING_DATA)
-    return new DB(DATA)
+    return new DB(EXISTING_DATA)
 }
 
 // TODO: extend this to use the real schemas

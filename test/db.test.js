@@ -2,9 +2,10 @@ import {CATEGORIES} from "../src/server/db/schema.js"
 import {makeDB, sort} from '../src/server/db/db.js'
 import {compareAsc} from "date-fns"
 import expect from "expect"
+import {DATA} from './resources/db.test.data.js'
 
 describe("db tests",() => {
-    let db = makeDB()
+    let db = makeDB(DATA)
 
     it('will find all chat messages', () => {
         //find all chat messages
