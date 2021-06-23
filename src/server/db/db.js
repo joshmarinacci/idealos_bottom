@@ -1,5 +1,5 @@
 import {DATA} from '../../../resources/database/testdata.js'
-import {query2} from './query2.js'
+import {query} from './query.js'
 import {CATEGORIES, makeNewObject, SORTS, validateData} from './schema.js'
 import {compareAsc, compareDesc} from "date-fns/index.js"
 
@@ -261,7 +261,7 @@ class DB {
         this.listeners[cat] = this.listeners[cat].filter(l => l !== listener)
     }
     QUERY(...args) {
-        return query2(this.data,...args)
+        return query(this.data,...args)
     }
     add(obj) {
         this.data.push(obj)

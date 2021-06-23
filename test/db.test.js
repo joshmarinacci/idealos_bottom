@@ -82,7 +82,7 @@ describe("db tests",() => {
         const or = (...args) => ({or: args})
         const hasSubstring = (f, value) => ({substring: {prop: f, value: value}})
 
-        const res = query2(DATA, and(isPerson(), isContact(), or(
+        const res = query(DATA, and(isPerson(), isContact(), or(
             hasSubstring('last', 'mar'),
             hasSubstring('first', 'mar')
         )))

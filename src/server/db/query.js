@@ -112,7 +112,7 @@ function processOr(opts, o) {
     return pass
 }
 
-export function query2(data,opts) {
+export function query(data, opts) {
     let res = []
     data.forEach(o => {
         if(isAnd(opts) && processAnd(opts,o)) res.push(o)
