@@ -252,6 +252,7 @@ const categories = {
                 props: {
                     sender:{
                         key:'sender',
+                        required:true
                     },
                     receivers:{
                         key:'receivers',
@@ -509,16 +510,55 @@ Object.entries(categories).forEach(([cat_name,cat_def]) => {
 
 export const CATEGORIES = categories
 
+let SCHEMAS = null
+
+function make_SCHEMAS() {
+    SCHEMAS = {}
+    Object.values(categories).forEach(category => {
+        if(category.SCHEMAS) {
+            Object.keys(category.SCHEMAS).forEach(sch => {
+                let type = category.TYPES[sch]
+                // console.log("key is",category, sch,type)
+                SCHEMAS[type] = category.SCHEMAS[sch]
+            })
+        }
+    })
 
 
-const SCHEMAS = {}
-Object.values(categories).forEach(val => {
-    if(val.SCHEMAS) {
-        Object.keys(val.SCHEMAS).forEach(key => {
-            SCHEMAS[key] = val.SCHEMAS[key]
-        })
+}
+
+function get_schemas() {
+    if(!SCHEMAS) make_SCHEMAS()
+    return SCHEMAS
+}
+
+export class SchemaManager {
+    constructor() {
+        this._schemas = get_schemas()
     }
-})
+    findSchema(type) {
+        // console.log(this._schemas)
+        if(!this._schemas[type]) throw new Error(`no schema found for type ${type}`)
+        return this._schemas[type]
+    }
+    isValid(item) {
+        if(!item) return false
+        if(!item.type) return false
+        let schema = this.findSchema(item.type)
+        if(!schema) return false
+        for(let key of Object.keys(schema.props)) {
+            let sch = schema.props[key]
+            if(propMissing(item,key) && sch.required && !sch.hasOwnProperty('default')) {
+                console.log("item missing",key,"and its required and has no default")
+                return false
+            }
+        }
+        return true
+    }
+
+}
+
+
 
 
 function propMissing(obj, key) {
@@ -528,106 +568,102 @@ function propMissing(obj, key) {
     return false
 }
 
-export function validateData(data) {
-    function fix_with_schema(o) {
-        // let schema = CATEGORIES.APP.SCHEMAS.APP
-        let schema = CATEGORIES[o.category].SCHEMAS[o.type]
-        // console.log("fixing",o.type, o.category, schema)
-        Object.keys(schema.props).forEach(key => {
-            let sch = schema.props[key]
-            // console.log(key,sch)
-            if(propMissing(o,key)) {
-                // console.warn("missing prop",key, 'setting', sch.default, o)
-                o.props[key] = sch.default
-            }
-        })
-    }
+// export function validateData(data) {
+//     function fix_with_schema(o) {
+//         // let schema = CATEGORIES.APP.SCHEMAS.APP
+//         let schema = CATEGORIES[o.category].SCHEMAS[o.type]
+//         // console.log("fixing",o.type, o.category, schema)
+//         Object.keys(schema.props).forEach(key => {
+//             let sch = schema.props[key]
+//             // console.log(key,sch)
+//             if(propMissing(o,key)) {
+//                 // console.warn("missing prop",key, 'setting', sch.default, o)
+//                 o.props[key] = sch.default
+//             }
+//         })
+//     }
+//
+//     // data.forEach(o => {
+//     //     if(o.type === CATEGORIES.CONTACT.TYPES.PERSON) {
+//     //         fix_with_schema(o)
+//     //     }
+//     //     if(o.type === CATEGORIES.APP.TYPES.APP) {
+//     //         fix_with_schema(o)
+//     //     }
+//     // })
+// }
 
-    // data.forEach(o => {
-    //     if(o.type === CATEGORIES.CONTACT.TYPES.PERSON) {
-    //         fix_with_schema(o)
-    //     }
-    //     if(o.type === CATEGORIES.APP.TYPES.APP) {
-    //         fix_with_schema(o)
-    //     }
-    // })
-}
-
-export function getEnumPropValues(obj,prop) {
-    // console.log("looking up values for",obj,prop)
-    if(obj.type === CATEGORIES.CONTACT.TYPES.EMAIL) {
-        return CATEGORIES.CONTACT.SCHEMAS.EMAIL.props[prop].values
-    }
-    if(obj.type === CATEGORIES.CONTACT.TYPES.PHONE) {
-        return CATEGORIES.CONTACT.SCHEMAS.PHONE.props[prop].values
-    }
-    if(obj.type === CATEGORIES.CONTACT.TYPES.MAILING_ADDRESS) {
-        return CATEGORIES.CONTACT.SCHEMAS.MAILING_ADDRESS.props[prop].values
-    }
-    if(obj.type === CATEGORIES.ALARM.TYPES.ALARM) {
-        return CATEGORIES.ALARM.SCHEMAS.ALARM.props[prop].values
-    }
-    return ["A",'B']
-}
-
-function findSchema(type) {
-    if(!SCHEMAS[type]) throw new Error("no schema found for type",type)
-    return SCHEMAS[type]
-}
-
-export function makeNewObject(type, category, customSchema) {
-    if(!type) throw new Error("makeNewObject missing type")
-    if(!category) throw new Error("makeNewObject missing category")
-    let schema = null
-    if(customSchema) {
-        schema = customSchema.SCHEMAS[type]
-    } else {
-        schema = findSchema(type)
-    }
-    if(!schema) throw new Error(`no schema found for type ${category}:${type}`)
-    if(!schema.props) throw new Error(`no schema props found for type ${category}:${type}`)
+// export function getEnumPropValues(obj,prop) {
+//     // console.log("looking up values for",obj,prop)
+//     if(obj.type === CATEGORIES.CONTACT.TYPES.EMAIL) {
+//         return CATEGORIES.CONTACT.SCHEMAS.EMAIL.props[prop].values
+//     }
+//     if(obj.type === CATEGORIES.CONTACT.TYPES.PHONE) {
+//         return CATEGORIES.CONTACT.SCHEMAS.PHONE.props[prop].values
+//     }
+//     if(obj.type === CATEGORIES.CONTACT.TYPES.MAILING_ADDRESS) {
+//         return CATEGORIES.CONTACT.SCHEMAS.MAILING_ADDRESS.props[prop].values
+//     }
+//     if(obj.type === CATEGORIES.ALARM.TYPES.ALARM) {
+//         return CATEGORIES.ALARM.SCHEMAS.ALARM.props[prop].values
+//     }
+//     return ["A",'B']
+// }
 
 
-    let obj = {
-        id:Math.floor(Math.random()*1000*1000),
-        type,
-        category,
-        props:{}
-    }
-    Object.keys(schema.props).forEach(key => {
-        let sc = schema.props[key]
-        if(!sc.hasOwnProperty('default')) {
-            console.error("schema missing default",category,type,sc)
-        }
-        // console.log('setting key',key,sc)
-        if(sc.type === TIMESTAMP && sc.default === 'NOW') {
-            obj.props[sc.key] = Date.now()
-            return
-        }
-        if(typeof sc.default === 'function') {
-            obj.props[sc.key] = sc.default()
-        } else {
-            obj.props[sc.key] = sc.default
-        }
-    })
-    // console.log("made new object of type",type,obj)
-    return obj
-}
+// export function makeNewObject(type, category, customSchema) {
+//     if(!type) throw new Error("makeNewObject missing type")
+//     if(!category) throw new Error("makeNewObject missing category")
+//     let schema = null
+//     if(customSchema) {
+//         schema = customSchema.SCHEMAS[type]
+//     } else {
+//         schema = findSchema(type)
+//     }
+//     if(!schema) throw new Error(`no schema found for type ${category}:${type}`)
+//     if(!schema.props) throw new Error(`no schema props found for type ${category}:${type}`)
+//
+//
+//     let obj = {
+//         id:Math.floor(Math.random()*1000*1000),
+//         type,
+//         category,
+//         props:{}
+//     }
+//     Object.keys(schema.props).forEach(key => {
+//         let sc = schema.props[key]
+//         if(!sc.hasOwnProperty('default')) {
+//             console.error("schema missing default",category,type,sc)
+//         }
+//         // console.log('setting key',key,sc)
+//         if(sc.type === TIMESTAMP && sc.default === 'NOW') {
+//             obj.props[sc.key] = Date.now()
+//             return
+//         }
+//         if(typeof sc.default === 'function') {
+//             obj.props[sc.key] = sc.default()
+//         } else {
+//             obj.props[sc.key] = sc.default
+//         }
+//     })
+//     // console.log("made new object of type",type,obj)
+//     return obj
+// }
 
-export function lookup_schema(domain, category, type) {
-    return CATEGORIES[category].SCHEMAS[type]
-}
+// export function lookup_schema(domain, category, type) {
+//     return CATEGORIES[category].SCHEMAS[type]
+// }
 
-export function lookup_types_for_category(domain, category) {
-    // console.log("lookup_types_for_category",domain,category)
-    let schemas = CATEGORIES[category].SCHEMAS
-    // console.log("schemas for category is",schemas)
-    Object.keys(schemas).forEach(key => {
-        let type = schemas[key]
-        if(!type.title) console.warn(category + " " + key + " is missing a title")
-    })
-    return Object.keys(schemas).map(key => {
-        schemas[key].key = key
-        return schemas[key]
-    })
-}
+// export function lookup_types_for_category(domain, category) {
+//     // console.log("lookup_types_for_category",domain,category)
+//     let schemas = CATEGORIES[category].SCHEMAS
+//     // console.log("schemas for category is",schemas)
+//     Object.keys(schemas).forEach(key => {
+//         let type = schemas[key]
+//         if(!type.title) console.warn(category + " " + key + " is missing a title")
+//     })
+//     return Object.keys(schemas).map(key => {
+//         schemas[key].key = key
+//         return schemas[key]
+//     })
+// }

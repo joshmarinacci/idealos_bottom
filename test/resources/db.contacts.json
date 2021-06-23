@@ -1,40 +1,40 @@
 [
   {
     "id":1,
-    "category":"CATEGORIES.CONTACT.ID",
-    "type":"CATEGORIES.CONTACT.TYPES.PERSON",
+    "category": "CATEGORIES.CONTACT.ID",
+    "type": "CATEGORIES.CONTACT.TYPES.PERSON",
     "props":{
-      "first":"Josh",
-      "last":"Marinacci",
+      "first": "Josh",
+      "last": "Marinacci",
       "emails":[
         {
-          "type":"CATEGORIES.CONTACT.TYPES.EMAIL",
+          "type": "CATEGORIES.CONTACT.TYPES.EMAIL",
           "props":{
-            "type":"personal",
+            "type": "personal",
             "value":"joshua@marinacci.org"
           }
         },
         {
-          "type":"CATEGORIES.CONTACT.TYPES.EMAIL",
+          "type": "CATEGORIES.CONTACT.TYPES.EMAIL",
           "props":{
-            "type":"work",
+            "type": "work",
             "value":"josh@josh.earth"
           }
         }
       ],
       "phones":[
         {
-          "type":"CATEGORIES.CONTACT.TYPES.PHONE",
+          "type": "CATEGORIES.CONTACT.TYPES.PHONE",
           "props": {
             "type": "personal",
             "value": "707-509-9627"
           }
         }
       ],
-      "icon":"http://placekeanu.com/64/64/d",
+      "icon": "http://placekeanu.com/64/64/d",
       "addresses":[
         {
-          "type":"CATEGORIES.CONTACT.TYPES.MAILING_ADDRESS",
+          "type": "CATEGORIES.CONTACT.TYPES.MAILING_ADDRESS",
           "category": "CATEGORIES.CONTACT.TYPES.MAILING_ADDRESS",
           "props": {
             "type": "home",
@@ -50,21 +50,21 @@
   },
   {
     "id":2,
-    "category":"CATEGORIES.CONTACT.ID",
-    "type":"CATEGORIES.CONTACT.TYPES.PERSON",
+    "category": "CATEGORIES.CONTACT.ID",
+    "type": "CATEGORIES.CONTACT.TYPES.PERSON",
     "props":{
-      "first":"Jesse",
-      "last":"Marinacci",
+      "first": "Jesse",
+      "last": "Marinacci",
       "emails":[
         {
-          "type":"CATEGORIES.CONTACT.TYPES.EMAIL",
+          "type": "CATEGORIES.CONTACT.TYPES.EMAIL",
           "props":{
-            "type":"personal",
+            "type": "personal",
             "value":"jessemarinacci@icloud.com"
           }
         },
         {
-          "type":"CATEGORIES.CONTACT.TYPES.EMAIL",
+          "type": "CATEGORIES.CONTACT.TYPES.EMAIL",
           "props": {
             "type": "school",
             "value": "jesse.marinacci@bsd52.org"
@@ -73,7 +73,7 @@
       ],
       "addresses":[
         {
-          "type":"CATEGORIES.CONTACT.TYPES.MAILING_ADDRESS",
+          "type": "CATEGORIES.CONTACT.TYPES.MAILING_ADDRESS",
           "category": "CATEGORIES.CONTACT.TYPES.MAILING_ADDRESS",
           "props": {
             "type": "home",
@@ -85,44 +85,45 @@
           }
         },
         {
-          "type":"CATEGORIES.CONTACT.TYPES.MAILING_ADDRESS",
+          "type": "CATEGORIES.CONTACT.TYPES.MAILING_ADDRESS",
           "category": "CATEGORIES.CONTACT.TYPES.MAILING_ADDRESS",
           "props": {
-            "type":"school",
+            "type": "school",
             "street1": "irving elementary drive",
-            "city":"eugene",
-            "state":"OR",
+            "city": "eugene",
+            "state": "OR",
             "zipcode": "97404",
             "country": "USA"
           }
         }
       ],
-      "icon":"http://placekeanu.com/64/64/a",
+      "icon": "http://placekeanu.com/64/64/a",
       "favorite":true
     }
   },
   {
     "id":3,
     "category": "CATEGORIES.CONTACT.ID",
-    "type":"CATEGORIES.CONTACT.TYPES.PERSON",
+    "type": "CATEGORIES.CONTACT.TYPES.PERSON",
     "props": {
-      "first":"Cocoa",
-      "last":"",
-      "icon":"https://placekitten.com/64/65",
+      "first": "Cocoa",
+      "last": "",
+      "icon": "https://placekitten.com/64/65",
       "favorite":false,
-      "timezone":"Europe/Berlin"
+      "timezone": "Europe/Berlin",
+      "emails": []
     }
   },
   {
     "id":4,
     "category": "CATEGORIES.CONTACT.ID",
-    "type":"CATEGORIES.CONTACT.TYPES.PERSON",
+    "type": "CATEGORIES.CONTACT.TYPES.PERSON",
     "props": {
-      "first":"Oreo",
-      "last":"",
-      "icon":"https://placekitten.com/64/64",
+      "first": "Oreo",
+      "last": "",
+      "icon": "https://placekitten.com/64/64",
       "favorite":true,
-      "timezone":"Europe/Berlin"
+      "timezone": "Europe/Berlin"
     }
   }
 ]

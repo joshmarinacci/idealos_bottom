@@ -1,19 +1,14 @@
 import {CATEGORIES} from "../src/server/db/schema.js"
-import {makeDB, makeDB_with_json_files, sort} from '../src/server/db/db.js'
-import {compareAsc} from "date-fns"
+import {DataBase} from '../src/server/db/db.js'
 import expect from "expect"
-import {DATA} from './resources/db.test.data.js'
 
 
 describe("db tests",() => {
-    let db = makeDB(DATA)
 
     it('will find all chat messages', async () => {
-        let db = await makeDB_with_json_files([
-            "test/resources/db.chats.json",
-            "test/resources/db.tasks.json"
-        ])
-        //find all chat messages
+        let db = new DataBase()
+        await db.watch_json("test/resources/db.chats.json")
+        await db.start()
         let res = db.QUERY({
             and: [
                 {
@@ -28,7 +23,11 @@ describe("db tests",() => {
         // assert.strictEqual(res.length, 4)
         expect(res.length).toBe(4)
     })
-    it('find all items where first or last contains the substring "mar"', () => {
+
+    it('find all items where first or last contains the substring "mar"', async () => {
+        let db = new DataBase()
+        await db.watch_json("test/resources/db.contacts.json")
+        await db.start()
         let res = db.QUERY({
             or: [
                 {
@@ -47,6 +46,45 @@ describe("db tests",() => {
         })
         expect(res.length).toBe(2)
     })
+
+    it("succeed even with a broken json file", async () => {
+        let db = new DataBase()
+        await db.watch_json("test/resources/db.chats.json")
+        await db.watch_json("test/resources/db.json_broken.json")
+        await db.start()
+        let res = db.QUERY({
+            and: [
+                {
+                    TYPE: CATEGORIES.CHAT.TYPES.MESSAGE
+
+                },
+                {
+                    CATEGORY: CATEGORIES.CHAT.ID
+                }
+            ]
+        })
+        // assert.strictEqual(res.length, 4)
+        expect(res.length).toBe(4)
+    })
+
+    it("don't let invalid data in", async () => {
+        let db = new DataBase()
+        await db.watch_json("test/resources/db.schema_broken.json")
+        await db.start()
+        let res = db.QUERY({
+            and: [
+                {
+                    TYPE: CATEGORIES.CHAT.TYPES.MESSAGE
+
+                },
+                {
+                    CATEGORY: CATEGORIES.CHAT.ID
+                }
+            ]
+        })
+        expect(res.length).toBe(1)
+    })
+    /*
 
     //compound AND and OR query
     it('find all contacts.people where first or last contains the substring "Mar"', () => {
@@ -80,7 +118,7 @@ describe("db tests",() => {
         expect(res.length).toBe(2)
     })
 
-    /*
+
     it('query building', () => {
 
         const and = (...args) => ({and: args})
@@ -94,7 +132,7 @@ describe("db tests",() => {
 
         expect(res.length).toBe(2)
     })
-     */
+
 
 
     //find all notes where archived is true
@@ -171,6 +209,6 @@ describe("db tests",() => {
         console.log('obj2', obj2)
         expect(obj2.props.time instanceof Date).toBe(true)
         expect(obj2.props.time.toISOString()).toBe(obj1.props.time.toISOString())
-    })
+    })*/
 
 })

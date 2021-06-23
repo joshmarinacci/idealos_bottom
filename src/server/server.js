@@ -10,7 +10,7 @@ import Ajv from 'ajv'
 import fs from 'fs'
 import path from 'path'
 import {AudioService} from './audio.js'
-import {makeDB} from './db/db.js'
+import {DataBase, makeDB} from './db/db.js'
 import {DATA} from '../../resources/database/testdata.js'
 
 export const hostname = '127.0.0.1'
@@ -62,7 +62,8 @@ export class CentralServer {
 
     async start() {
         this.keybindings = await load_keybindings("resources/keybindings.json")
-        this.db = makeDB(DATA)
+        this.db = new DataBase()
+        this.db.start()
 
         this._wsserver = new WS.Server({
             port: this.websocket_port

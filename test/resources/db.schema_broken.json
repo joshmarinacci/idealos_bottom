@@ -1,0 +1,33 @@
+[
+  {
+    "id":11,
+    "category": "CATEGORIES.CHAT.ID",
+    "type": "CATEGORIES.CHAT.TYPES.MESSAGE",
+    "props": {
+      "sender":1,
+      "receivers":[1,2,3],
+      "contents":"hi jesse",
+      "timestamp":2
+    }
+  },
+  {
+    "id":12,
+    "category": "CATEGORIES.CHAT.ID",
+    "props": {
+      "sender":2,
+      "receivers":[1,2,3],
+      "contents":"hi daddy",
+      "timestamp":1
+    }
+  },
+  {
+    "id":13,
+    "category": "CATEGORIES.CHAT.ID",
+    "type": "CATEGORIES.CHAT.TYPES.MESSAGE",
+    "props": {
+      "receivers":[1,2,3],
+      "contents":"hi daddy",
+      "timestamp":1
+    }
+  }
+]
