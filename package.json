@@ -19,6 +19,7 @@
     "audio-loader": "^1.0.3",
     "audio-play": "^2.3.1",
     "date-fns": "^2.22.1",
+    "expect": "^27.0.2",
     "idealos_schemas": "^0.2.3",
     "mingo": "^4.1.2",
     "mocha": "^8.3.2",
