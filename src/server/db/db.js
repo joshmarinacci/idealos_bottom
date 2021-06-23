@@ -420,7 +420,8 @@ class DB {
     }
 }
 
-export function makeDB() {
+export function makeDB(EXISTING_DATA) {
+    if(EXISTING_DATA) return new DB(EXISTING_DATA)
     return new DB(DATA)
 }
 

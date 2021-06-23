@@ -1,15 +1,14 @@
 import {CATEGORIES} from "../src/server/db/schema.js"
-import {query2} from '../src/server/db/query2.js'
-import {DATA} from "../resources/database/testdata.js"
-import {sort} from '../src/server/db/db.js'
+import {makeDB, sort} from '../src/server/db/db.js'
 import {compareAsc} from "date-fns"
 import expect from "expect"
 
 describe("db tests",() => {
+    let db = makeDB()
 
     it('will find all chat messages', () => {
         //find all chat messages
-        let res = query2(DATA, {
+        let res = db.QUERY({
             and: [
                 {
                     TYPE: CATEGORIES.CHAT.TYPES.MESSAGE
@@ -24,7 +23,7 @@ describe("db tests",() => {
         expect(res.length).toBe(4)
     })
     it('find all items where first or last contains the substring "mar"', () => {
-        let res = query2(DATA, {
+        let res = db.QUERY({
             or: [
                 {
                     substring: {
@@ -45,7 +44,7 @@ describe("db tests",() => {
 
     //compound AND and OR query
     it('find all contacts.people where first or last contains the substring "Mar"', () => {
-        let res = query2(DATA, {
+        let res = db.QUERY({
             and: [
                 {
                     TYPE: CATEGORIES.CONTACT.TYPES.PERSON,
@@ -98,7 +97,7 @@ describe("db tests",() => {
         const isNote = () => ({TYPE: CATEGORIES.NOTES.TYPES.NOTE})
         const isArchived = () => ({equal: {prop: 'archived', value: true}})
 
-        const res = query2(DATA, and(isNote(), isArchived()))
+        const res = db.QUERY(and(isNote(), isArchived()))
         expect(res.length).toBe(2)
     })
 
@@ -108,7 +107,7 @@ describe("db tests",() => {
         const isEmail = () => ({TYPE: CATEGORIES.EMAIL.TYPES.MESSAGE})
         const isMessage = () => ({CATEGORY: CATEGORIES.EMAIL.ID})
 
-        let res1 = query2(DATA, and(isMessage(), isEmail()))
+        let res1 = db.QUERY(and(isMessage(), isEmail()))
         res1 = sort(res1, ["timestamp"])
         let res2 = res1.slice()
         res2.sort((a, b) => compareAsc(a.props.timestamp, b.props.timestamp))
