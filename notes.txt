@@ -1,0 +1,39 @@
+(type=heartbeat) => noop
+(type=screen_start) => register_screen => register_app
+(type=sidebar_start) => add_app
+(type=list_all_apps) => apps.respond.list_all_apps
+(type=debug_list) => add_app
+(type=start_sub_app) => apps.start_sub_app
+(type=start_app_by_name) => apps.start_app_by_name
+(type=list_apps_request) => check_debug => apps.list_apps_response
+(type=stop_app) => apps.stop_app
+(type=start_app) => apps.start_app
+(type=window_open) => apps.window_tracker.open
+(type=window_open_response) => forward_to_target
+(type=window_child_open) => apps.window_tracker.open_child
+(type=window_close_child) => apps.window_tracker.close_child
+(type=window_refresh_request) => forward_to_target
+(type=window_refresh_response) => forward_to_target
+(type=window_set_position) => apps.window_tracker.set_position
+(type=window_set_size) => apps.window_tracker.set_size
+(type=window_set_focused) => apps.window_tracker.set_focused
+
+(type=window_close_request) => send_to_target
+(type=window_close_response) => send_to_screens
+
+(type=menubar_set) => send_to_menubar
+
+(type==graphics_draw_rect
+|| type=graphics_draw_pixel
+|| type=graphics_draw_image
+) => get_graphics_target => forward_to_app
+
+type = mouse_down => forward_to_app
+type = mouse_move => forward_to_app
+type = mouse_up => forward_to_app
+
+type = keyboard_down => keybindings => forward_to_app
+type = keyboard_up   => forward_to_app
+type = action        => forward_to_focused
+
+type = get_control_theme =>

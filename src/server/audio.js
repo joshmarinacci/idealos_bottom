@@ -6,8 +6,11 @@ import Load from "audio-loader"
 
 export class AudioService {
     constructor() {
-        console.log("made an audio server")
+        this.log("made an audio server")
         this.players = {}
+    }
+    log(...args) {
+        console.log("AUDIO_SERVICE",...args)
     }
     load(pth) {
         if(this.players[pth]) return this.players[pth]

@@ -36,14 +36,13 @@ function handle_font_load(msg, cons, server) {
 }
 
 function perform_database_query(msg, cons, server) {
-    console.log("searching database for",msg)
-    server.db.query(msg.query).then(res => {
-        console.log("result is",res)
-        server.cons.forward_to_app(msg.app,{
-            type:"database-query-response",
-            app:msg.app,
-            docs:res.docs,
-        })
+    console.log("searching database for",msg.query)
+    let res = server.db.QUERY(msg.query)
+    console.log("result is",res.length)
+    server.cons.forward_to_app(msg.app,{
+        type:"database-query-response",
+        app:msg.app,
+        docs:res,
     })
 }
 
@@ -141,6 +140,11 @@ export class EventRouter {
                 })
             }
             return
+        }
+
+        if(msg.type === "debug-action-done") {
+            console.log("bouncing back debug action done")
+            return this.cons.forward_to_app(msg.app,msg)
         }
 
         this.log("unhandled message",msg)

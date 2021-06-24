@@ -95,7 +95,6 @@ class TestGUIApp extends BaseAppWrapper {
         this.name = "guiapp"
         this.app = new App([0, 1, ws_url, data.app.id])
         this.app.a_init().then(() => {
-            console.log("done with init")
             try {
                 cb(this).catch(e => console.error(e))
             } catch (e) {

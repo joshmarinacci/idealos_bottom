@@ -252,6 +252,8 @@ export class DataBase {
         // this.loadPresetData()
         // this.loadLocalStorage()
         // this.validateData()
+
+        this.file_watchers = []
     }
 
 
@@ -272,11 +274,7 @@ export class DataBase {
         }
         try {
             await refresh_file()
-            fs.watch(file,(e) => {
-                refresh_file().then(()=>{
-                    // console.log("done refreshing")
-                })
-            })
+            this.file_watchers.push(fs.watch(file,()=>refresh_file()))
             this.log("watching",file)
         } catch(e) {
             this.log(e)
@@ -288,7 +286,7 @@ export class DataBase {
 
     }
     async stop() {
-
+        this.file_watchers.forEach(fw => fw.close())
     }
     addEventListener(cat,listener) {
         if(!cat) throw new Error("Missing category")

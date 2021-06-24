@@ -5,6 +5,11 @@ import {promises as fs} from "fs"
 import {AND, IS_PROP_TRUE, IS_TYPE} from '../src/server/db/query.js'
 import {compareAsc} from 'date-fns'
 import {sleep} from '../src/common.js'
+import {CentralServer} from '../src/server/server.js'
+import {HeadlessDisplay, start_testguiapp} from './common.js'
+import {GENERAL} from 'idealos_schemas/js/general.js'
+import {Component} from '../src/clients/toolkit/guitoolkit.js'
+import assert from 'assert'
 
 
 describe("db tests",() => {
@@ -227,22 +232,6 @@ describe("db tests",() => {
         expect(res.length).toBe(2)
     })
 
-    /*
-    it('query building', () => {
-
-        const and = (...args) => ({and: args})
-        const or = (...args) => ({or: args})
-        const hasSubstring = (f, value) => ({substring: {prop: f, value: value}})
-
-        const res = query(DATA, and(isPerson(), isContact(), or(
-            hasSubstring('last', 'mar'),
-            hasSubstring('first', 'mar')
-        )))
-
-        expect(res.length).toBe(2)
-    })
-    */
-
 
     //find all notes where archived is true
     it('archived tasks', async () => {
@@ -257,75 +246,88 @@ describe("db tests",() => {
         await db.stop()
     })
 
-/*
-    it('sort by date', async () => {
-        let db = new DataBase()
-        await db.watch_json("test/resources/db.email.json")
-        await db.start()
+})
 
-        const and = (...args) => ({and: args})
-        const isEmail = () => ({TYPE: CATEGORIES.EMAIL.TYPES.MESSAGE})
-        const isMessage = () => ({CATEGORY: CATEGORIES.EMAIL.ID})
 
-        let res1 = db.QUERY(and(isMessage(), isEmail()))
-        res1 = sort(res1, ["timestamp"])
-        let res2 = res1.slice()
-        res2.sort((a, b) => compareAsc(a.props.timestamp, b.props.timestamp))
-        console.log("res2", res2.map(o => o.props.timestamp))
-        expect(res1.length).toBe(4)
-        expect(res1).toEqual(res2)
-        db.stop()
-    })*/
-    /*
-    function encode_props_with_types(value) {
-        let props = {}
-        Object.keys(value).forEach(k => {
-            let prefix = ''
-            let val = value[k]
-            if (value[k] instanceof Date) {
-                prefix = '_date_'
-                val = val.toISOString()
-            }
-            props[prefix + k] = val
-        })
-        return props
+class ListPanel extends Component {
+    constructor(opts) {
+        super(opts);
+        this.name = 'list-panel'
+        this.list = null
+        this.debug_draw_event = opts.debug_draw_event
     }
+    layout() {
+        if(!this.list) {
+            this.list = []
+            this.window().app.on("database-query-response",(t) => {
+                // console.log("got the database response",t.payload.docs.length)
+                this.list = t.payload.docs
+                this.repaint(t)
+                if(this.debug_draw_event) this.window().send({
+                    type:"debug-action-done",
+                    count:t.payload.docs.length
+                })
+            })
+            this.window().send({
+                type:"database-query",
+                query: {
+                    and: [
+                        {
+                            TYPE: CATEGORIES.CHAT.TYPES.MESSAGE
 
-    function decode_props_with_types(value) {
-        let props = {}
-        Object.keys(value).forEach(k => {
-            if (k.startsWith('_date_')) {
-                let k2 = k.replace('_date_', '')
-                props[k2] = new Date(value[k])
-            } else {
-                props[k] = value[k]
-            }
-        })
-        return props
-    }
-
-    it('date encoding test', () => {
-        let obj1 = {
-            props: {
-                time: new Date()
-            }
+                        },
+                        {
+                            CATEGORY: CATEGORIES.CHAT.ID
+                        }
+                    ]
+                }
+            })
+        } else {
+            this.height = this.list.length*10
         }
+    }
+    redraw(gfx) {
+        console.log("drawing self with list",this.list,this.height)
+    }
+}
 
-        console.log("obj1", obj1)
-        expect(typeof obj1.props.time).toBe('object')
+describe("db driven app test", () => {
+    it('will open an app', async () => {
 
-        let str = JSON.stringify(obj1, function (key, value) {
-            if (key === 'props') return encode_props_with_types(value)
-            return value
+        let server = new CentralServer({
+            hostname:'127.0.0.1',
+            websocket_port:8081,
+            apps:{ system:[], user:[] }
         })
-        console.log('JSON string is', str)
-        let obj2 = JSON.parse(str, function (key, value) {
-            if (key === 'props') return decode_props_with_types(value);
-            return value
-        })
-        console.log('obj2', obj2)
-        expect(obj2.props.time instanceof Date).toBe(true)
-        expect(obj2.props.time.toISOString()).toBe(obj1.props.time.toISOString())
-    })*/
+
+        try {
+            await server.start()
+            await server.db.watch_json("test/resources/db.chats.json")
+            let display = new HeadlessDisplay(server.hostname, server.websocket_port)
+            await display.wait_for_message(GENERAL.TYPE_Connected)
+            await display.send(GENERAL.MAKE_ScreenStart())
+
+            //create app
+            let app = await start_testguiapp(server, async (wrapper) => {
+                // open window
+                let main_window = await wrapper.app.open_window(0, 0, 100, 120, 'plain')
+
+                //add listpanel control with query
+                main_window.root = new ListPanel({query:"foo",debug_draw_event:true})
+                main_window.redraw()
+            })
+
+            //wait for debug message
+            let done_msg = await app.wait_for_message("debug-action-done")
+            //should have 4 results
+            assert.strictEqual(done_msg.count,4)
+
+            await server.shutdown()
+            console.log('everything should be shut down now')
+        } catch (e) {
+            console.log(e)
+            await server.shutdown()
+        }
+    })
 
 })

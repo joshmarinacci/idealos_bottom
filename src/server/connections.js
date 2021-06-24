@@ -44,7 +44,7 @@ export class ConnectionManager {
     }
 
     log(...args) {
-        console.log(...args)
+        console.log("CONNECTIONS",...args)
     }
 
 

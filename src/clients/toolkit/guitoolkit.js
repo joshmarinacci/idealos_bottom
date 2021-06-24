@@ -165,7 +165,10 @@ export class App {
             process.exit(0)
         },500)
     }
-    async a_init() {
+    a_init() {
+        return new Promise((res,rej)=>{
+            this.on('start',res)
+        })
     }
     open_window(x,y,width,height,window_type) {
         return new Promise((res,rej)=>{
@@ -186,9 +189,10 @@ export class App {
                 }).then(r  => {
                     win.base_font = new JoshFont(r.font)
                     win.repaint()
+                }).then(()=>{
+                    this.windows.push(win)
+                    res(win)
                 })
-                this.windows.push(win)
-                res(win)
             }
             this.on(WINDOWS.TYPE_WindowOpenResponse,handler)
         })

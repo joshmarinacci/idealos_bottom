@@ -10,8 +10,7 @@ import Ajv from 'ajv'
 import fs from 'fs'
 import path from 'path'
 import {AudioService} from './audio.js'
-import {DataBase, makeDB} from './db/db.js'
-import {DATA} from '../../resources/database/testdata.js'
+import {DataBase} from './db/db.js'
 
 export const hostname = '127.0.0.1'
 export const websocket_port = 8081
@@ -129,13 +128,18 @@ export class CentralServer {
         this.dispatch(msg)
     }
 
-    shutdown() {
-        return new Promise((res,rej)=>{
-            this._wsserver.close(()=>{
-                console.log('close is done')
+    async shutdown() {
+        await this._stop_websocket_server()
+        await this.db.stop()
+    }
+
+    _stop_websocket_server() {
+        return new Promise((res, rej) => {
+            this._wsserver.close(() => {
+                // console.log('close is done')
+                this.log("stopped messages")
                 res()
             })
-            this.log("stopped")
         })
     }
 
@@ -150,6 +154,7 @@ export class CentralServer {
     start_app_by_id(id) {
         return this.at.start(id)
     }
+
 }
 
 async function load_checker(dir, schema_names) {
