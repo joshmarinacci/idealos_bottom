@@ -268,6 +268,7 @@ export class DataBase {
                     this.data.push(item)
                 }
             })
+            this._fireUpdateAll()
         }
         try {
             await refresh_file()

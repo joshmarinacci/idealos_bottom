@@ -152,6 +152,7 @@ describe("db tests",() => {
         //add event listener
         db.addEventListener(CATEGORIES.CHAT.ID,()=>{
             updated = true
+            console.log("chat category is updated")
         })
         //append new data and write to temp file
         data.push({
@@ -180,6 +181,8 @@ describe("db tests",() => {
             })
             expect(res.length).toBe(6)
         }
+
+        expect(updated).toBe(true)
 
         //shutdown
         await db.stop()
