@@ -3,37 +3,37 @@ import {CATEGORIES, SchemaManager, SORTS} from './schema.js'
 import {compareAsc, compareDesc} from "date-fns/index.js"
 import fs from 'fs'
 
-// export function sort(items,sortby,sortorder) {
-//     if(!Array.isArray(sortby)) throw new Error("sort(items, sortby) sortby must be an array of key names")
-//     items = items.slice()
-//     items.sort((A,B)=>{
-//         let key = sortby[0]
-//         let a = A.props[key]
-//         let b = B.props[key]
-//         // console.log("a,b",key,A,B,a,b)
-//
-//         //date sort
-//         // console.log("is date",a instanceof Date)
-//         if(a instanceof Date) {
-//             if(sortorder === SORTS.DESCENDING) {
-//                 return compareDesc(a,b)
-//             } else {
-//                 return compareAsc(a,b)
-//             }
-//         }
-//
-//         if(sortorder === SORTS.DESCENDING) {
-//             if (A.props[key] === B.props[key]) return 0
-//             if (A.props[key] < B.props[key]) return 1
-//             return -1
-//         } else {
-//             if (A.props[key] === B.props[key]) return 0
-//             if (A.props[key] > B.props[key]) return 1
-//             return -1
-//         }
-//     })
-//     return items
-// }
+export function sort(items,sortby,sortorder) {
+    if(!Array.isArray(sortby)) throw new Error("sort(items, sortby) sortby must be an array of key names")
+    items = items.slice()
+    items.sort((A,B)=>{
+        let key = sortby[0]
+        let a = A.props[key]
+        let b = B.props[key]
+        // console.log("a,b",key,A,B,a,b)
+
+        //date sort
+        // console.log("is date",a instanceof Date)
+        if(a instanceof Date) {
+            if(sortorder === SORTS.DESCENDING) {
+                return compareDesc(a,b)
+            } else {
+                return compareAsc(a,b)
+            }
+        }
+
+        if(sortorder === SORTS.DESCENDING) {
+            if (A.props[key] === B.props[key]) return 0
+            if (A.props[key] < B.props[key]) return 1
+            return -1
+        } else {
+            if (A.props[key] === B.props[key]) return 0
+            if (A.props[key] > B.props[key]) return 1
+            return -1
+        }
+    })
+    return items
+}
 
 // export function project(items,propsarray=[]) {
 //     return items.map(o => {
@@ -256,10 +256,10 @@ export class DataBase {
 
 
     async watch_json(file) {
-        this.log("loading json",file)
-        try {
+        const refresh_file = async () => {
             let raw = await fs.promises.readFile(file)
             let json = JSON.parse(raw.toString())
+            this.data = []
             json.forEach(item => {
                 // this.log("checking item",item)
                 if(!this.scm.isValid(item)) {
@@ -268,6 +268,15 @@ export class DataBase {
                     this.data.push(item)
                 }
             })
+        }
+        try {
+            await refresh_file()
+            fs.watch(file,(e) => {
+                refresh_file().then(()=>{
+                    // console.log("done refreshing")
+                })
+            })
+            this.log("watching",file)
         } catch(e) {
             this.log(e)
         }

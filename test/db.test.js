@@ -1,7 +1,10 @@
 import {CATEGORIES} from "../src/server/db/schema.js"
-import {DataBase} from '../src/server/db/db.js'
+import {DataBase, sort} from '../src/server/db/db.js'
 import expect from "expect"
+import {promises as fs} from "fs"
 import {AND, IS_PROP_TRUE, IS_TYPE} from '../src/server/db/query.js'
+import {compareAsc} from 'date-fns'
+import {sleep} from '../src/common.js'
 
 
 describe("db tests",() => {
@@ -90,6 +93,101 @@ describe("db tests",() => {
         await db.stop()
     })
 
+    it("auto-reload when json file changes", async () => {
+        //read test data
+        let data = JSON.parse((await fs.readFile("test/resources/db.chats.json")).toString())
+        //make temp file
+        let temp_file = "test/temp.json"
+        //write to temp file
+        await fs.writeFile(temp_file,JSON.stringify(data,null,"  "))
+        await sleep(250)
+        let db = new DataBase()
+        //watch temp file
+        await db.watch_json(temp_file)
+        await db.start()
+        {
+            let res = db.QUERY({
+                and: [
+                    {
+                        TYPE: CATEGORIES.CHAT.TYPES.MESSAGE
+
+                    },
+                    {
+                        CATEGORY: CATEGORIES.CHAT.ID
+                    }
+                ]
+            })
+            expect(res.length).toBe(4)
+        }
+
+        //append new data and write to temp file
+        data.push({
+                "id":66,
+                "category": "CATEGORIES.CHAT.ID",
+                "type": "CATEGORIES.CHAT.TYPES.MESSAGE",
+                "props": {
+                    "sender":1,
+                    "contact":1
+                }
+            })
+        await fs.writeFile(temp_file,JSON.stringify(data,null,"  "))
+        await sleep(250)
+        //verify new data
+        {
+            let res = db.QUERY({
+                and: [
+                    {
+                        TYPE: CATEGORIES.CHAT.TYPES.MESSAGE
+
+                    },
+                    {
+                        CATEGORY: CATEGORIES.CHAT.ID
+                    }
+                ]
+            })
+            expect(res.length).toBe(5)
+        }
+
+        let updated = false
+        //add event listener
+        db.addEventListener(CATEGORIES.CHAT.ID,()=>{
+            updated = true
+        })
+        //append new data and write to temp file
+        data.push({
+            "id":67,
+            "category": "CATEGORIES.CHAT.ID",
+            "type": "CATEGORIES.CHAT.TYPES.MESSAGE",
+            "props": {
+                "sender":1,
+                "contact":1
+            }
+        })
+        await fs.writeFile(temp_file,JSON.stringify(data))
+        await sleep(250)
+        //wait for event trigger
+        {
+            let res = db.QUERY({
+                and: [
+                    {
+                        TYPE: CATEGORIES.CHAT.TYPES.MESSAGE
+
+                    },
+                    {
+                        CATEGORY: CATEGORIES.CHAT.ID
+                    }
+                ]
+            })
+            expect(res.length).toBe(6)
+        }
+
+        //shutdown
+        await db.stop()
+
+        //delete temp file
+        await fs.rm(temp_file)
+    })
+
 
     //compound AND and OR query
     it('find all contacts.people where first or last contains the substring "Mar"', async () => {
@@ -156,8 +254,12 @@ describe("db tests",() => {
         await db.stop()
     })
 
-    /*
-    it('sort by date', () => {
+/*
+    it('sort by date', async () => {
+        let db = new DataBase()
+        await db.watch_json("test/resources/db.email.json")
+        await db.start()
+
         const and = (...args) => ({and: args})
         const isEmail = () => ({TYPE: CATEGORIES.EMAIL.TYPES.MESSAGE})
         const isMessage = () => ({CATEGORY: CATEGORIES.EMAIL.ID})
@@ -169,8 +271,9 @@ describe("db tests",() => {
         console.log("res2", res2.map(o => o.props.timestamp))
         expect(res1.length).toBe(4)
         expect(res1).toEqual(res2)
-    })
-
+        db.stop()
+    })*/
+    /*
     function encode_props_with_types(value) {
         let props = {}
         Object.keys(value).forEach(k => {
