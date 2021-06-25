@@ -201,6 +201,7 @@ export class HeadlessDisplay extends BaseAppWrapper {
             win.x = msg.x
             win.y = msg.y
         }
+        if(msg.type === "group-message" && msg.category === 'graphics') return
         this.log("unhandled", msg)
     }
 
