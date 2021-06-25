@@ -1,6 +1,17 @@
 {
   "bindings": [
     {
+      "code": "ArrowLeft",
+      "control": false,
+      "command": "navigate-cursor-left"
+    },
+    {
+      "code": "KeyB",
+      "control": true,
+      "command": "navigate-cursor-left"
+    },
+
+    {
       "code": "ArrowRight",
       "control": false,
       "command": "navigate-cursor-right"

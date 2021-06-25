@@ -102,20 +102,13 @@ export class TextBox extends Component {
     }
 
     input(e) {
-        if( e.type === INPUT.TYPE_Action) {
-            if(e.command === "navigate-cursor-right") {
-                this.cursor = Math.min(this.cursor + 1, this.text.length)
-                this.repaint(e)
-            }
-        }
+        if( e.type === INPUT.TYPE_Action) return this.handle_action(e)
         if (e.type === INPUT.TYPE_MouseDown) {
             this.selected = true
             this.repaint(e)
             return
         }
-        if (is_word_char(e)) {
-            return this.append_char(e.key)
-        }
+        if (is_word_char(e)) return this.append_char(e.key)
         if (e.code === INFO.KEY_NAMES.Backspace) {
             if (this.text.length > 0) {
                 let before = this.text.substring(0, this.cursor)
@@ -125,14 +118,8 @@ export class TextBox extends Component {
                 this.repaint(e)
             }
         }
-        if (e.code === INFO.KEY_NAMES.ArrowLeft) {
-            this.cursor = Math.max(this.cursor - 1, 0)
-            this.repaint(e)
-        }
-        if (e.code === INFO.KEY_NAMES.ArrowRight) {
-            this.cursor = Math.min(this.cursor + 1, this.text.length)
-            this.repaint(e)
-        }
+        if (e.code === INFO.KEY_NAMES.ArrowLeft) return this.nav_left(e)
+        if (e.code === INFO.KEY_NAMES.ArrowRight) return this.nav_right(e)
         if (e.key === "Enter") {
             this.fire('action', {target: this})
         }
@@ -161,10 +148,24 @@ export class TextBox extends Component {
         this.cursor += 1
         this.repaint()
     }
+
+    nav_left(e) {
+        this.cursor = Math.max(this.cursor - 1, 0)
+        this.repaint(e)
+    }
+    nav_right(e) {
+        this.cursor = Math.min(this.cursor + 1, this.text.length)
+        this.repaint(e)
+    }
+
+    handle_action(e) {
+        if(e.command === "navigate-cursor-right") return this.nav_right(e)
+        if(e.command === "navigate-cursor-left") return this.nav_left(e)
+    }
 }
 
 
-export class MultilineTextBox extends Component {
+export class MultilineTextBox extends TextBox {
     constructor(opts) {
         super(opts)
         this.text = opts.text || "textbox"
@@ -174,12 +175,7 @@ export class MultilineTextBox extends Component {
         this.name = 'textbox'
     }
     input(e) {
-        if( e.type === INPUT.TYPE_Action) {
-            if(e.command === "navigate-cursor-right") {
-                this.cursor = Math.min(this.cursor + 1, this.text.length)
-                this.repaint(e)
-            }
-        }
+        if( e.type === INPUT.TYPE_Action) return this.handle_action(e)
         if (e.type === INPUT.TYPE_MouseDown) {
             this.selected = true
             this.repaint(e)
@@ -196,14 +192,6 @@ export class MultilineTextBox extends Component {
                 this.cursor = Math.max(this.cursor - 1, 0)
                 this.repaint(e)
             }
-        }
-        if (e.code === INFO.KEY_NAMES.ArrowLeft) {
-            this.cursor = Math.max(this.cursor - 1, 0)
-            this.repaint(e)
-        }
-        if (e.code === INFO.KEY_NAMES.ArrowRight) {
-            this.cursor = Math.min(this.cursor + 1, this.text.length)
-            this.repaint(e)
         }
         if (e.key === "Enter") {
             this.fire('action', {target: this})

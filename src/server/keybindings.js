@@ -8,7 +8,7 @@ export class KeybindingsManager {
     }
 
     handle_keybindings(msg) {
-        console.log("keybindings",this.keybindings,msg)
+        // console.log("keybindings",this.keybindings,msg)
         if(msg.type === INPUT.TYPE_KeyboardDown) {
             console.log("msg is",msg)
             let binding = this.keybindings.bindings.find(e => e.code === msg.code && e.control === msg.control)
