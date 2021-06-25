@@ -51,6 +51,16 @@ function perform_database_query(msg, cons, server) {
 const APPS_GROUP = {
     LIST_ALL_APPS:"LIST_ALL_APPS"
 }
+
+function is_input(msg) {
+    if(msg.type === INPUT.TYPE_MouseDown) return true
+    if(msg.type === INPUT.TYPE_MouseMove) return true
+    if(msg.type === INPUT.TYPE_MouseUp) return true
+    if(msg.type === INPUT.TYPE_KeyboardUp) return true
+    if(msg.type === INPUT.TYPE_KeyboardDown) return true
+    return false
+}
+
 export class EventRouter {
     constructor(cons,wids,apptracker,server) {
         this.cons = cons// || throw new Error("missing cons")
@@ -108,11 +118,8 @@ export class EventRouter {
             }
         }
 
-        if(msg.type === INPUT.TYPE_MouseDown) return this.cons.forward_to_app(msg.app,msg)
-        if(msg.type === INPUT.TYPE_MouseMove) return this.cons.forward_to_app(msg.app,msg)
-        if(msg.type === INPUT.TYPE_MouseUp) return this.cons.forward_to_app(msg.app,msg)
         if(msg.type === INPUT.TYPE_KeyboardDown) return this.server.kb.handle_keybindings(msg)
-        if(msg.type === INPUT.TYPE_KeyboardUp) return this.cons.forward_to_app(msg.app,msg)
+        if(is_input(msg)) return this.cons.forward_to_app(msg.app,msg)
 
         if(msg.type === INPUT.TYPE_Action) return forward_to_focused(msg,this.cons,this.wids)
 
