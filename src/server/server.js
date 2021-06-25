@@ -41,7 +41,6 @@ export class CentralServer {
         if(opts.translations) this.translations = opts.translations
         this.active_translation = this.translations[0]
 
-        this.fonts = {}
         if(opts.fonts) this.fonts = opts.fonts
 
         this.cons = new ConnectionManager()
@@ -60,6 +59,12 @@ export class CentralServer {
     }
 
     async start() {
+        if(!this.fonts) {
+            this.fonts = {
+                base: JSON.parse((await fs.promises.readFile("resources/fonts/font.json")).toString())
+            }
+
+        }
         this.keybindings = await load_keybindings("resources/keybindings.json")
         this.db = new DataBase()
         this.db.start()

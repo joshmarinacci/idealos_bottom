@@ -7,6 +7,7 @@ import {WINDOW_TYPES} from './windows.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
 import {INFO} from 'idealos_schemas/js/keyboard_map.js'
+import {is_audio} from './audio.js'
 
 
 function handle_font_load(msg, cons, server) {
@@ -26,7 +27,7 @@ function handle_font_load(msg, cons, server) {
         })
     }
     resp.app = msg.app
-    console.log("sending font to app",resp.app)
+    // console.log("sending font to app",resp.app,resp)
     if(resp.app) {
         cons.forward_to_app(resp.app,resp)
     } else {
@@ -46,6 +47,9 @@ function perform_database_query(msg, cons, server) {
     })
 }
 
+const APPS_GROUP = {
+    LIST_ALL_APPS:"LIST_ALL_APPS"
+}
 export class EventRouter {
     constructor(cons,wids,apptracker,server) {
         this.cons = cons// || throw new Error("missing cons")
@@ -59,7 +63,7 @@ export class EventRouter {
         if(msg.type === GENERAL.TYPE_ScreenStart) return this.cons.handle_start_message(ws,msg,this.wids)
         if(msg.type === "SIDEBAR_START") return this.cons.add_connection(CLIENT_TYPES.SIDEBAR,msg.app,ws)
 
-        if(msg.type === "LIST_ALL_APPS") return handle_list_all_apps(msg,this.cons,this.server.apps)
+        if(msg.type === APPS_GROUP.LIST_ALL_APPS) return handle_list_all_apps(msg,this.cons,this.server.apps)
         if(msg.type === "DEBUG_LIST") return this.cons.add_connection(CLIENT_TYPES.DEBUG,msg.sender,ws)
         if(msg.type === "START_SUB_APP") return this.apptracker.start_sub_app(msg,this.cons)
         if(msg.type === DEBUG.TYPE_StartAppByName) return this.apptracker.start_app_by_name(msg.name);
@@ -120,8 +124,8 @@ export class EventRouter {
         if(msg.type === "translation_set_language") return translation_set_language(msg,this.cons,this.server)
 
         if(msg.type === "database-query") return perform_database_query(msg,this.cons,this.server)
-        if(msg.type === "audio-server-play") return this.server.audio.play(msg)
-        if(msg.type === "audio-server-pause") return this.server.audio.pause(msg)
+
+        if(is_audio(msg)) return this.server.audio.handle(msg)
 
         if(msg.type === 'group-message') {
             if(msg.category === 'graphics') {

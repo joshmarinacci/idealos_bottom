@@ -1,6 +1,8 @@
 (type=heartbeat) => noop
+
 (type=screen_start) => register_screen => register_app
 (type=sidebar_start) => add_app
+
 (type=list_all_apps) => apps.respond.list_all_apps
 (type=debug_list) => add_app
 (type=start_sub_app) => apps.start_sub_app
@@ -8,6 +10,7 @@
 (type=list_apps_request) => check_debug => apps.list_apps_response
 (type=stop_app) => apps.stop_app
 (type=start_app) => apps.start_app
+
 (type=window_open) => apps.window_tracker.open
 (type=window_open_response) => forward_to_target
 (type=window_child_open) => apps.window_tracker.open_child
@@ -17,7 +20,6 @@
 (type=window_set_position) => apps.window_tracker.set_position
 (type=window_set_size) => apps.window_tracker.set_size
 (type=window_set_focused) => apps.window_tracker.set_focused
-
 (type=window_close_request) => send_to_target
 (type=window_close_response) => send_to_screens
 
@@ -36,4 +38,32 @@ type = keyboard_down => keybindings => forward_to_app
 type = keyboard_up   => forward_to_app
 type = action        => forward_to_focused
 
-type = get_control_theme =>
+(type = get_control_theme) => themes.find_theme_component()
+(type = theme-set) => themes.set_theme()
+
+(type = request-font) => resources.request_font()
+
+(type = translation_get_value) => translations.get_value()
+(type = translation_set_language) => translations.set_language()
+
+(type = database-query) => perform_db_query(cons,server)
+
+(type = audio-server-play) => audio_server.do()
+(type = audio-server-pause) => audio_server.do()
+
+(type = group-message) => split_and_recurse()
+(type = debug-action-done) => forward_to_app()
+
+print unhandled
+
+
+make modules for different parts, send message directly to the module and then it splits it out.
+
+if(is_audio(msg)) return this.server.audio.handle(msg)
+if(is_theme(msg)) return this.server.theme_manager.handle(msg)
+if(is_translations(msg)) return this.server.translation_manager.handle(msg)
+if(is_input(msg)) return this.server
+    .keybindings_manager.handle(msg)
+    .forward_to_app(msg)
+
+if(is_apps(msg)) return this.server.apps.handle(msg)

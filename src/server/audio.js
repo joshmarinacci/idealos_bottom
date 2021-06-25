@@ -4,6 +4,15 @@ import Load from "audio-loader"
 
 // let pth = "resources/hilton.mp3"
 
+export const AUDIO_GROUP = {
+    "audio-server-play":"audio-server-play",
+    "audio-server-pause":"audio-server-pause"
+}
+
+export function is_audio(msg) {
+    return Object.values(AUDIO_GROUP).some(n => msg.type === n)
+}
+
 export class AudioService {
     constructor() {
         this.log("made an audio server")
@@ -11,6 +20,10 @@ export class AudioService {
     }
     log(...args) {
         console.log("AUDIO_SERVICE",...args)
+    }
+    handle(msg) {
+        if(msg.type === "audio-server-play") return this.play(msg)
+        if(msg.type === "audio-server-pause") return this.pause(msg)
     }
     load(pth) {
         if(this.players[pth]) return this.players[pth]
