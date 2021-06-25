@@ -3,14 +3,13 @@ import {WindowTracker} from './windows.js'
 import {AppTracker} from './apps.js'
 import {ConnectionManager} from "./connections.js"
 import {EventRouter} from "./router.js"
-
-import {sleep} from '../common.js'
 import {GENERAL} from "idealos_schemas/js/general.js"
 import Ajv from 'ajv'
 import fs from 'fs'
 import path from 'path'
 import {AudioService} from './audio.js'
 import {DataBase} from './db/db.js'
+import {TranslationManager} from './translations.js'
 
 export const hostname = '127.0.0.1'
 export const websocket_port = 8081
@@ -37,9 +36,7 @@ export class CentralServer {
             }
         ]
         if(opts.screens) this.screens = opts.screens
-        this.translations = []
-        if(opts.translations) this.translations = opts.translations
-        this.active_translation = this.translations[0]
+        this.trans = new TranslationManager(this,opts.translations)
 
         if(opts.fonts) this.fonts = opts.fonts
 

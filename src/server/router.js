@@ -2,12 +2,12 @@ import {GENERAL} from 'idealos_schemas/js/general.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
-import {CLIENT_TYPES} from './connections.js'
+import {CLIENT_TYPES, make_response} from './connections.js'
 import {WINDOW_TYPES} from './windows.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
-import {INFO} from 'idealos_schemas/js/keyboard_map.js'
 import {is_audio} from './audio.js'
+import {is_translation} from './translations.js'
 
 
 function handle_font_load(msg, cons, server) {
@@ -120,11 +120,9 @@ export class EventRouter {
 
         if(msg.type === 'request-font') return handle_font_load(msg,this.cons,this.server)
 
-        if(msg.type === "translation_get_value") return translation_get_value(msg,this.cons,this.server)
-        if(msg.type === "translation_set_language") return translation_set_language(msg,this.cons,this.server)
-
         if(msg.type === "database-query") return perform_database_query(msg,this.cons,this.server)
 
+        if(is_translation(msg)) return this.server.trans.handle(msg)
         if(is_audio(msg)) return this.server.audio.handle(msg)
 
         if(msg.type === 'group-message') {
@@ -290,16 +288,6 @@ function handle_list_all_apps(msg, cons, apps) {
     })
 }
 
-function make_response(orig,settings) {
-    let msg = {
-        id: "msg_"+Math.floor((Math.random()*10000)),
-        response_to:orig.id,
-    }
-    Object.entries(settings).forEach(([key,value])=>{
-        msg[key] = value
-    })
-    return msg
-}
 function set_theme(msg,cons,server) {
     // console.log("vailable themese",server.themes)
     // console.log("target is",msg.name)
@@ -340,43 +328,4 @@ function get_control_theme(msg, cons, server) {
         })
         return cons.forward_to_app(msg.app, msg2)
     }
-}
-
-function translation_get_value(msg, cons, server) {
-    if(!server.active_translation) {
-        return cons.forward_to_app(msg.app,make_response(msg,{
-            type:"translation_get_value_response",
-            key:msg.key,
-            value:"[?]",
-            succeeded:false,
-        }))
-    }
-    if(!server.active_translation[msg.key]) {
-        return cons.forward_to_app(msg.app,make_response(msg,{
-            type:"translation_get_value_response",
-            key:msg.key,
-            value:"[?]",
-            succeeded:false,
-        }))
-    }
-    let value = server.active_translation[msg.key]
-    return cons.forward_to_app(msg.app,make_response(msg,{
-        type:"translation_get_value_response",
-        key:msg.key,
-        value:value,
-        succeeded:true,
-    }))
-}
-
-function translation_set_language(msg,cons,server) {
-    // console.log("hanlding message",msg)
-    let trans = server.translations.find(t => t.language === msg.language)
-    // console.log("new trans is",trans)
-    server.active_translation = trans
-    console.log('sending to all apps',msg.app)
-    return cons.forward_to_all_apps({
-        type:"translation_language_changed",
-        language:msg.language,
-        succeeded:true,
-    })
 }

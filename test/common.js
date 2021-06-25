@@ -5,6 +5,7 @@ import {GENERAL} from 'idealos_schemas/js/general.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {hostname, websocket_port} from '../src/server/server.js'
 import {App} from '../src/clients/toolkit/guitoolkit.js'
+import assert from 'assert'
 
 class BaseAppWrapper {
     constructor() {
@@ -238,4 +239,13 @@ export async function start_headless_display() {
 
 export function log(...args) {
     console.log("TEST", ...args)
+}
+
+export function message_compare(m1, m2) {
+    let m1a = {}
+    Object.entries(m1).forEach(([key, value]) => {
+        if (key === 'id') return
+        m1a[key] = value
+    })
+    assert.deepStrictEqual(m1a, m2)
 }
