@@ -47,7 +47,7 @@ export class CentralServer {
         let log = (...args) => this.log(...args)
         this.wids = new WindowTracker(sender, this.cons,this)
         this.at = new AppTracker(this.hostname, this.websocket_port,
-            log, this.wids, sender, this.cons)
+            log, this.wids, sender, this.cons,this)
         this.router = new EventRouter(this.cons, this.wids, this.at, this)
         this.apps = opts.apps
         this.audio = new AudioService()

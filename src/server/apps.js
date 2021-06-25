@@ -2,7 +2,7 @@ import {spawn} from 'child_process'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
 
 export class AppTracker {
-    constructor(hostname,websocket_port, log_delegate, wids, sender, cons) {
+    constructor(hostname,websocket_port, log_delegate, wids, sender, cons, server) {
         this.hostname = hostname
         this.websocket_port = websocket_port
         this.apps = []
@@ -10,6 +10,7 @@ export class AppTracker {
         this.wids = wids
         this.send = sender
         this.cons = cons
+        this.server = server
     }
     log(...args) {
         if(this.log_delegate) this.log_delegate(...args)
@@ -139,4 +140,41 @@ export class AppTracker {
             appid:app.id,
         })
     }
+    handle_list_all_apps(msg) {
+        this.server.cons.forward_to_app(msg.app, {
+            type: "LIST_ALL_APPS_RESPONSE",
+            target: msg.sender,
+            apps: this.server.apps
+        })
+    }
+
+    handle(msg) {
+        if(msg.type === APPS_GROUP.LIST_ALL_APPS) return this.handle_list_all_apps(msg)
+        if(msg.type === APPS_GROUP.START_SUB_APP) return this.start_sub_app(msg,this.server.cons)
+        if(msg.type === DEBUG.TYPE_StartAppByName) return this.start_app_by_name(msg.name);
+        if(msg.type === DEBUG.TYPE_StopApp)  return this.stop(msg.target)
+        if(msg.type === DEBUG.TYPE_StartApp) return this.start(msg.target)
+        if(msg.type === DEBUG.TYPE_ListAppsRequest) {
+            return this.cons.forward_to_debug(DEBUG.MAKE_ListAppsResponse({
+                connection_count:this.cons.count(),
+                apps:this.server.at.list_apps(),
+            }))
+        }
+    }
 }
+
+export function is_apps(msg) {
+    if(msg.type === APPS_GROUP.LIST_ALL_APPS) return true
+    if(msg.type === APPS_GROUP.START_SUB_APP) return true
+    if(msg.type === DEBUG.TYPE_StartAppByName) return true
+    if(msg.type === DEBUG.TYPE_StopApp)  return true
+    if(msg.type === DEBUG.TYPE_StartApp) return true
+    if(msg.type === DEBUG.TYPE_ListAppsRequest) return true
+    return false
+}
+
+export const APPS_GROUP = {
+    LIST_ALL_APPS: "LIST_ALL_APPS",
+    "START_SUB_APP":"START_SUB_APP"
+}
+

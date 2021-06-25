@@ -1,5 +1,4 @@
 import {GENERAL} from 'idealos_schemas/js/general.js'
-import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {CLIENT_TYPES, make_response} from './connections.js'
@@ -9,6 +8,7 @@ import {DEBUG} from 'idealos_schemas/js/debug.js'
 import {is_audio} from './audio.js'
 import {is_translation} from './translations.js'
 import {is_theme} from './themes.js'
+import {APPS_GROUP, is_apps} from './apps.js'
 
 
 function handle_font_load(msg, cons, server) {
@@ -48,10 +48,6 @@ function perform_database_query(msg, cons, server) {
     })
 }
 
-const APPS_GROUP = {
-    LIST_ALL_APPS:"LIST_ALL_APPS"
-}
-
 function is_input(msg) {
     if(msg.type === INPUT.TYPE_MouseDown) return true
     if(msg.type === INPUT.TYPE_MouseMove) return true
@@ -73,28 +69,13 @@ export class EventRouter {
         if(msg.type === GENERAL.TYPE_Heartbeat) return do_nothing(msg)
         if(msg.type === GENERAL.TYPE_ScreenStart) return this.cons.handle_start_message(ws,msg,this.wids)
         if(msg.type === "SIDEBAR_START") return this.cons.add_connection(CLIENT_TYPES.SIDEBAR,msg.app,ws)
-
-        if(msg.type === APPS_GROUP.LIST_ALL_APPS) return handle_list_all_apps(msg,this.cons,this.server.apps)
         if(msg.type === "DEBUG_LIST") return this.cons.add_connection(CLIENT_TYPES.DEBUG,msg.sender,ws)
-        if(msg.type === "START_SUB_APP") return this.apptracker.start_sub_app(msg,this.cons)
-        if(msg.type === DEBUG.TYPE_StartAppByName) return this.apptracker.start_app_by_name(msg.name);
-        if(msg.type === DEBUG.TYPE_ListAppsRequest) {
-            return this.cons.forward_to_debug(DEBUG.MAKE_ListAppsResponse({
-                connection_count:this.cons.count(),
-                apps:this.apptracker.list_apps(),
-            }))
-        }
-        if(msg.type === DEBUG.TYPE_StopApp)  return this.apptracker.stop(msg.target)
-        if(msg.type === DEBUG.TYPE_StartApp) return this.apptracker.start(msg.target)
 
-
+        if(is_apps(msg)) this.server.at.handle(msg)
         if(is_window(msg)) return this.server.wids.handle(ws,msg)
-
 
         if(msg.type === MENUS.TYPE_SetMenubar) return this.cons.forward_to_menubar(msg)
 
-
-        // if(msg.type === GRAPHICS.TYPE_DrawPixel) return this.cons.forward_to_screen(msg)
         if(msg.type === GRAPHICS.TYPE_DrawRect
             || msg.type === GRAPHICS.TYPE_DrawPixel
             || msg.type === GRAPHICS.TYPE_DrawImage
@@ -159,13 +140,5 @@ function do_nothing(msg) {}
 function forward_to_focused(msg, cons, wids) {
     let win = wids.get_active_window()
     if(win && win.owner) return cons.forward_to_app(win.owner,msg)
-}
-
-function handle_list_all_apps(msg, cons, apps) {
-    cons.forward_to_app(msg.app,{
-        type:"LIST_ALL_APPS_RESPONSE",
-        target:msg.sender,
-        apps:apps,
-    })
 }
 
