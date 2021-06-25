@@ -58,11 +58,11 @@ function is_input(msg) {
 }
 
 export class EventRouter {
-    constructor(cons,wids,apptracker,server) {
+    constructor(server,cons,wids,apptracker) {
+        this.server = server
         this.cons = cons// || throw new Error("missing cons")
         this.wids = wids// || throw new Error("missing wids")
         this.apptracker = apptracker
-        this.server = server
     }
 
     route(ws,msg) {

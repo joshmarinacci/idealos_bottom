@@ -12,7 +12,8 @@ export const CLIENT_TYPES = {
 
 
 export class ConnectionManager {
-    constructor() {
+    constructor(server) {
+        this.server = server
         this.by_type = {}
         Object.keys(CLIENT_TYPES).forEach(typ => this.by_type[typ]=[])
     }

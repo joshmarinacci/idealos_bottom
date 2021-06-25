@@ -38,16 +38,10 @@ export class CentralServer {
 
         if(opts.fonts) this.fonts = opts.fonts
 
-        this.cons = new ConnectionManager()
-
-        let sender = (msg) => {
-            // console.log("RELAUYING BACK",msg.type)
-            this.cons.forward_to_screen(msg)
-        }
-        let log = (...args) => this.log(...args)
+        this.cons = new ConnectionManager(this)
         this.wids = new WindowTracker(this)
-        this.at = new AppTracker(this.hostname, this.websocket_port, log, this)
-        this.router = new EventRouter(this.cons, this.wids, this.at, this)
+        this.at = new AppTracker(this,this.hostname, this.websocket_port)
+        this.router = new EventRouter(this,this.cons, this.wids, this.at)
         this.apps = opts.apps
         this.audio = new AudioService(this)
     }
@@ -184,7 +178,6 @@ async function load_checker(dir, schema_names) {
         }
     }
 }
-
 export async function load_applist(json_path) {
     let checker = await load_checker("resources/schemas", ["app.schema.json", "applist.schema.json"])
     let data = JSON.parse((await fs.promises.readFile(json_path)).toString())
@@ -202,7 +195,6 @@ export async function load_uitheme(json_path) {
 export async function load_translation(json_path) {
     return JSON.parse((await fs.promises.readFile(json_path)).toString())
 }
-
 export async function load_keybindings(json_path) {
     return JSON.parse((await fs.promises.readFile(json_path)).toString())
 }

@@ -2,15 +2,14 @@ import {spawn} from 'child_process'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
 
 export class AppTracker {
-    constructor(hostname,websocket_port, log_delegate, server) {
+    constructor(server,hostname,websocket_port) {
         this.hostname = hostname
         this.websocket_port = websocket_port
         this.apps = []
-        this.log_delegate = log_delegate
         this.server = server
     }
     log(...args) {
-        if(this.log_delegate) this.log_delegate(...args)
+        this.server.log(...args)
     }
 
     create_app(opts) {
