@@ -131,7 +131,9 @@ export class App {
         this.listeners['ALL'] = []
         this.listeners['PENDING_RESPONSE'] = []
         this.windows = []
+        this._started = false
         this.ws.on('open', () => {
+            this._started = true
             this.fireLater('start', {})
         })
         this.ws.on("message", (data) => {
@@ -167,6 +169,7 @@ export class App {
     }
     a_init() {
         return new Promise((res,rej)=>{
+            if(this._started) return res()
             this.on('start',res)
         })
     }
@@ -187,8 +190,12 @@ export class App {
                     type: "request-font",
                     name: 'base',
                 }).then(r  => {
-                    win.base_font = new JoshFont(r.font)
-                    win.repaint()
+                    if(r.succeeded) {
+                        win.base_font = new JoshFont(r.font)
+                        win.repaint()
+                    } else {
+                        this.log("warning. no font loaded")
+                    }
                 }).then(()=>{
                     this.windows.push(win)
                     res(win)
