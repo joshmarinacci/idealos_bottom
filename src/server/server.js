@@ -45,11 +45,11 @@ export class CentralServer {
             this.cons.forward_to_screen(msg)
         }
         let log = (...args) => this.log(...args)
-        this.wids = new WindowTracker(sender, this.cons,this)
+        this.wids = new WindowTracker(this)
         this.at = new AppTracker(this.hostname, this.websocket_port, log, this)
         this.router = new EventRouter(this.cons, this.wids, this.at, this)
         this.apps = opts.apps
-        this.audio = new AudioService()
+        this.audio = new AudioService(this)
     }
 
     async start() {
