@@ -1,4 +1,5 @@
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
+import {CLIENT_TYPES} from './connections.js'
 
 export const WINDOW_TYPES = {
     MENUBAR:'menubar',
@@ -16,6 +17,117 @@ export class WindowTracker {
         this.send = sender
         this.server = server
     }
+    handle(ws,msg) {
+        // this.log(msg)
+        if(msg.type === WINDOWS.TYPE_WindowOpen) return this.handle_open_window_message(ws,msg,this.server)
+        if(msg.type === WINDOWS.TYPE_create_child_window)  return this.handle_open_child_window_message(msg,this.server)
+        if(msg.type === WINDOWS.TYPE_close_child_window)   return this.handle_close_child_window_message(msg,this.server)
+        if(msg.type === WINDOWS.TYPE_WindowSetPosition) return this.set_window_position(msg,this.server)
+        if(msg.type === 'window-set-size') return this.set_window_size(msg,this.server)
+        if(msg.type === WINDOWS.TYPE_SetFocusedWindow) return this.handle_set_window_focused(msg,this.server)
+        if(msg.type === WINDOWS.TYPE_WindowOpenResponse) return this.server.cons.forward_to_target(msg)
+        if(msg.type === WINDOWS.TYPE_window_refresh_request) return this.server.cons.forward_to_target(msg)
+        if(msg.type === WINDOWS.TYPE_window_refresh_response) return this.server.cons.forward_to_target(msg)
+        if(msg.type === WINDOWS.TYPE_window_close_response) return this.server.cons.forward_to_screen(msg)
+        if(msg.type === WINDOWS.TYPE_window_close_request) return this.server.cons.forward_to_target(msg)
+    }
+    handle_set_window_focused(msg,server) {
+        let win = server.wids.window_for_id(msg.window)
+        if(!win) return log(`no such window ${msg.window}`)
+        if(!win.owner) return log(`window has no owner ${win.owner}`)
+        //send focus lost to old window
+        if(server.wids.get_active_window()) {
+            let old_win = server.wids.get_active_window()
+            server.cons.forward_to_app(old_win.owner,{
+                type:"WINDOW_FOCUS_LOST",
+                app:old_win.owner,
+                window:old_win.id
+            })
+        }
+        server.wids.set_active_window(win)
+        server.cons.forward_to_app(win.owner,msg)
+    }
+
+    handle_open_window_message(ws,msg,server) {
+        if(!msg.sender) return log("open window message with no sender")
+        ws.target = msg.sender
+        console.log("app opening window is",msg.app)
+        if(server.at.is_sub_app(msg.app)) {
+            // console.log("its embedded. skipping the normal flow")
+            server.cons.add_app_connection(msg.sender,ws)
+            let resp = WINDOWS.MAKE_WindowOpenResponse({target:msg.sender, window:"som_win_id"+Math.random()})
+            server.cons.forward_to_app(msg.sender,resp)
+            let parent = server.at.get_parent_of_sub_app(msg.app)
+            server.cons.forward_to_app(parent.id,{type:"SUB_APP_WINDOW_OPEN",app:msg.app,window:resp.window})
+            return
+        }
+        let win_id = server.wids.make_root_window(msg.window_type,msg.width,msg.height,msg.sender)
+        if(msg.window_type === WINDOW_TYPES.MENUBAR) {
+            server.cons.add_connection(CLIENT_TYPES.MENUBAR,msg.sender,ws)
+        } else if(msg.window_type === WINDOW_TYPES.DOCK) {
+            server.cons.add_connection(CLIENT_TYPES.DOCK,msg.sender,ws)
+        } else {
+            server.cons.add_app_connection(msg.sender,ws)
+        }
+        //send response to screen
+        server.cons.forward_to_screen(WINDOWS.MAKE_WindowOpenDisplay({target:msg.sender, window:server.wids.window_for_id(win_id)}))
+        //send response back to client
+        server.cons.forward_to_app(msg.sender,WINDOWS.MAKE_WindowOpenResponse({target:msg.sender, window:win_id}))
+    }
+
+    set_window_position(msg,server) {
+        let win = server.wids.window_for_id(msg.window)
+        if(!win) return log(`no such window ${msg.window}`)
+        if(!win.owner) return log(`window has no owner ${win.owner}`)
+        server.wids.move_window(msg.window,msg.x,msg.y)
+        server.cons.forward_to_app(win.owner,msg)
+    }
+
+    set_window_size(msg,server) {
+        let win = server.wids.window_for_id(msg.window)
+        if(!win) return log(`no such window ${msg.window}`)
+        if(!win.owner) return log(`window has no owner ${win.owner}`)
+        server.wids.size_window(msg.window,msg.width,msg.height)
+        server.cons.forward_to_app(win.owner,msg)
+    }
+
+    handle_open_child_window_message(msg,server) {
+        if(!msg.sender) return log("open window message with no sender")
+        let ch_win = server.wids.make_child_window(msg)
+        server.wids.add_window(ch_win.id,ch_win)
+        server.cons.forward_to_screen(WINDOWS.MAKE_create_child_window_display({
+            // type:'CREATE_CHILD_WINDOW_DISPLAY',
+            parent:msg.parent,
+            window:ch_win,
+            sender:msg.sender,
+        }));
+        server.cons.forward_to_app(msg.sender,WINDOWS.MAKE_create_child_window_response({
+            // type:'CREATE_CHILD_WINDOW_RESPONSE',
+            target:msg.sender,
+            parent:msg.parent,
+            window:ch_win,
+            sender:msg.sender,
+        }))
+    }
+
+    handle_close_child_window_message(msg,server) {
+        console.log("closing child window",msg.window)
+        server.wids.close_child_window(msg.window)
+        server.cons.forward_to_screen(WINDOWS.MAKE_close_child_window_display({
+            target:msg.sender,
+            parent:msg.parent,
+            window:msg.window,
+            sender:msg.sender,
+        }))
+        server.cons.forward_to_app(msg.sender,WINDOWS.MAKE_close_child_window_response({
+            target:msg.sender,
+            parent:msg.parent,
+            window:msg.window,
+            sender:msg.sender,
+        }))
+    }
+
+
     find(pt) {
         return Object.values(this.windows).find(win => {
             if(pt.x < win.x) return false
@@ -61,7 +173,7 @@ export class WindowTracker {
     }
 
     log(...args) {
-        console.log(...args)
+        console.log("WINDOW_TRACKER",...args)
     }
 
     set_active_window(win) {
@@ -138,4 +250,19 @@ export class WindowTracker {
         })
         return win_id
     }
+}
+
+export function is_window(msg) {
+    if (msg.type === WINDOWS.TYPE_WindowOpen) return true
+    if (msg.type === WINDOWS.TYPE_create_child_window) return true
+    if (msg.type === WINDOWS.TYPE_close_child_window) return true
+    if (msg.type === WINDOWS.TYPE_WindowSetPosition) return true
+    if (msg.type === 'window-set-size') return true
+    if (msg.type === WINDOWS.TYPE_SetFocusedWindow) return true
+    if(msg.type === WINDOWS.TYPE_WindowOpenResponse) return true
+    if(msg.type === WINDOWS.TYPE_window_refresh_request) return true
+    if(msg.type === WINDOWS.TYPE_window_refresh_response) return true
+    if(msg.type === WINDOWS.TYPE_window_close_response) return true
+    if(msg.type === WINDOWS.TYPE_window_close_request) return true
+    return false
 }

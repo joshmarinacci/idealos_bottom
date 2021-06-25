@@ -22,71 +22,70 @@ describe('window drag test',function() {
 
     it('creates a window', async function () {
         //start the server
-        let applist = await load_applist("test/resources/good.applist.json")
+        // let applist = await load_applist("test/resources/good.applist.json")
+        let applist = {
+            system:[],
+            user:[]
+        }
         let server = new CentralServer({
             hostname:'127.0.0.1',
             websocket_port:8081,
             apps:applist,
         })
-        try {
-            await server.start()
-            //start the display
-            let display = await new HeadlessDisplay(server.hostname, server.websocket_port)
-            await display.wait_for_message(GENERAL.TYPE_Connected)
-            await display.send(GENERAL.MAKE_ScreenStart())
+        await server.start()
+        //start the display
+        let display = await new HeadlessDisplay(server.hostname, server.websocket_port)
+        await display.wait_for_message(GENERAL.TYPE_Connected)
+        await display.send(GENERAL.MAKE_ScreenStart())
 
-            //start the test app
-            let app = await start_testapp(server,async (app)=>{
-                app.ws.send(JSON.stringify(WINDOWS.MAKE_WindowOpen({
-                    x:50,
-                    y:50,
-                    width:70,
-                    height:80,
-                    sender:app.id,
-                    window_type:'plain'
-                })))
-            })
-            log("got the app")
+        //start the test app
+        let app = await start_testapp(server,async (app)=>{
+            app.ws.send(JSON.stringify(WINDOWS.MAKE_WindowOpen({
+                x:50,
+                y:50,
+                width:70,
+                height:80,
+                sender:app.id,
+                window_type:'plain'
+            })))
+        })
+        log("got the app")
 
-            //wait for the app to receive it's open window
-            let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
-            log("got the window open response",open_msg)
-            assert.strictEqual(server.wids.has_window_id(open_msg.window),true)
-            let win = server.wids.window_for_id(open_msg.window)
-            assert.strictEqual(win.type,'root')
-            assert.strictEqual(win.width,70)
-            assert.strictEqual(win.height,80)
+        //wait for the app to receive it's open window
+        let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
+        log("got the window open response",open_msg)
+        assert.strictEqual(server.wids.has_window_id(open_msg.window),true)
+        let win = server.wids.window_for_id(open_msg.window)
+        assert.strictEqual(win.type,'root')
+        assert.strictEqual(win.width,70)
+        assert.strictEqual(win.height,80)
 
-            {
-                //set the focused window
-                server.send(WINDOWS.MAKE_SetFocusedWindow({window: open_msg.window}))
-                await app.wait_for_message(WINDOWS.TYPE_SetFocusedWindow)
-                log("app is now the focused window")
-            }
-
-            //move the window
-            {
-                server.send(WINDOWS.MAKE_WindowSetPosition({
-                    window: open_msg.window,
-                    app: open_msg.target,
-                    x:100,
-                    y:100,
-                }))
-                let msg = await app.wait_for_message(WINDOWS.TYPE_WindowSetPosition)
-                console.log("message was",msg)
-                assert.strictEqual(msg.x,100)
-                assert.strictEqual(msg.y,100)
-                let win = server.wids.window_for_id(open_msg.window)
-                log("now window is",win)
-                assert.strictEqual(win.x,100)
-                assert.strictEqual(win.y,100)
-            }
-
-            await server.shutdown()
-        } catch(e) {
-            console.error(e)
-            await server.shutdown()
+        {
+            //set the focused window
+            await server.send(WINDOWS.MAKE_SetFocusedWindow({window: open_msg.window}))
+            await app.wait_for_message(WINDOWS.TYPE_SetFocusedWindow)
+            log("app is now the focused window")
         }
+
+        //move the window
+        {
+            await server.send(WINDOWS.MAKE_WindowSetPosition({
+                window: open_msg.window,
+                app: open_msg.target,
+                x:100,
+                y:100,
+            }))
+            let msg = await app.wait_for_message(WINDOWS.TYPE_WindowSetPosition)
+            console.log("message was",msg)
+            assert.strictEqual(msg.x,100)
+            assert.strictEqual(msg.y,100)
+            let win = server.wids.window_for_id(open_msg.window)
+            log("now window is",win)
+            assert.strictEqual(win.x,100)
+            assert.strictEqual(win.y,100)
+        }
+
+        await server.shutdown()
     })
 
     it('uses the menu', async function() {

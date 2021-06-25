@@ -152,7 +152,7 @@ class CustomMenu extends VBox {
         this.children = this.item.children.map((item,i) => {
             return new MenuItem({text:item.label, item:item, win:win, action:()=>{
                 win.close()
-                app.send(INPUT.MAKE_Action({command:item.command}))
+                app.send(INPUT.MAKE_Action({command:item.command, app:this.app._appid, window:this.win._winid}))
             }})
         })
         this.children.forEach(ch => ch.parent = this)

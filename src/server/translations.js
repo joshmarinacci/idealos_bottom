@@ -23,7 +23,7 @@ export class TranslationManager {
     }
 
     translation_get_value(msg) {
-        console.log("translation get value", msg, this.active_translation)
+        // console.log("translation get value", msg, this.active_translation)
         if (!this.active_translation) {
             return this.server.cons.forward_to_app(msg.app, make_response(msg, {
                 type: "translation_get_value_response",

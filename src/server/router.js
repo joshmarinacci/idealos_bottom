@@ -3,7 +3,7 @@ import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {CLIENT_TYPES, make_response} from './connections.js'
-import {WINDOW_TYPES} from './windows.js'
+import {is_window} from './windows.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
 import {is_audio} from './audio.js'
@@ -87,20 +87,9 @@ export class EventRouter {
         if(msg.type === DEBUG.TYPE_StopApp)  return this.apptracker.stop(msg.target)
         if(msg.type === DEBUG.TYPE_StartApp) return this.apptracker.start(msg.target)
 
-        if(msg.type === WINDOWS.TYPE_WindowOpen) return handle_open_window_message(ws,msg,this.cons,this.wids,this.apptracker)
-        if(msg.type === WINDOWS.TYPE_WindowOpenResponse) return this.cons.forward_to_target(msg)
-        if(msg.type === WINDOWS.TYPE_create_child_window)  return handle_open_child_window_message(msg,this.cons,this.wids)
-        if(msg.type === WINDOWS.TYPE_close_child_window)   return handle_close_child_window_message(msg,this.cons,this.wids)
 
-        if(msg.type === WINDOWS.TYPE_window_refresh_request) return this.cons.forward_to_target(msg)
-        if(msg.type === WINDOWS.TYPE_window_refresh_response) return this.cons.forward_to_target(msg)
+        if(is_window(msg)) return this.server.wids.handle(ws,msg)
 
-        if(msg.type === WINDOWS.TYPE_WindowSetPosition) return set_window_position(msg,this.cons,this.wids)
-        if(msg.type === 'window-set-size') return set_window_size(msg,this.cons,this.wids)
-        if(msg.type === WINDOWS.TYPE_SetFocusedWindow) return handle_set_window_focused(msg,this.cons,this.wids)
-
-        if(msg.type === WINDOWS.TYPE_window_close_response) return this.cons.forward_to_screen(msg)
-        if(msg.type === WINDOWS.TYPE_window_close_request) return this.cons.forward_to_target(msg)
 
         if(msg.type === MENUS.TYPE_SetMenubar) return this.cons.forward_to_menubar(msg)
 
@@ -166,103 +155,6 @@ export class EventRouter {
 }
 
 function do_nothing(msg) {}
-
-function handle_open_window_message(ws,msg,cons,wids,apptracker) {
-    if(!msg.sender) return log("open window message with no sender")
-    ws.target = msg.sender
-    // console.log("app opening window is",msg.app)
-    if(apptracker.is_sub_app(msg.app)) {
-        // console.log("its embedded. skipping the normal flow")
-        cons.add_app_connection(msg.sender,ws)
-        let resp = WINDOWS.MAKE_WindowOpenResponse({target:msg.sender, window:"som_win_id"+Math.random()})
-        cons.forward_to_app(msg.sender,resp)
-        let parent = apptracker.get_parent_of_sub_app(msg.app)
-        cons.forward_to_app(parent.id,{type:"SUB_APP_WINDOW_OPEN",app:msg.app,window:resp.window})
-        return
-    }
-    let win_id = wids.make_root_window(msg.window_type,msg.width,msg.height,msg.sender)
-    if(msg.window_type === WINDOW_TYPES.MENUBAR) {
-        cons.add_connection(CLIENT_TYPES.MENUBAR,msg.sender,ws)
-    } else if(msg.window_type === WINDOW_TYPES.DOCK) {
-        cons.add_connection(CLIENT_TYPES.DOCK,msg.sender,ws)
-    } else {
-        cons.add_app_connection(msg.sender,ws)
-    }
-    //send response to screen
-    cons.forward_to_screen(WINDOWS.MAKE_WindowOpenDisplay({target:msg.sender, window:wids.window_for_id(win_id)}))
-    //send response back to client
-    cons.forward_to_app(msg.sender,WINDOWS.MAKE_WindowOpenResponse({target:msg.sender, window:win_id}))
-}
-
-function handle_open_child_window_message(msg,cons,wids) {
-    if(!msg.sender) return log("open window message with no sender")
-    let ch_win = wids.make_child_window(msg)
-    wids.add_window(ch_win.id,ch_win)
-    cons.forward_to_screen(WINDOWS.MAKE_create_child_window_display({
-        // type:'CREATE_CHILD_WINDOW_DISPLAY',
-        parent:msg.parent,
-        window:ch_win,
-        sender:msg.sender,
-    }));
-    cons.forward_to_app(msg.sender,WINDOWS.MAKE_create_child_window_response({
-        // type:'CREATE_CHILD_WINDOW_RESPONSE',
-        target:msg.sender,
-        parent:msg.parent,
-        window:ch_win,
-        sender:msg.sender,
-    }))
-}
-
-function handle_close_child_window_message(msg,cons,wids) {
-    console.log("closing child window",msg.window)
-    wids.close_child_window(msg.window)
-    cons.forward_to_screen(WINDOWS.MAKE_close_child_window_display({
-        target:msg.sender,
-        parent:msg.parent,
-        window:msg.window,
-        sender:msg.sender,
-    }))
-    cons.forward_to_app(msg.sender,WINDOWS.MAKE_close_child_window_response({
-        target:msg.sender,
-        parent:msg.parent,
-        window:msg.window,
-        sender:msg.sender,
-    }))
-}
-
-
-function set_window_position(msg,cons,wids) {
-    let win = wids.window_for_id(msg.window)
-    if(!win) return log(`no such window ${msg.window}`)
-    if(!win.owner) return log(`window has no owner ${win.owner}`)
-    wids.move_window(msg.window,msg.x,msg.y)
-    cons.forward_to_app(win.owner,msg)
-}
-
-function set_window_size(msg,cons,wids) {
-    let win = wids.window_for_id(msg.window)
-    if(!win) return log(`no such window ${msg.window}`)
-    if(!win.owner) return log(`window has no owner ${win.owner}`)
-    wids.size_window(msg.window,msg.width,msg.height)
-    cons.forward_to_app(win.owner,msg)
-}
-
-function handle_set_window_focused(msg,cons,wids) {
-    let win = wids.window_for_id(msg.window)
-    if(!win) return log(`no such window ${msg.window}`)
-    if(!win.owner) return log(`window has no owner ${win.owner}`)
-    //send focus lost to old window
-    if(wids.get_active_window()) {
-        let old_win = wids.get_active_window()
-        cons.forward_to_app(old_win.owner,{
-            type:"WINDOW_FOCUS_LOST",
-            app:old_win.owner,
-            window:old_win.id
-        })
-    }
-    wids.set_active_window(win)
-    cons.forward_to_app(win.owner,msg)
-}
 
 function forward_to_focused(msg, cons, wids) {
     let win = wids.get_active_window()
