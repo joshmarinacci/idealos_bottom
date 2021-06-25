@@ -2,6 +2,7 @@
   "bindings": [
     {
       "code": "ArrowRight",
+      "control": false,
       "command": "navigate-cursor-right"
     },
     {

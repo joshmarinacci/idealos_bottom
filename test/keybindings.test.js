@@ -3,9 +3,9 @@ import {GENERAL} from 'idealos_schemas/js/general.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {INFO} from 'idealos_schemas/js/keyboard_map.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
-import assert from 'assert'
-import {HeadlessDisplay, start_testapp} from './common.js'
+import {HeadlessDisplay, message_compare, start_testapp, start_testguiapp} from './common.js'
 import {sleep} from '../src/common.js'
+import {TextBox} from '../src/clients/toolkit/text.js'
 
 describe("keybindings",function() {
 
@@ -26,40 +26,34 @@ describe("keybindings",function() {
             await display.wait_for_message(GENERAL.TYPE_Connected)
             await display.send(GENERAL.MAKE_ScreenStart())
 
-            let app = await start_testapp(server, async (app) => {
-                // open window
-                app.ws.send(JSON.stringify(WINDOWS.MAKE_WindowOpen({
-                    x: 50,
-                    y: 50,
-                    width: 70,
-                    height: 80,
-                    sender: app.id,
-                    window_type: 'plain'
-                })))
-                //wait for keyboard action events
+            let app = await start_testguiapp(server, async (wrapper) => {
+                let win = await wrapper.app.open_window(50,50,70,80,'plain')
+                win.root = new TextBox({ text:"hi" })
+                win.redraw()
             })
 
             let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
+            await display.dispatch_mousedown({x:65,y:65})
             await display.dispatch_keydown_to_window(open_msg.window,
                 INFO.KEY_NAMES.ArrowRight,
                 INFO.KEY_NAMES.ArrowRight)
             let msg1 = await app.wait_for_message(INPUT.TYPE_Action)
-            assert.deepStrictEqual(msg1, {
+            message_compare(msg1, {
                     command:'navigate-cursor-right',
                     type: INPUT.TYPE_Action,
                     window:open_msg.window,
-                    app:app.id,
+                    app:app.app._appid,
                 }
             )
             await display.dispatch_keydown_to_window(open_msg.window,
                 INFO.KEY_NAMES.KeyF,
                 'F',false,true)
             let msg2 = await app.wait_for_message(INPUT.TYPE_Action)
-            assert.deepStrictEqual(msg2, {
+            message_compare(msg2, {
                     command:'navigate-cursor-right',
                     type: INPUT.TYPE_Action,
                     window:open_msg.window,
-                    app:app.id,
+                    app:app.app._appid,
                 }
             )
             await sleep(250)

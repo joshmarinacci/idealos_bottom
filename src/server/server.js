@@ -10,6 +10,7 @@ import path from 'path'
 import {AudioService} from './audio.js'
 import {DataBase} from './db/db.js'
 import {TranslationManager} from './translations.js'
+import {KeybindingsManager} from './keybindings.js'
 
 export const hostname = '127.0.0.1'
 export const websocket_port = 8081
@@ -62,7 +63,10 @@ export class CentralServer {
             }
 
         }
-        this.keybindings = await load_keybindings("resources/keybindings.json")
+
+        this.kb = new KeybindingsManager(this, {
+            keybindings:await load_keybindings("resources/keybindings.json")
+        })
         this.db = new DataBase()
         this.db.start()
 

@@ -294,6 +294,8 @@ class EventDispatcher {
     }
 
     dispatch_mousedown(evt,node) {
+        this.log("dispatch mousedown",evt.type)
+        if(!node) return console.warn("WARNING: no root inside window")
         // console.log(`down`,evt.pos,node.constructor.name, node.children.length)
         for (let ch of node.children) {
             // console.log('mousedown inside?',ch.constructor.name,ch.bounds(),evt.pos,ch.bounds().contains(evt.pos))
@@ -314,6 +316,7 @@ class EventDispatcher {
     }
 
     dispatch_mouseup(evt,node) {
+        this.log("dispatch mouseup",evt.type)
         if(this.mouse_target) {
             // this.window.log("sending mouseup to mouse_target",this.mouse_target.constructor.name)
             this.mouse_target.input(evt)
@@ -322,13 +325,19 @@ class EventDispatcher {
     }
 
     dispatch_keydown(evt, root) {
+        this.log("dispatch keydown",evt.type)
         if(!this.keyboard_target) return console.error("no keyboard target")
         this.keyboard_target.input(evt)
     }
 
     dispatch_action(evt,root) {
+        this.log("dispatch action",evt.type)
         if(!this.keyboard_target) return console.error("no keyboard action target")
         this.keyboard_target.input(evt)
+    }
+
+    log(...args) {
+        console.log("EVENT_DISPATCHER",...args)
     }
 }
 
