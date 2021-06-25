@@ -1,6 +1,6 @@
 import {CentralServer, load_applist, load_uitheme} from '../src/server/server.js'
 import assert from 'assert'
-import {start_testapp, start_testguiapp} from './common.js'
+import {message_compare, start_testapp, start_testguiapp} from './common.js'
 
 describe("load apps list", function() {
     it("loads the gui theme", async function() {
@@ -12,25 +12,36 @@ describe("load apps list", function() {
             apps:applist,
             uitheme:uitheme,
         })
-        try {
-            await server.start()
-            let app = await start_testguiapp(server,async (wrapper)=>{
-                console.log("in the app",app)
-                let main_window = await wrapper.app.open_window(0, 0, 100, 120, 'plain')
-                wrapper.app.ws.send(JSON.stringify({
-                    type:"get_control_theme",//(name, style, state) style can be * state can be *"
-                    name:"button",
-                    style:"plain",
-                    state:"normal",
-                    app:app.app._appid
-                }))
+
+        await server.start()
+        let app = await start_testguiapp(server,async (wrapper)=>{
+            let main_window = await wrapper.app.open_window(0, 0, 100, 120, 'plain')
+            main_window.send({
+                type:"get_control_theme",//(name, style, state) style can be * state can be *"
+                name:"button",
+                style:"plain",
+                state:"normal",
             })
-            let theme_msg = await app.wait_for_message("get_control_theme_response")
-            console.log("got the response",theme_msg)
-            await server.shutdown()
-        } catch (e) {
-            console.log(e)
-            await server.shutdown()
-        }
+        })
+        let theme_msg = await app.wait_for_message("get_control_theme_response")
+        console.log("got the response",theme_msg)
+        message_compare({
+            type:theme_msg.type,
+            theme:{
+                name:theme_msg.theme.name,
+                "background-color":theme_msg.theme['background-color'],
+                "border-color":theme_msg.theme['border-color'],
+                "color":theme_msg.theme['color'],
+            }
+        },{
+            type:"get_control_theme_response",
+            theme: {
+                "name":"button",
+                "background-color": "aqua",
+                "border-color": "black",
+                "color": "black",
+            }
+        })
+        await server.shutdown()
     })
 })

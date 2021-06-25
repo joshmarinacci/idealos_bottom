@@ -8,6 +8,7 @@ import {MENUS} from 'idealos_schemas/js/menus.js'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
 import {is_audio} from './audio.js'
 import {is_translation} from './translations.js'
+import {is_theme} from './themes.js'
 
 
 function handle_font_load(msg, cons, server) {
@@ -115,8 +116,7 @@ export class EventRouter {
 
         if(msg.type === INPUT.TYPE_Action) return forward_to_focused(msg,this.cons,this.wids)
 
-        if(msg.type === "get_control_theme") return get_control_theme(msg,this.cons,this.server)
-        if(msg.type === "theme-set") return set_theme(msg,this.cons,this.server)
+        if(is_theme(msg)) return this.server.theme_manager.handle(msg)
 
         if(msg.type === 'request-font') return handle_font_load(msg,this.cons,this.server)
 
@@ -270,44 +270,3 @@ function handle_list_all_apps(msg, cons, apps) {
     })
 }
 
-function set_theme(msg,cons,server) {
-    // console.log("vailable themese",server.themes)
-    // console.log("target is",msg.name)
-    if(!server.themes[msg.name]) {
-        console.log(`missing theme name ${msg.name}`)
-    } else {
-        server.uitheme = server.themes[msg.name]
-        return cons.forward_to_all_apps(make_response(msg,{type:"theme-changed",name:msg.name}))
-    }
-}
-function get_control_theme(msg, cons, server) {
-    // console.log("doing get control theme",msg, server.uitheme)
-    if(!server.uitheme) {
-        //if no theme loaded, use a default
-        let msg2 = make_response(msg,{
-            type:"get_control_theme_response",
-            theme:{
-                "background-color": "white",
-                "color": "black",
-                "border-color":'black'
-            }
-        })
-        return cons.forward_to_app(msg.app, msg2)
-    }
-    // console.log('name is',msg.name)
-    if(server.uitheme[msg.name]) {
-        let msg2 = make_response(msg,{
-            type:"get_control_theme_response",
-            // id: "msg_"+Math.floor((Math.random()*10000)),
-            // response_to:msg.id,
-            theme: server.uitheme[msg.name]
-        })
-        return cons.forward_to_app(msg.app, msg2)
-    } else {
-        let msg2 = make_response(msg,{
-            type:"get_control_theme_response",
-            theme: server.uitheme['*']
-        })
-        return cons.forward_to_app(msg.app, msg2)
-    }
-}

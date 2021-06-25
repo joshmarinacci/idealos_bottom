@@ -11,6 +11,7 @@ import {AudioService} from './audio.js'
 import {DataBase} from './db/db.js'
 import {TranslationManager} from './translations.js'
 import {KeybindingsManager} from './keybindings.js'
+import {ThemeManager} from './themes.js'
 
 export const hostname = '127.0.0.1'
 export const websocket_port = 8081
@@ -24,11 +25,7 @@ export class CentralServer {
 
         if (!opts.apps) throw new Error("no applist provided")
 
-        this.themes = null
-        if(opts.themes) {
-            this.themes = opts.themes
-            this.uitheme = this.themes['light']
-        }
+        this.theme_manager = new ThemeManager(this,opts.themes,opts.uitheme)
 
         this.screens = [
             {
