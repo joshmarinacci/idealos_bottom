@@ -21,6 +21,7 @@ export class Label extends Component {
     }
 
     redraw(gfx) {
+        if(!this.visible) return
         let bg = this.lookup_theme_part("background-color",null)
         let co = this.lookup_theme_part('color',null)
         gfx.rect(this.x, this.y, this.width, this.height,bg)

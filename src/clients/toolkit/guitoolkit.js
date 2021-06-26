@@ -299,6 +299,7 @@ class EventDispatcher {
         // console.log(`down`,evt.pos,node.constructor.name, node.children.length)
         for (let ch of node.children) {
             // console.log('mousedown inside?',ch.constructor.name,ch.bounds(),evt.pos,ch.bounds().contains(evt.pos))
+            if(!ch.visible) continue
             if(ch.bounds().contains(evt.pos)) {
                 // node.window().log("inside child!")
                 // if(ch.text) node.window().log("text",ch.text)
@@ -562,6 +563,8 @@ export class Component {
         this.listeners = {}
         this.children = []
         this.font = opts.font || null
+        this.visible = true
+        if(opts.hasOwnProperty('visible')) this.visible = opts.visible
     }
 
     bounds() {
@@ -660,7 +663,8 @@ export class Container extends Component {
     constructor(opts) {
         super(opts)
         if(!opts) opts = {}
-        this.children = opts.children || []
+        this.children = []
+        if(opts.hasOwnProperty('children')) this.children = opts.children.slice()
         this.children.forEach(ch => ch.parent = this)
     }
 
@@ -674,7 +678,9 @@ export class Container extends Component {
     redraw(gfx) {
         // this.window().log("drawing",this.constructor.name,this.x,this.y,this.width,this.height)
         gfx.translate(this.x,this.y)
-        this.children.forEach(ch => ch.redraw(gfx))
+        this.children.forEach(ch => {
+            if(ch.visible) ch.redraw(gfx)
+        })
         gfx.translate(-this.x,-this.y)
     }
     theme_changed() {
