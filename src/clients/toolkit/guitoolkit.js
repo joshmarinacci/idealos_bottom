@@ -641,13 +641,13 @@ export class Component {
             return this._translations[key]
         }
         if(this.translation_loading) return "-----"
-        console.log('starting to load')
+        // console.log('starting to load')
         this.translation_loading = true
         this.window().send_and_wait({
             type: "translation_get_value",
             key: key,
         }).then((msg)=>{
-            console.log("got the response back")
+            // console.log("got the response back")
             this._translations[key] = msg.value
             this.translation_loading = false
             this.repaint()

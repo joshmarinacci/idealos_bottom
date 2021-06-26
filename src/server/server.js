@@ -58,7 +58,7 @@ export class CentralServer {
         this.kb = new KeybindingsManager(this, {
             keybindings:await load_keybindings("resources/keybindings.json")
         })
-        this.db = new DataBase()
+        this.db = new DataBase(this)
         this.db.start()
         this.db_json.forEach(path => this.db.watch_json(path))
 

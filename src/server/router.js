@@ -9,6 +9,7 @@ import {is_audio} from './audio.js'
 import {is_translation} from './translations.js'
 import {is_theme} from './themes.js'
 import {APPS_GROUP, is_apps} from './apps.js'
+import {is_database} from './db/db.js'
 
 
 function handle_font_load(msg, cons, server) {
@@ -35,42 +36,6 @@ function handle_font_load(msg, cons, server) {
         cons.forward_to_screen(resp)
     }
     // cons.forward_to_screen(resp)
-}
-
-function perform_database_query(msg, cons, server) {
-    console.log("searching database for",msg.query)
-    let res = server.db.QUERY(msg.query)
-    console.log("result is",res.length)
-    server.cons.forward_to_app(msg.app,{
-        type:"database-query-response",
-        app:msg.app,
-        docs:res,
-    })
-}
-
-function perform_database_watch(msg, server) {
-    console.log("watching db for",msg)
-    server.db.addEventListener(msg.category,(obj)=>{
-        console.log("db changed with object",msg.category,obj)
-        server.cons.forward_to_app(msg.app,{
-            type:"database-watch-update",
-            app:msg.app,
-            object:obj,
-        })
-    })
-}
-function perform_database_add(msg, server) {
-    console.log("adding to database",msg)
-    server.db.add(msg.object)
-}
-function perform_database_update(msg, server) {
-    console.log("updating object in db",msg)
-    let obj = server.db.findObject(msg.object.id)
-    console.log("on object",obj)
-    Object.entries(msg.object.props).forEach(([key,value])=>{
-        console.log('setting',key,value)
-        server.db.setProp(obj,key,value)
-    })
 }
 
 function is_input(msg) {
@@ -122,11 +87,7 @@ export class EventRouter {
 
         if(msg.type === 'request-font') return handle_font_load(msg,this.cons,this.server)
 
-        if(msg.type === "database-query") return perform_database_query(msg,this.cons,this.server)
-        if(msg.type === "database-watch") return perform_database_watch(msg,this.server)
-        if(msg.type === "database-add")   return perform_database_add(msg,this.server)
-        if(msg.type === "database-update")return perform_database_update(msg,this.server)
-
+        if(is_database(msg)) return this.server.db.handle(msg)
         if(is_translation(msg)) return this.server.trans.handle(msg)
         if(is_audio(msg)) return this.server.audio.handle(msg)
 

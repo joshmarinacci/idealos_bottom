@@ -3,6 +3,18 @@ import {CATEGORIES, SchemaManager, SORTS} from './schema.js'
 import {compareAsc, compareDesc} from "date-fns/index.js"
 import fs from 'fs'
 
+
+export const DATABASE_GROUP = {
+    "database-query":"database-query",
+    "database-watch":"database-watch",
+    "database-add":"database-add",
+    "database-update":"database-update"
+}
+
+export function is_database(msg) {
+    return Object.values(DATABASE_GROUP).some(n => msg.type === n)
+}
+
 export function sort(items,sortby,sortorder) {
     if(!Array.isArray(sortby)) throw new Error("sort(items, sortby) sortby must be an array of key names")
     items = items.slice()
@@ -241,7 +253,7 @@ export class DataBase {
     log(...args) {
         console.log("DB:",...args)
     }
-    constructor() {
+    constructor(server) {
         // this._original_data = data
         this.data = []
         this.log("making database")
@@ -254,6 +266,7 @@ export class DataBase {
         // this.validateData()
 
         this.file_watchers = []
+        this.server = server
     }
 
 
@@ -460,6 +473,43 @@ export class DataBase {
         Object.values(this.listeners).forEach(category => category.forEach(listener => listener()))
     }
 
+    perform_database_query(msg) {
+        // console.log("searching database for",msg.query)
+        let res = this.QUERY(msg.query)
+        // console.log("result is",res.length)
+        this.server.cons.forward_to_app(msg.app,{
+            type:"database-query-response",
+            app:msg.app,
+            docs:res,
+        })
+    }
+
+    perform_database_watch(msg) {
+        this.addEventListener(msg.category,(obj)=>{
+            // console.log("db changed with object",msg.category,obj)
+            this.server.cons.forward_to_app(msg.app,{
+                type:"database-watch-update",
+                app:msg.app,
+                object:obj,
+            })
+        })
+    }
+    perform_database_add(msg) {
+        this.add(msg.object)
+    }
+    perform_database_update(msg) {
+        let obj = this.findObject(msg.object.id)
+        Object.entries(msg.object.props).forEach(([key,value])=>{
+            this.setProp(obj,key,value)
+        })
+    }
+
+    handle(msg) {
+        if(msg.type === "database-query") return this.perform_database_query(msg)
+        if(msg.type === "database-watch") return this.perform_database_watch(msg)
+        if(msg.type === "database-add")   return this.perform_database_add(msg)
+        if(msg.type === "database-update")return this.perform_database_update(msg)
+    }
 }
 
 
