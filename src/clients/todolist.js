@@ -45,11 +45,20 @@ async function init() {
             ]
         },
         template_function:(task)=>{
+            // console.log("making template for task",task)
             return new HBox({
                 children:[
                     new CheckButton({
                         selected:task.props.completed,
-                        // action:() => it.completed = tb.selected,
+                        action:() => {
+                            win.send({
+                                type:"database-update",
+                                object:{
+                                    id:task.id,
+                                    props:{"completed":!task.props.completed}
+                                }
+                            })
+                        }
                     }),
                     new Label({text:task.props.title})
                 ]
@@ -87,7 +96,7 @@ class ListPanel extends Container {
         if(!this.list) {
             this.list = []
             this.window().app.on("database-query-response",(t) => {
-                console.log("got the database response",t.payload.docs.length)
+                // console.log("got the database response",t.payload.docs.length)
                 this.list = t.payload.docs
                 if(!this.template_function) throw new Error("ListPanel missing template_function")
                 this.children = this.list.map(this.template_function)
@@ -99,7 +108,7 @@ class ListPanel extends Container {
                 // })
             })
             this.window().app.on("database-watch-update",t => {
-                console.log("got database update",t)
+                // console.log("got database update",t)
                 this.window().send({
                     type:"database-query",
                     query: this.query

@@ -268,6 +268,7 @@ export class DataBase {
                     this.log("invalid item",item)
                 } else {
                     this.data.push(item)
+                    this.object_cache[item.id] = item
                 }
             })
             this._fireUpdateAll()
@@ -324,6 +325,9 @@ export class DataBase {
     }
     make(category,type, customSchema) {
         return makeNewObject(type,category, customSchema)
+    }
+    findObject(id) {
+        return this.object_cache[id]
     }
     setProp(obj,key,value) {
         if(!obj) return

@@ -63,6 +63,15 @@ function perform_database_add(msg, server) {
     console.log("adding to database",msg)
     server.db.add(msg.object)
 }
+function perform_database_update(msg, server) {
+    console.log("updating object in db",msg)
+    let obj = server.db.findObject(msg.object.id)
+    console.log("on object",obj)
+    Object.entries(msg.object.props).forEach(([key,value])=>{
+        console.log('setting',key,value)
+        server.db.setProp(obj,key,value)
+    })
+}
 
 function is_input(msg) {
     if(msg.type === INPUT.TYPE_MouseDown) return true
@@ -116,6 +125,7 @@ export class EventRouter {
         if(msg.type === "database-query") return perform_database_query(msg,this.cons,this.server)
         if(msg.type === "database-watch") return perform_database_watch(msg,this.server)
         if(msg.type === "database-add")   return perform_database_add(msg,this.server)
+        if(msg.type === "database-update")return perform_database_update(msg,this.server)
 
         if(is_translation(msg)) return this.server.trans.handle(msg)
         if(is_audio(msg)) return this.server.audio.handle(msg)
