@@ -111,13 +111,7 @@ export class TextBox extends Component {
         }
         if (is_word_char(e)) return this.append_char(e.key)
         if (e.code === INFO.KEY_NAMES.Backspace) {
-            if (this.text.length > 0) {
-                let before = this.text.substring(0, this.cursor)
-                let after = this.text.substring(this.cursor)
-                this.text = before.substring(0, before.length - 1) + after
-                this.cursor = Math.max(this.cursor - 1, 0)
-                this.repaint(e)
-            }
+            this.delete_backward()
         }
         if (e.code === INFO.KEY_NAMES.ArrowLeft) return this.nav_left(e)
         if (e.code === INFO.KEY_NAMES.ArrowRight) return this.nav_right(e)
@@ -150,6 +144,24 @@ export class TextBox extends Component {
         this.repaint()
     }
 
+    delete_backward(e) {
+        if (this.text.length > 0) {
+            let before = this.text.substring(0, this.cursor)
+            let after = this.text.substring(this.cursor)
+            this.text = before.substring(0, before.length - 1) + after
+            this.cursor = Math.max(this.cursor - 1, 0)
+            this.repaint(e)
+        }
+    }
+    delete_forward(e) {
+        let before = this.text.substring(0, this.cursor)
+        let after = this.text.substring(this.cursor)
+        this.text = before + after.substring(1)
+        // this.cursor += 1
+        if(this.cursor >= this.text.length) this.cursor = this.text.length
+        this.repaint(e)
+    }
+
     nav_left(e) {
         this.cursor = Math.max(this.cursor - 1, 0)
         this.repaint(e)
@@ -166,10 +178,13 @@ export class TextBox extends Component {
     }
 
     handle_action(e) {
+        console.log("action",e)
         if(e.command === "navigate-cursor-right") return this.nav_right(e)
         if(e.command === "navigate-cursor-left") return this.nav_left(e)
         if(e.command === "navigate-cursor-up") return this.nav_up(e)
         if(e.command === "navigate-cursor-down") return this.nav_down(e)
+        if(e.command === "delete-character-backward") return this.delete_backward()
+        if(e.command === "delete-character-forward") return this.delete_forward()
     }
 }
 
@@ -193,15 +208,15 @@ export class MultilineTextBox extends TextBox {
         if (is_word_char(e)) {
             return this.append_char(e.key)
         }
-        if (e.code === INFO.KEY_NAMES.Backspace) {
-            if (this.text.length > 0) {
-                let before = this.text.substring(0, this.cursor)
-                let after = this.text.substring(this.cursor)
-                this.text = before.substring(0, before.length - 1) + after
-                this.cursor = Math.max(this.cursor - 1, 0)
-                this.repaint(e)
-            }
-        }
+        // if (e.code === INFO.KEY_NAMES.Backspace) {
+        //     if (this.text.length > 0) {
+        //         let before = this.text.substring(0, this.cursor)
+        //         let after = this.text.substring(this.cursor)
+        //         this.text = before.substring(0, before.length - 1) + after
+        //         this.cursor = Math.max(this.cursor - 1, 0)
+        //         this.repaint(e)
+        //     }
+        // }
         if (e.key === "Enter") {
             this.fire('action', {target: this})
         }

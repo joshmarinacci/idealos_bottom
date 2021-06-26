@@ -42,6 +42,18 @@
       "code": "KeyN",
       "control": true,
       "command": "navigate-cursor-down"
+    },
+
+
+    {
+      "code": "KeyD",
+      "control": true,
+      "command": "delete-character-forward"
+    },
+    {
+      "code": "Backspace",
+      "control": "false",
+      "command": "delete-character-backward"
     }
   ]
 }
