@@ -348,7 +348,7 @@ export class DataBase {
             console.warn("object missing category")
             return
         }
-        this.listeners[obj.category].forEach(l => l())
+        this.listeners[obj.category].forEach(l => l(obj))
     }
 
     // loadPresetData() {

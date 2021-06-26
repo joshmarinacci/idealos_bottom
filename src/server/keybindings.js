@@ -4,7 +4,7 @@ export class KeybindingsManager {
     constructor(server,opts) {
         this.server = server
         this.keybindings = opts.keybindings
-        console.log("keybindings",this.keybindings)
+        // console.log("keybindings",this.keybindings)
     }
 
     handle_keybindings(msg) {

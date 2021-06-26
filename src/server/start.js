@@ -10,6 +10,9 @@ async function doit() {
     let fonts = {
         base: JSON.parse((await fs.promises.readFile("resources/fonts/font.json")).toString())
     }
+    let db_json = [
+        "resources/database/tasks.json"
+    ]
 
     let server = new CentralServer({
         hostname:'127.0.0.1',
@@ -27,6 +30,7 @@ async function doit() {
             }
         ],
         translations:[base_translation,lolcat_translation],
+        db_json:db_json
     })
 
     await server.start()

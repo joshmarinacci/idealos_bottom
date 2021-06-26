@@ -19,7 +19,7 @@ export class ThemeManager {
             this.uitheme = this.themes['light']
         }
         if(uitheme) this.uitheme = uitheme
-        this.log("made theme manager",this.themes,this.uitheme)
+        // this.log("made theme manager",this.themes,this.uitheme)
     }
 
     log(...args) {

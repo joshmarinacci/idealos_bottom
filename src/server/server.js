@@ -44,6 +44,7 @@ export class CentralServer {
         this.router = new EventRouter(this,this.cons, this.wids, this.at)
         this.apps = opts.apps
         this.audio = new AudioService(this)
+        this.db_json = opts.db_json || []
     }
 
     async start() {
@@ -59,6 +60,7 @@ export class CentralServer {
         })
         this.db = new DataBase()
         this.db.start()
+        this.db_json.forEach(path => this.db.watch_json(path))
 
         this._wsserver = new WS.Server({
             port: this.websocket_port

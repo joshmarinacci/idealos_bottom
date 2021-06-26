@@ -48,6 +48,22 @@ function perform_database_query(msg, cons, server) {
     })
 }
 
+function perform_database_watch(msg, server) {
+    console.log("watching db for",msg)
+    server.db.addEventListener(msg.category,(obj)=>{
+        console.log("db changed with object",msg.category,obj)
+        server.cons.forward_to_app(msg.app,{
+            type:"database-watch-update",
+            app:msg.app,
+            object:obj,
+        })
+    })
+}
+function perform_database_add(msg, server) {
+    console.log("adding to database",msg)
+    server.db.add(msg.object)
+}
+
 function is_input(msg) {
     if(msg.type === INPUT.TYPE_MouseDown) return true
     if(msg.type === INPUT.TYPE_MouseMove) return true
@@ -98,6 +114,8 @@ export class EventRouter {
         if(msg.type === 'request-font') return handle_font_load(msg,this.cons,this.server)
 
         if(msg.type === "database-query") return perform_database_query(msg,this.cons,this.server)
+        if(msg.type === "database-watch") return perform_database_watch(msg,this.server)
+        if(msg.type === "database-add")   return perform_database_add(msg,this.server)
 
         if(is_translation(msg)) return this.server.trans.handle(msg)
         if(is_audio(msg)) return this.server.audio.handle(msg)
