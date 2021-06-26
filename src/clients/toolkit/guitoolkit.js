@@ -338,7 +338,7 @@ class EventDispatcher {
     }
 
     log(...args) {
-        console.log("EVENT_DISPATCHER",...args)
+        // console.log("EVENT_DISPATCHER",...args)
     }
 }
 

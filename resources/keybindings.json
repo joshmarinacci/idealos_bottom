@@ -20,6 +20,28 @@
       "code": "KeyF",
       "control": true,
       "command": "navigate-cursor-right"
+    },
+
+
+    {
+      "code": "ArrowUp",
+      "control": false,
+      "command": "navigate-cursor-up"
+    },
+    {
+      "code": "KeyP",
+      "control": true,
+      "command": "navigate-cursor-up"
+    },
+    {
+      "code": "ArrowDown",
+      "control": false,
+      "command": "navigate-cursor-down"
+    },
+    {
+      "code": "KeyN",
+      "control": true,
+      "command": "navigate-cursor-down"
     }
   ]
 }

@@ -10,10 +10,10 @@ export class KeybindingsManager {
     handle_keybindings(msg) {
         // console.log("keybindings",this.keybindings,msg)
         if(msg.type === INPUT.TYPE_KeyboardDown) {
-            console.log("msg is",msg)
+            // console.log("msg is",msg)
             let binding = this.keybindings.bindings.find(e => e.code === msg.code && e.control === msg.control)
             if(binding) {
-                console.log('doing binding',binding)
+                // console.log('doing binding',binding)
                 if(!binding.command) throw new Error("binding missing command " + JSON.stringify(binding) )
                 this.server.cons.forward_to_app(msg.app,INPUT.MAKE_Action({
                     command:binding.command,

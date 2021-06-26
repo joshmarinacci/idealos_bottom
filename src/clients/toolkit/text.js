@@ -158,10 +158,18 @@ export class TextBox extends Component {
         this.cursor = Math.min(this.cursor + 1, this.text.length)
         this.repaint(e)
     }
+    nav_up(e) {
+        // console.log("nav up")
+    }
+    nav_down(e) {
+        // console.log("nav down")
+    }
 
     handle_action(e) {
         if(e.command === "navigate-cursor-right") return this.nav_right(e)
         if(e.command === "navigate-cursor-left") return this.nav_left(e)
+        if(e.command === "navigate-cursor-up") return this.nav_up(e)
+        if(e.command === "navigate-cursor-down") return this.nav_down(e)
     }
 }
 
@@ -198,9 +206,78 @@ export class MultilineTextBox extends TextBox {
             this.fire('action', {target: this})
         }
     }
-    append_char(ch) {
-        this.text = this.text.slice(0,this.cursor) + ch + this.text.slice(this.cursor)
-        this.cursor += 1
+    layout(gfx) {
+        //wrap and draw the text
+        let x = this.padding.left
+        let y = this.padding.top
+        this.cx = 0
+        this.cy = 0
+        this.lines = []
+        let line = ""
+        for(let i=0; i<this.text.length; i++) {
+            let ch = this.text[i]
+            let met = gfx.text_size(""+ch, this.font)
+            // gfx.text(this.x+x,this.y+y,""+ch,this.font)
+            line += ch
+            if(i === this.cursor) {
+                this.cx = x
+                this.cy = y
+            }
+            x += met.width
+            if(x > this.width) {
+                //start next line
+                x = this.padding.left
+                this.lines.push(line)
+                line = ""
+                y += 10
+            }
+        }
+        this.lines.push(line)
+
+    }
+    cursor_to_lc(cursor) {
+        let len = 0
+        let n = 0
+        for(let line of this.lines) {
+            if(this.cursor > len && this.cursor < len + line.length) {
+                // console.log("cursor inside line",line)
+                break;
+            }
+            len += line.length
+            n+=1
+        }
+        return {
+            line:n,
+            col:cursor-len
+        }
+    }
+    lc_to_cursor(lc) {
+        let cursor = 0
+        for(let i=0; i<this.lines.length; i++) {
+            let line = this.lines[i]
+            if(lc.line === i) {
+                cursor += lc.col
+                break
+            } else {
+                cursor += line.length
+            }
+        }
+        return cursor
+    }
+    nav_up(e) {
+        let lc = this.cursor_to_lc(this.cursor)
+        if(lc.line > 0) {
+            lc.line--
+            this.cursor = this.lc_to_cursor(lc)
+        }
+        this.repaint()
+    }
+    nav_down(e) {
+        let lc = this.cursor_to_lc(this.cursor)
+        if(lc.line < this.lines.length) {
+            lc.line++
+            this.cursor = this.lc_to_cursor(lc)
+        }
         this.repaint()
     }
     redraw(gfx) {
@@ -217,25 +294,12 @@ export class MultilineTextBox extends TextBox {
         //wrap and draw the text
         let x = this.padding.left
         let y = this.padding.top
-        let cx = 0
-        let cy = 0
-        for(let i=0; i<this.text.length; i++) {
-            let ch = this.text[i]
-            let met = gfx.text_size(""+ch, this.font)
-            gfx.text(this.x+x,this.y+y,""+ch,this.font)
-            if(i === this.cursor) {
-                cx = x
-                cy = y
-            }
-            x += met.width
-            if(x > this.width) {
-                x = this.padding.left
-                y += 10
-            }
-        }
+        this.lines.forEach((line,i) => {
+            gfx.text(this.x+x,this.y+y+i*10,line)
+        })
 
         if (gfx.win.is_focused(this)) {
-            gfx.rect(this.x + cx, this.y + cy, 1, 10, 'red')
+            gfx.rect(this.x + this.cx, this.y + this.cy, 1, 10, 'red')
         }
     }
 }
