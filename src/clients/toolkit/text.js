@@ -110,9 +110,7 @@ export class TextBox extends Component {
             return
         }
         if (is_word_char(e)) return this.append_char(e.key)
-        if (e.code === INFO.KEY_NAMES.Backspace) {
-            this.delete_backward()
-        }
+        if (e.code === INFO.KEY_NAMES.Backspace) return this.delete_backward()
         if (e.code === INFO.KEY_NAMES.ArrowLeft) return this.nav_left(e)
         if (e.code === INFO.KEY_NAMES.ArrowRight) return this.nav_right(e)
         if (e.key === "Enter") {
@@ -208,15 +206,7 @@ export class MultilineTextBox extends TextBox {
         if (is_word_char(e)) {
             return this.append_char(e.key)
         }
-        // if (e.code === INFO.KEY_NAMES.Backspace) {
-        //     if (this.text.length > 0) {
-        //         let before = this.text.substring(0, this.cursor)
-        //         let after = this.text.substring(this.cursor)
-        //         this.text = before.substring(0, before.length - 1) + after
-        //         this.cursor = Math.max(this.cursor - 1, 0)
-        //         this.repaint(e)
-        //     }
-        // }
+        if (e.code === INFO.KEY_NAMES.Backspace) return this.delete_backward()
         if (e.key === "Enter") {
             this.fire('action', {target: this})
         }
