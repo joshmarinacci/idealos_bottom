@@ -54,6 +54,18 @@
       "code": "Backspace",
       "control": "false",
       "command": "delete-character-backward"
+    },
+
+
+    {
+      "code": "KeyA",
+      "control": true,
+      "command": "navigate-cursor-line-start"
+    },
+    {
+      "code": "KeyE",
+      "control": true,
+      "command": "navigate-cursor-line-end"
     }
   ]
 }

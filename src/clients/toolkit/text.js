@@ -174,13 +174,23 @@ export class TextBox extends Component {
     nav_down(e) {
         // console.log("nav down")
     }
+    nav_start_line(e) {
+        this.cursor = 0
+        this.repaint(e)
+    }
+    nav_end_line(e) {
+        this.cursor = this.text.length
+        this.repaint(e)
+    }
 
     handle_action(e) {
-        console.log("action",e)
+        // console.log("action",e)
         if(e.command === "navigate-cursor-right") return this.nav_right(e)
         if(e.command === "navigate-cursor-left") return this.nav_left(e)
         if(e.command === "navigate-cursor-up") return this.nav_up(e)
         if(e.command === "navigate-cursor-down") return this.nav_down(e)
+        if(e.command === "navigate-cursor-line-start") return this.nav_start_line(e)
+        if(e.command === "navigate-cursor-line-end") return this.nav_end_line(e)
         if(e.command === "delete-character-backward") return this.delete_backward()
         if(e.command === "delete-character-forward") return this.delete_forward()
     }
@@ -284,6 +294,18 @@ export class MultilineTextBox extends TextBox {
             this.cursor = this.lc_to_cursor(lc)
         }
         this.repaint()
+    }
+    nav_start_line(e) {
+        let lc = this.cursor_to_lc(this.cursor)
+        lc.col = 0
+        this.cursor = this.lc_to_cursor(lc)
+        this.repaint(e)
+    }
+    nav_end_line(e) {
+        let lc = this.cursor_to_lc(this.cursor)
+        lc.col = this.lines[lc.line].length
+        this.cursor = this.lc_to_cursor(lc)
+        this.repaint(e)
     }
     redraw(gfx) {
         let name = "textbox"
