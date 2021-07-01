@@ -1,206 +1,8 @@
 import assert from 'assert'
 import fs from 'fs'
 import {JoshFont} from '../src/clients/toolkit/guitoolkit.js'
+import {BIAS, TextLayout} from '../src/clients/toolkit/text.js'
 
-const BIAS = {
-    LEFT:'LEFT',
-    RIGHT:'RIGHT',
-}
-
-class TextLayout {
-    constructor() {
-        this.text = ""
-        this.cursor = 0
-        this.bias = BIAS.LEFT
-        this.lines = [""]
-    }
-    layout_as_blocks(w) {
-        this.lines = []
-        let x = 0
-        let y = 0
-        let line = ""
-        for(let i=0; i<this.text.length; i++) {
-            let ch = this.text[i]
-            line += ch
-            let met = {width: 1}
-            x += met.width
-            if(x >= w) {
-                x = 0
-                this.lines.push(line)
-                line = ""
-                y += 10
-            }
-        }
-        this.lines.push(line)
-    }
-
-    nav_left() {
-        if(this.bias === BIAS.RIGHT) {
-            this.bias = BIAS.LEFT
-            return
-        }
-        if(this.bias === BIAS.LEFT) {
-
-            let lc = this.cursor_to_lc(this.cursor)
-            if(lc.col === 0 && lc.line === 0) {
-                this.cursor = 0
-                this.bias = BIAS.LEFT
-                return
-            }
-            if(lc.col === 0) {
-                this.cursor--
-                this.bias = BIAS.RIGHT
-                return
-            }
-
-            this.cursor--
-            if(this.cursor < 0) {
-                this.cursor = 0
-            }
-            return
-        }
-    }
-
-    cursor_to_lc(cursor) {
-        let len = 0
-        let n = 0
-        for(let line of this.lines) {
-            if(this.cursor >= len && this.cursor < len + line.length) {
-                break;
-            }
-            len += line.length
-            n+=1
-        }
-        return {
-            line:n,
-            col:cursor-len
-        }
-    }
-
-    nav_right() {
-        if(this.bias === BIAS.LEFT) {
-            this.bias = BIAS.RIGHT
-            return
-        }
-        let lc = this.cursor_to_lc(this.cursor)
-        //should wrap
-        if(lc.col === this.lines[lc.line].length-1 && lc.line < this.lines.length-1 ) {
-            this.cursor++
-            this.bias = BIAS.LEFT
-            return
-        }
-        //move on same line
-        if(lc.col < this.lines[lc.line].length-1) {
-            this.cursor++
-        }
-    }
-
-    layout_as_blocks_with_breaks(w) {
-        this.lines = []
-        let line = ""
-        let last_space = -1
-        let last_space_i = -1
-        let x = 0
-        let y = 0
-        for(let i=0; i<this.text.length; i++) {
-            console.log(i)
-            let ch = this.text[i]
-            if(ch === ' ') {
-                console.log("space")
-                last_space = line.length
-                last_space_i = i
-            }
-            if(ch === '\n') {
-                console.log("new line")
-                last_space_i = -1
-                last_space = -1
-                line += ch
-                this.lines.push(line)
-                line = ""
-                x = 0
-                y += 10
-                continue;
-            }
-            line += ch
-            let met = {width: 1}
-            x += met.width
-            if(x >= w) {
-                console.log("too far",x,i)
-                console.log("last space",last_space)
-                let before = line.slice(0,last_space+1)
-                let after = line.slice(last_space+1)
-                console.log("before:"+before+':after:'+after+':')
-                x = 0
-                console.log("--",before)
-                this.lines.push(before)
-                line = ""
-                i = last_space_i
-                console.log("set i to",last_space_i)
-                y += 10
-            }
-        }
-        this.lines.push(line)
-    }
-
-    layout_as_blocks_with_breaks_and_font(w, font) {
-        this.lines = []
-        let line = ""
-        let last_space = -1
-        let last_space_i = -1
-        let x = 0
-        let y = 0
-        let _count = 0
-        for(let i=0; i<this.text.length; i++) {
-            _count++
-            if(_count > 1000) {
-                throw new Error("infinite loop")
-            }
-            let ch = this.text[i]
-            if(ch === ' ') {
-                console.log("space")
-                last_space = line.length
-                last_space_i = i
-            }
-            if(ch === '\n') {
-                console.log("new line")
-                last_space_i = -1
-                last_space = -1
-                line += ch
-                this.lines.push(line)
-                line = ""
-                x = 0
-                y += 10
-                continue;
-            }
-            let cch = ch.charCodeAt(0)
-            console.log(i,ch,cch,x)//,font.find_glyph_by_id(cch))
-            line += ch
-            let mets = font.find_glyph_by_id(cch)
-            let met = {
-                width : mets.width - mets.left - mets.right,
-            }
-            // console.log(met)
-            // let met = {width: 1}
-            x += met.width
-            if(x >= w) {
-                console.log("too far",x,i)
-                console.log("last space",last_space)
-                let before = line.slice(0,last_space+1)
-                let after = line.slice(last_space+1)
-                console.log("before:"+before+':after:'+after+':')
-                x = 0
-                console.log("--",before)
-                this.lines.push(before)
-                line = ""
-                i = last_space_i
-                console.log("set i to",last_space_i)
-                y += 10
-            }
-        }
-        this.lines.push(line)
-
-    }
-}
 
 describe("text navigation",() => {
     it("navigates left",() => {
@@ -214,7 +16,6 @@ describe("text navigation",() => {
         assert(tl.bias===BIAS.LEFT)
         assert(tl.cursor===0)
         assert(tl.lines.length === 3)
-        console.log(tl.lines)
         assert(tl.lines[0] === 'ABC')
         assert(tl.lines[1] === 'DEF')
         assert(tl.lines[2] === 'G')
@@ -363,7 +164,6 @@ describe("text navigation",() => {
         //how are you
         //doing?
         tl.layout_as_blocks_with_breaks(14)
-        console.log(tl.lines)
         assert(tl.lines[0] === 'hello there ')
         assert(tl.lines[1] === 'mister man\n')
         assert(tl.lines[2] === 'how are you ')
@@ -380,7 +180,6 @@ describe("text navigation",() => {
         //how are you
         //doing?
         tl.layout_as_blocks_with_breaks_and_font(60,font)
-        console.log(tl.lines)
         assert(tl.lines[0] === 'hello there ')
         assert(tl.lines[1] === 'mister man\n')
         assert(tl.lines[2] === 'how are ')

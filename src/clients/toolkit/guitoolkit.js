@@ -533,6 +533,9 @@ class Gfx {
         if (font) return font.draw_text(this, this.tx + x, this.ty + y, text, color, this.win)
         return this.win.base_font.draw_text(this, this.tx + x, this.ty + y, text, color, this.win)
     }
+    font() {
+        return this.win.base_font
+    }
     text_size(text, font) {
         if(font) return font.measure_text(this.app,text)
         return this.win.base_font.measure_text(this.app,text)
