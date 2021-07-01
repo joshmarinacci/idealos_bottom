@@ -54,7 +54,7 @@ export class Insets {
 }
 
 
-class JoshFont {
+export class JoshFont {
     constructor(info) {
         this.info = info
     }
