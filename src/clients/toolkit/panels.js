@@ -168,10 +168,18 @@ export class TabPanel extends Container {
 export class ScrollPanel extends Container {
     constructor(opts) {
         super(opts);
-        this.up_arrow     = new Button({text:"/\\", action:()=>this.scroll_up()})
-        this.down_arrow   = new Button({text:"\\/", action:()=>this.scroll_down()})
-        this.left_arrow   = new Button({text:"<", action:()=>this.scroll_left()})
-        this.right_arrow  = new Button({text:">", action:()=>this.scroll_right()})
+        this.up_arrow     = new Button({
+            text:String.fromCodePoint(24),
+            action:()=>this.scroll_up()})
+        this.down_arrow   = new Button({
+            text:String.fromCodePoint(16),
+            action:()=>this.scroll_down()})
+        this.left_arrow   = new Button({
+            text:String.fromCodePoint(23),
+            action:()=>this.scroll_left()})
+        this.right_arrow  = new Button({
+            text:String.fromCodePoint(22),
+            action:()=>this.scroll_right()})
         this.hslider       = new Button({text:" "})
         this.vslider       = new Button({text:" "})
         this.controls = [this.up_arrow,this.down_arrow,this.left_arrow,this.right_arrow,this.hslider,this.vslider]
