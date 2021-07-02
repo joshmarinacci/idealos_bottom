@@ -194,10 +194,17 @@ export class ScrollPanel extends Container {
     }
     scroll_up() {
         this.offsety += 10
+        if(this.offsety > 0) this.offsety = 0
         this.repaint()
     }
     scroll_down() {
         this.offsety -= 10
+        let content_height = this.content[0].height
+        let view_height = this.height - 15*3
+        let m = view_height -this.offsety
+        if(m > content_height) {
+            this.offsety = -(content_height-view_height)
+        }
         this.repaint()
     }
     scroll_right() {
@@ -237,9 +244,10 @@ export class ScrollPanel extends Container {
         this.vslider.width = s
         this.vslider.height = this.height-s-s-s
 
+        let b = 2
         this.content.forEach(ch => {
             ch.x = this.offsetx
-            ch.y = this.offsety
+            ch.y = this.offsety + b
         })
     }
     redraw(gfx) {
@@ -285,7 +293,7 @@ export class ListView extends Container {
         if(!this.generated) {
             this.children = this.data.map((item,i) => {
                 let ch = this.template_function(item)
-                let li = new ListItem({children:[ch]})
+                let li = new ListItem({children:[ch], padding:2})
                 li.parent = this
                 li.list_view = this
                 li.action = ()=>this.set_selected(i)
@@ -315,9 +323,8 @@ export class ListView extends Container {
         })
         gfx.translate(-this.x,-this.y)
     }
-
-    set_selected(i,e) {
-        this.selected_index = i
+    set_selected(index,e) {
+        this.selected_index = index
         this.repaint(e)
     }
 }

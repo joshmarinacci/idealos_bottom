@@ -518,7 +518,6 @@ export class MultilineTextBox extends TextBox {
         if (e.key === "Enter") return this.fire('action', {target: this})
     }
     layout(gfx) {
-        console.log("doing layout")
         //wrap and draw the text
         this.tl.layout_as_blocks_with_breaks_and_font(this.width,gfx.font())
     }
