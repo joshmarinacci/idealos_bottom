@@ -206,7 +206,9 @@ export class TextLayout {
     }
 
     append_char(ch) {
-        this.text = this.text.slice(0, this.cursor) + ch + this.text.slice(this.cursor)
+        let cur = this.cursor
+        if(this.bias === BIAS.RIGHT) cur++
+        this.text = this.text.slice(0, cur) + ch + this.text.slice(cur)
         this.cursor += 1
     }
 
