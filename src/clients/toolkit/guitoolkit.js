@@ -524,17 +524,27 @@ class Gfx {
         this.ty += y
     }
     set_clip_rect(x, y, width, height) {
-        this.clip_rect = {x,y, width, height}
+        this.clip_rect = {x:x+this.tx,y:y+this.ty, width, height}
     }
     clear_clip_rect() {
         this.clip_rect = {x:0,y:0,width:1000,height:1000}
     }
     rect(x,y,width,height,color) {
-        let bounds  = {x: this.tx + x, y: this.ty + y, width, height, color, window: this.win._winid }
-        let clip = {x:this.clip_rect.x+this.tx, y:this.clip_rect.y+this.ty, width:this.clip_rect.width, height: this.clip_rect.height}
+        let bounds  = {
+            x: this.tx + x,
+            y: this.ty + y,
+            width, height, color, window: this.win._winid }
+        let clip = {
+            x:this.clip_rect.x,
+            y:this.clip_rect.y,
+            width:this.clip_rect.width,
+            height: this.clip_rect.height
+        }
         if(this.clip_rect.width !== 1000) {
             // this.win.log("drawing rect with clip rect", clip)
             // this.win.log("bounds",bounds)
+            if(bounds.y+bounds.height < clip.y ) return
+            if(bounds.y > clip.y + clip.height) return
             if(bounds.x+bounds.width > clip.x + clip.width ) {
                 bounds.width = clip.x + clip.width - bounds.x
             }
@@ -551,7 +561,6 @@ class Gfx {
                 bounds.y += diff
                 bounds.height -= diff
             }
-
             // this.win.log("final",bounds)
         }
         this.send(GRAPHICS.MAKE_DrawRect(bounds))
@@ -561,6 +570,17 @@ class Gfx {
         this.messages.push(msg)
     }
     text(x,y,text,color,font) {
+        if(this.clip_rect.width !== 1000) {
+            let clip = {
+                x: this.clip_rect.x,
+                y: this.clip_rect.y,
+                width: this.clip_rect.width,
+                height: this.clip_rect.height
+            }
+            if(this.ty + y < clip.y) return
+            if(this.ty + y > clip.y + clip.height) return
+        }
+
         if (font) return font.draw_text(this, this.tx + x, this.ty + y, text, color, this.win)
         return this.win.base_font.draw_text(this, this.tx + x, this.ty + y, text, color, this.win)
     }

@@ -156,7 +156,6 @@ export class TabPanel extends Container {
         gfx.rect(this.x,this.y,this.width,this.height,'cyan')
         super.redraw(gfx)
     }
-
     select_tab(n) {
         this.selected_index = n
         this.tab_buttons.forEach((btn,i)=> btn.selected = (i===this.selected_index))
@@ -191,6 +190,7 @@ export class ScrollPanel extends Container {
         this.children.forEach(ch => ch.parent = this)
         this.offsetx = 2
         this.offsety = 2
+        this.hstretch = opts.hstretch || false
     }
     scroll_up() {
         this.offsety += 10
@@ -209,6 +209,9 @@ export class ScrollPanel extends Container {
         this.repaint()
     }
     layout(gfx) {
+        if(this.hstretch) {
+            this.content.forEach(ch => ch.width = this.width)
+        }
         super.layout(gfx)
         let s = 15
         this.controls.forEach(b => {
@@ -246,7 +249,7 @@ export class ScrollPanel extends Container {
         gfx.rect(this.x + b, this.y + b, this.width - b * 2 -s, this.height - b * 2 -s, 'white')
         //draw content
         gfx.translate(this.x, this.y)
-        gfx.set_clip_rect(b, b, this.width-s-b*2, this.height-s-b*2)
+        gfx.set_clip_rect(b,b,this.width-s-b*2,this.height-s-b*2)
         this.content.forEach(ch => ch.redraw(gfx))
         gfx.clear_clip_rect()
         gfx.translate(-this.x, -this.y)
@@ -265,5 +268,35 @@ export class GridDebugPanel extends Component {
         // for(let i=0; i<1; i++) {
             gfx.rect(this.x+i*s, this.y+i*s, this.width-i*s*2, this.height-i*s*2, colors[i])
         }
+    }
+}
+
+export class ListView extends Container {
+    constructor(opts) {
+        super(opts);
+        this.name = 'list-view'
+        this.data = opts.data
+        this.template_function = opts.template_function
+        this.children = []
+        this.rendered = false
+    }
+    layout(gfx) {
+        if(!this.rendered) {
+            this.children = this.data.map(this.template_function)
+            this.children.forEach(ch => ch.parent = this)
+            this.rendered = true
+        }
+        this.height = this.children.length*12
+        super.layout(gfx)
+        this.children.forEach((ch,i) => {
+            ch.x = 0
+            ch.y = i*14
+            ch.height = 14
+            ch.width = this.width
+        })
+    }
+    redraw(gfx) {
+        gfx.rect(this.x,this.y,this.width,this.height,'red')
+        super.redraw(gfx)
     }
 }

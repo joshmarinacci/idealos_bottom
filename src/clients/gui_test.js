@@ -2,9 +2,17 @@ import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {App} from './toolkit/guitoolkit.js'
-import {CONSTRAINTS, GridDebugPanel, HBox, ScrollPanel, TabPanel, VBox} from './toolkit/panels.js'
+import {
+    CONSTRAINTS,
+    HBox,
+    ListView,
+    ScrollPanel,
+    TabPanel,
+    VBox
+} from './toolkit/panels.js'
 import {Label, MultilineLabel, MultilineTextBox, TextBox, TranslatedLabel} from './toolkit/text.js'
 import {Button, PopupButton, ToggleButton} from './toolkit/buttons.js'
+
 let app = new App(process.argv)
 
 async function init() {
@@ -53,8 +61,15 @@ async function init() {
                         hstretch:true,
                         children:[
                         new Label({text:"scroll panel"}),
-                        new ScrollPanel({width:100, height:100, children:[
-                            new GridDebugPanel({width:100, height:100})
+                        new ScrollPanel({
+                            width:100,
+                            height:100,
+                            hstretch:true,
+                            children:[
+                            new ListView({
+                                data:["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O"],
+                                template_function:item=> new Button({text:item})
+                            })
                         ]})
                     ]})
                 ]
