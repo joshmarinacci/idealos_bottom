@@ -1,4 +1,3 @@
-import WS from "ws"
 // import {WindowTracker} from './windows.js'
 // import {AppTracker} from './apps.js'
 // import {ConnectionManager} from "./connections.js"
@@ -15,6 +14,7 @@ import path from 'path'
 // import {ThemeManager} from './themes.js'
 import {AppManager} from './app_manager.js'
 import WebSocket from "ws";
+import {FontManager} from "./FontManager.js";
 
 export const hostname = '127.0.0.1'
 export const websocket_port = 8081
@@ -26,11 +26,11 @@ export class CentralServer {
     private apps: any;
     // private audio: AudioService;
     // private db_json: string[];
-    private fonts: any;
     // @ts-ignore
     private _server: WebSocket.Server;
     // @ts-ignore
-    constructor(opts) {
+    private font_manager: FontManager;
+    constructor(opts:any) {
         this.log('starting with opts', opts)
         if (!opts.websocket_port) throw new Error("no webssocket port set!")
         this.websocket_port = opts.websocket_port
@@ -57,17 +57,13 @@ export class CentralServer {
         // this.at = new AppTracker(this,this.hostname, this.websocket_port)
         // this.router = new EventRouter(this,this.cons, this.wids, this.at)
         this.apps = opts.apps
+        this.font_manager = new FontManager(this)
         // this.audio = new AudioService(this)
         // this.db_json = opts.db_json || []
     }
 
     async start() {
-        if(!this.fonts) {
-            this.fonts = {
-                base: JSON.parse((await fs.promises.readFile("resources/fonts/font.json")).toString())
-            }
-
-        }
+        await this.font_manager.load()
 
         // this.kb = new KeybindingsManager(this, {
         //     keybindings:await load_keybindings("resources/keybindings.json")
@@ -76,15 +72,16 @@ export class CentralServer {
         // this.db.start()
         // this.db_json.forEach(path => this.db.watch_json(path))
 
-        this._server = new WS.Server({
+        this._server = new WebSocket.Server({
             port: this.websocket_port
         })
         this.log(`started websocket port on ws://${hostname}:${websocket_port}`)
         this._server.on('connection', (ws) => {
+            this.log("connection opened")
             ws.on("message", (m) => {
                 // @ts-ignore
                 let msg = JSON.parse(m)
-                // this.dispatch(msg, ws)
+                this.dispatch(msg, ws)
             })
             ws.on('close', (code) => {
                 // this.cons.remove_connection(ws)
@@ -102,8 +99,8 @@ export class CentralServer {
             if(app.disabled !== true) await this.start_app(app)
         }
         for (let app of this.apps.user) {
-            if (app.autostart === true) {
-                // await this.start_app(app)
+            if (app.autostart) {
+                await this.start_app(app)
             } else {
                 // await this.at.create_app(app)
             }
@@ -116,7 +113,6 @@ export class CentralServer {
     }
 
     async start_app(opts: any) {
-        this.log("starting the app",opts)
         let app = this.app_manager.create_app(opts)
         this.app_manager.start_app_by_id(app.id)
     }
@@ -130,13 +126,17 @@ export class CentralServer {
     }
 
 
-    // dispatch(msg, ws) {
-        // try {
-        //     this.router.route(ws, msg)
-        // } catch (e) {
-        //     this.log(e)
-        // }
-    // }
+    dispatch(msg: any, ws: WebSocket) {
+        try {
+            if(msg.type === 'APP_OPEN') return this.app_manager.app_connected(msg,ws)
+            if(msg.type === 'MAKE_WindowOpen_name') return this.app_manager.open_window(msg)
+            if(msg.type === 'request-font') return this.font_manager.request_font(msg)
+            console.log("server received",msg)
+            // this.router.route(ws, msg)
+        } catch (e) {
+            this.log(e)
+        }
+    }
 
     // async send(msg) {
         // this.dispatch(msg)

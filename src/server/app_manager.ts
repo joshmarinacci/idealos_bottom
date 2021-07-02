@@ -1,8 +1,13 @@
-import {spawn} from "child_process";
+import {spawn, ChildProcessWithoutNullStreams} from "child_process";
+import WebSocket from "ws";
+// @ts-ignore
+import {WINDOWS} from "idealos_schemas/js/windows.js"
 // import {DEBUG} from 'idealos_schemas/js/debug.js'
 
 type AppType = "SCREEN" | "DEBUG" | "TEST" | "MENUBAR" | "DOCK" | "APP" | "SIDEBAR" | "CHILD"
-type WindowType = "MENUBAR" | "DOCK" | "SIDEBAR" | "DEBUG" | "CHILD"
+type WindowType = "MENUBAR" | "DOCK" | "SIDEBAR" | "DEBUG" | "CHILD" | "PLAIN"
+
+type NO_OWNER = "NO_OWNER"
 
 interface Window {
     type:WindowType,
@@ -11,19 +16,19 @@ interface Window {
     y:number,
     width:number,
     height:number,
-    owner:string,
+    owner:string|NO_OWNER,
 }
 
-const NO_OWNER = "NO_OWNER"
 interface App {
-    owner: string;
+    owner: string|NO_OWNER;
     type:AppType,
     id:string,
     name:string,
     entrypoint:string,
     args:string[],
-    subprocess:any|null,
     windows:Window[],
+    subprocess:ChildProcessWithoutNullStreams|undefined,
+    connection:WebSocket|undefined
 }
 
 export const APPS_GROUP = {
@@ -45,18 +50,66 @@ export class AppManager {
     create_app(opts:any):App {
         console.log("creating app with opts",opts)
         let app:App = {
-            subprocess: null,
+            subprocess: undefined,
+            connection:undefined,
             windows: [],
             id: "app_"+(Math.floor(Math.random()*100000)),
             name: opts.name || "unnamed",
             entrypoint: opts.entrypoint,
             type:"APP",
             args:opts.args || [],
-            owner:NO_OWNER
+            owner:"NO_OWNER"
         }
         this.apps.push(app)
         return app
     }
+
+    app_connected(msg: any, ws: WebSocket) {
+        this.log("app connected",msg)
+        let app = this.get_app_by_id(msg.app)
+        if(typeof app === undefined) {
+            return console.error(`app missing ${msg.app}`)
+        } else {
+            // @ts-ignore
+            app.connection = ws
+            console.log("attached app")
+        }
+    }
+
+    open_window(msg: any) {
+        this.log("opening a window",msg)
+        if(msg.window_type === 'plain') {
+            let app = this.get_app_by_id(msg.app)
+            let win:Window = {
+                x:msg.x,
+                y: msg.y,
+                width:msg.width,
+                height:msg.height,
+                owner: "NO_OWNER",
+                type: "PLAIN",
+                id:"win_"+Math.floor(Math.random()*10000)
+            }
+            app?.windows.push(win)
+            this.send_to_type("SCREEN", WINDOWS.MAKE_WindowOpenDisplay({
+                target:msg.sender,
+                window:{
+                    id:win.id,
+                    x:win.x,
+                    y:win.y,
+                    width:win.width,
+                    height:win.height,
+                    owner:win.owner,
+                    window_type:win.type,
+                }
+            }))
+            //send response back to client
+            this.send_to_app(msg.sender,WINDOWS.MAKE_WindowOpenResponse({
+                target:msg.sender,
+                window:win.id,
+            }))
+        }
+    }
+
     start_app_by_id(id:String) {
         let app = this.get_app_by_id(id)
         if(typeof app === 'undefined') return console.error(`no such app ${id}`)
@@ -74,15 +127,12 @@ export class AppManager {
         // @ts-ignore
         app.subprocess.stderr.on('data',(data:any)=>this.log(`STDERR ${app.name} ${data}`))
         // this.server.cons.forward_to_screen(DEBUG.MAKE_AppStarted({target:id}))
+        console.log("app started")
     }
 
     private get_app_by_id(id: String):App | undefined {
         return this.apps.find(ap => ap.id === id)
     }
-    private get_app_by_name(name:String):App | undefined {
-        return this.apps.find(ap => ap.name === name)
-    }
-
     private log(...args: any[]) {
         this.server.log(...args)
     }
@@ -129,5 +179,17 @@ export class AppManager {
         return this.get_app_by_id(app.owner)
     }
 
+    private send_to_type(display: AppType, msg: any) {
+        console.log('sending to type', display,msg)
+        let apps = this.apps.filter(a => a.type === display)
+        apps.forEach((app: App) => {
+            app.connection?.send(JSON.stringify(msg))
+        })
+    }
+    private send_to_app(appid:string, msg:any) {
+        console.log("sending to app",msg)
+        let app = this.get_app_by_id(appid)
+        app?.connection?.send(JSON.stringify(msg))
+    }
 
 }

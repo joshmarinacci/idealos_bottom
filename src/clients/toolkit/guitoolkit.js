@@ -134,6 +134,11 @@ export class App {
         this._started = false
         this.ws.on('open', () => {
             this._started = true
+            this.send({
+                type:"APP_OPEN",
+                app_type:"CLIENT",
+                app:this._appid
+            })
             this.fireLater('start', {})
         })
         this.ws.on("message", (data) => {

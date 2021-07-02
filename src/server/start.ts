@@ -3,7 +3,29 @@ import {CentralServer, load_applist, load_translation, load_uitheme} from "./ser
 import fs from 'fs'
 
 async function doit() {
-    let applist = await load_applist("resources/apps.json")
+    // let applist = await load_applist("resources/apps.json")
+    let applist = {
+        "system": [
+        ],
+        "user": [
+            {
+                "name": "guitest",
+                "title": "Cool Gui Tester",
+                "icon": "guitester",
+                "entrypoint": "src/clients/gui_test.js",
+                "autostart": true
+            }
+        ],
+        "services": [
+        ],
+        "menu-plugins": [
+        ],
+        "sidebar-plugins": [
+
+        ]
+    }
+
+
     let uitheme_light = await load_uitheme("resources/uitheme.json")
     let uitheme_dark = await load_uitheme("resources/uitheme-dark.json")
     let base_translation = await load_translation("resources/translations/base.json")
