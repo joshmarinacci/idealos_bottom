@@ -1,4 +1,4 @@
-import {CentralServer, load_applist, load_uitheme} from '../src/server/server.js'
+import {CentralServer, load_applist, load_uitheme} from '../src/server/server.ts'
 import assert from 'assert'
 import {message_compare, start_testapp, start_testguiapp} from './common.js'
 

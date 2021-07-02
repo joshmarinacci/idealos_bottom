@@ -1,4 +1,5 @@
-import {CentralServer, load_applist, load_translation, load_uitheme} from './server.js'
+import {CentralServer, load_applist, load_translation, load_uitheme} from "./server.js"
+// @ts-ignore
 import fs from 'fs'
 
 async function doit() {

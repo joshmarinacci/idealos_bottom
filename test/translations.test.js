@@ -1,4 +1,4 @@
-import {CentralServer, load_applist, load_translation} from '../src/server/server.js'
+import {CentralServer, load_applist, load_translation} from '../src/server/server.ts'
 import {message_compare, start_testguiapp} from './common.js'
 import {VBox} from '../src/clients/toolkit/panels.js'
 

@@ -3,7 +3,7 @@ import {INPUT} from 'idealos_schemas/js/input.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {GENERAL} from 'idealos_schemas/js/general.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
-import {hostname, websocket_port} from '../src/server/server.js'
+import {hostname, websocket_port} from '../src/server/server.ts'
 import {App} from '../src/clients/toolkit/guitoolkit.js'
 import assert from 'assert'
 
