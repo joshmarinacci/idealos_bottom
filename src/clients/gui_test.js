@@ -68,7 +68,7 @@ async function init() {
                             children:[
                             new ListView({
                                 data:["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O"],
-                                template_function:item=> new Button({text:item})
+                                template_function:item=> new Label({text:item})
                             })
                         ]})
                     ]})

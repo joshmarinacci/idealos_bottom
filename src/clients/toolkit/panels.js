@@ -278,13 +278,20 @@ export class ListView extends Container {
         this.data = opts.data
         this.template_function = opts.template_function
         this.children = []
-        this.rendered = false
+        this.generated = false
+        this.selected_index = 0
     }
     layout(gfx) {
-        if(!this.rendered) {
-            this.children = this.data.map(this.template_function)
-            this.children.forEach(ch => ch.parent = this)
-            this.rendered = true
+        if(!this.generated) {
+            this.children = this.data.map((item,i) => {
+                let ch = this.template_function(item)
+                let li = new ListItem({children:[ch]})
+                li.parent = this
+                li.list_view = this
+                li.action = ()=>this.set_selected(i)
+                return li
+            })
+            this.generated = true
         }
         this.height = this.children.length*12
         super.layout(gfx)
@@ -297,6 +304,34 @@ export class ListView extends Container {
     }
     redraw(gfx) {
         gfx.rect(this.x,this.y,this.width,this.height,'red')
+        gfx.translate(this.x,this.y)
+        this.children.forEach((ch,i) => {
+            if(this.selected_index === i) {
+                ch.selected = true
+            } else {
+                ch.selected = false
+            }
+            ch.redraw(gfx)
+        })
+        gfx.translate(-this.x,-this.y)
+    }
+
+    set_selected(i,e) {
+        this.selected_index = i
+        this.repaint(e)
+    }
+}
+
+class ListItem extends HBox {
+    input(e) {
+        this.action(e)
+    }
+    redraw(gfx) {
+        if(this.selected) {
+            gfx.rect(this.x,this.y,this.width,this.height,'cyan')
+        } else {
+            gfx.rect(this.x,this.y,this.width,this.height,'white')
+        }
         super.redraw(gfx)
     }
 }
