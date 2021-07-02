@@ -1,4 +1,3 @@
-import {Server} from "ws";
 import fs from "fs";
 
 export class FontManager {
@@ -41,7 +40,7 @@ export class FontManager {
             // @ts-ignore
             this.server.app_manager.send_to_app(resp.app,resp)
         } else {
-            this.server.app_manager.send_to_type("DISPLAY",resp)
+            this.server.app_manager.send_to_type("SCREEN", resp)
         }
 
     }

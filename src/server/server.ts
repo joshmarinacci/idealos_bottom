@@ -14,6 +14,10 @@ import {is_translation, TranslationManager} from "./translations.js"
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 // @ts-ignore
 import {WINDOWS} from "idealos_schemas/js/windows.js";
+// @ts-ignore
+import {DEBUG} from "idealos_schemas/js/debug.js";
+// @ts-ignore
+import {GENERAL} from "idealos_scemas/js/general.js";
 
 export const hostname = '127.0.0.1'
 export const websocket_port = 8081
@@ -40,23 +44,8 @@ export class CentralServer {
         if (!opts.apps) throw new Error("no applist provided")
 
         this.theme_manager = new ThemeManager(this,opts.themes,opts.uitheme)
-
-        // this.screens = [
-        //     {
-        //         width:250,
-        //         height:250,
-        //     }
-        // ]
-        // if(opts.screens) this.screens = opts.screens
         this.translation_manager = new TranslationManager(this,opts.translations)
-        //
-        // if(opts.fonts) this.fonts = opts.fonts
-
         this.app_manager = new AppManager(this,this.hostname,this.websocket_port)
-        // this.cons = new ConnectionManager(this)
-        // this.wids = new WindowTracker(this)
-        // this.at = new AppTracker(this,this.hostname, this.websocket_port)
-        // this.router = new EventRouter(this,this.cons, this.wids, this.at)
         this.apps = opts.apps
         this.font_manager = new FontManager(this)
         // this.audio = new AudioService(this)
@@ -65,7 +54,6 @@ export class CentralServer {
 
     async start() {
         await this.font_manager.load()
-
         // this.kb = new KeybindingsManager(this, {
         //     keybindings:await load_keybindings("resources/keybindings.json")
         // })
@@ -87,7 +75,6 @@ export class CentralServer {
             ws.on('close', (code) => {
                 // this.cons.remove_connection(ws)
             })
-            // ws.send(JSON.stringify(GENERAL.MAKE_Connected({})))
         })
         this._server.on("close", (m: any) => {
             this.log('server closed', m)
@@ -131,6 +118,7 @@ export class CentralServer {
         try {
             if(msg.type === 'APP_OPEN') return this.app_manager.app_connected(msg,ws)
             if(msg.type === 'MAKE_ScreenStart_name') return this.app_manager.screen_connected(msg,ws)
+            if(msg.type === DEBUG.TYPE_ListAppsRequest)  return this.app_manager.handle_list_all_apps(msg)
             if(msg.type === WINDOWS.TYPE_WindowOpen) return this.app_manager.open_window(msg)
             if(msg.type === 'request-font') return this.font_manager.request_font(msg)
             if(msg.type === WINDOWS.TYPE_window_refresh_request) return this.app_manager.send_to_target(msg)

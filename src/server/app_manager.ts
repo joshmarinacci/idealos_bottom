@@ -2,7 +2,11 @@ import {spawn, ChildProcessWithoutNullStreams} from "child_process";
 import WebSocket from "ws";
 // @ts-ignore
 import {WINDOWS} from "idealos_schemas/js/windows.js"
-// import {DEBUG} from 'idealos_schemas/js/debug.js'
+// @ts-ignore
+import {DEBUG} from "idealos_schemas/js/debug.js";
+// @ts-ignore
+import {GENERAL} from "idealos_schemas/js/general.js";
+
 
 type AppType = "SCREEN" | "DEBUG" | "TEST" | "MENUBAR" | "DOCK" | "APP" | "SIDEBAR" | "CHILD"
 type WindowType = "MENUBAR" | "DOCK" | "SIDEBAR" | "DEBUG" | "CHILD" | "PLAIN"
@@ -68,12 +72,13 @@ export class AppManager {
     app_connected(msg: any, ws: WebSocket) {
         this.log("app connected",msg)
         let app = this.get_app_by_id(msg.app)
-        if(typeof app === undefined) {
+        if(app === undefined) {
             return console.error(`app missing ${msg.app}`)
         } else {
             // @ts-ignore
             app.connection = ws
             console.log("attached app")
+            this.send_to_app(app.id, GENERAL.MAKE_Connected({app:app.id}))
         }
     }
     screen_connected(msg:any, ws:WebSocket) {
@@ -91,6 +96,10 @@ export class AppManager {
             width:win.width,
             height:win.height,
             parent:win.parent
+        })
+        this.send_to_app(app.id, {
+            type:GENERAL.TYPE_Connected,
+            app:app.id
         })
         let resp = WINDOWS.MAKE_window_list({windows:win_map})
         // console.log("response is",resp)
@@ -168,16 +177,15 @@ export class AppManager {
             running:(!!app.subprocess)
         }))
     }
-    handle_list_all_apps(msg: { app: any; sender: any; }) {
-        this.server.cons.forward_to_app(msg.app, {
-            type: "LIST_ALL_APPS_RESPONSE",
-            target: msg.sender,
-            apps: this.server.apps
-        })
+    handle_list_all_apps(msg:any) {
+        console.log("handling list apps request",msg)
+        this.send_to_app(msg.app,DEBUG.MAKE_ListAppsResponse({
+            connection_count:this.apps.length,
+            apps:this.list_apps(),
+        }))
     }
     /*
     handle(msg) {
-        if(msg.type === APPS_GROUP.LIST_ALL_APPS) return this.handle_list_all_apps(msg)
         if(msg.type === APPS_GROUP.START_SUB_APP) return this.start_sub_app(msg)
         if(msg.type === DEBUG.TYPE_StartAppByName) return this.start_app_by_name(msg.name);
         if(msg.type === DEBUG.TYPE_StopApp)  return this.stop(msg.target)
@@ -202,9 +210,9 @@ export class AppManager {
         return this.get_app_by_id(app.owner)
     }
 
-    send_to_type(display: AppType, msg: any) {
-        console.log('sending to type', display,msg.type)
-        let apps = this.apps.filter(a => a.type === display)
+    send_to_type(app_type: AppType, msg: any) {
+        console.log('sending to type', app_type,msg.type)
+        let apps = this.apps.filter(a => a.type === app_type)
         apps.forEach((app: App) => {
             app.connection?.send(JSON.stringify(msg))
         })
