@@ -25,7 +25,7 @@ export class TranslationManager {
     translation_get_value(msg) {
         // console.log("translation get value", msg, this.active_translation)
         if (!this.active_translation) {
-            return this.server.cons.forward_to_app(msg.app, make_response(msg, {
+            return this.server.app_manager.send_to_app(msg.app, make_response(msg, {
                 type: "translation_get_value_response",
                 key: msg.key,
                 value: "[?]",
@@ -33,7 +33,7 @@ export class TranslationManager {
             }))
         }
         if (!this.active_translation[msg.key]) {
-            return this.server.cons.forward_to_app(msg.app, make_response(msg, {
+            return this.server.app_manager.send_to_app(msg.app, make_response(msg, {
                 type: "translation_get_value_response",
                 key: msg.key,
                 value: "[?]",
@@ -41,7 +41,7 @@ export class TranslationManager {
             }))
         }
         let value = this.active_translation[msg.key]
-        return this.server.cons.forward_to_app(msg.app, make_response(msg, {
+        return this.server.app_manager.send_to_app(msg.app, make_response(msg, {
             type: "translation_get_value_response",
             key: msg.key,
             value: value,

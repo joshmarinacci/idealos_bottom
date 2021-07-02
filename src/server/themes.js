@@ -52,7 +52,7 @@ export class ThemeManager {
                     "border-color":'black'
                 }
             })
-            return this.server.cons.forward_to_app(msg.app, msg2)
+            return this.server.app_manager.send_to_app(msg.app, msg2)
         }
         // console.log('name is',msg.name)
         if(this.uitheme[msg.name]) {
@@ -60,13 +60,13 @@ export class ThemeManager {
                 type:"get_control_theme_response",
                 theme: this.uitheme[msg.name]
             })
-            return this.server.cons.forward_to_app(msg.app, msg2)
+            return this.server.app_manager.send_to_app(msg.app, msg2)
         } else {
             let msg2 = make_response(msg,{
                 type:"get_control_theme_response",
                 theme: this.uitheme['*']
             })
-            return this.server.cons.forward_to_app(msg.app, msg2)
+            return this.server.app_manager.send_to_app(msg.app, msg2)
         }
     }
 }

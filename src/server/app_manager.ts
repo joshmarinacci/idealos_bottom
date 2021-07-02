@@ -179,15 +179,15 @@ export class AppManager {
         return this.get_app_by_id(app.owner)
     }
 
-    private send_to_type(display: AppType, msg: any) {
-        console.log('sending to type', display,msg)
+    send_to_type(display: AppType, msg: any) {
+        console.log('sending to type', display,msg.type)
         let apps = this.apps.filter(a => a.type === display)
         apps.forEach((app: App) => {
             app.connection?.send(JSON.stringify(msg))
         })
     }
     private send_to_app(appid:string, msg:any) {
-        console.log("sending to app",msg)
+        console.log("sending to app",msg.type)
         let app = this.get_app_by_id(appid)
         app?.connection?.send(JSON.stringify(msg))
     }

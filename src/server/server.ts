@@ -1,20 +1,17 @@
-// import {WindowTracker} from './windows.js'
-// import {AppTracker} from './apps.js'
-// import {ConnectionManager} from "./connections.js"
-// import {EventRouter} from "./router.js"
-// import {GENERAL} from "idealos_schemas/js/general.js"
 // @ts-ignore
 import Ajv from 'ajv'
 import fs from 'fs'
 import path from 'path'
 // import {AudioService} from './audio.js'
 // import {DataBase} from './db/db.js'
-// import {TranslationManager} from './translations.js'
 // import {KeybindingsManager} from './keybindings.js'
-// import {ThemeManager} from './themes.js'
+import {is_theme, ThemeManager} from './themes.js'
 import {AppManager} from './app_manager.js'
 import WebSocket from "ws";
 import {FontManager} from "./FontManager.js";
+import {is_translation, TranslationManager} from "./translations.js"
+// @ts-ignore
+import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 
 export const hostname = '127.0.0.1'
 export const websocket_port = 8081
@@ -30,6 +27,8 @@ export class CentralServer {
     private _server: WebSocket.Server;
     // @ts-ignore
     private font_manager: FontManager;
+    private translation_manager: TranslationManager;
+    private theme_manager: ThemeManager;
     constructor(opts:any) {
         this.log('starting with opts', opts)
         if (!opts.websocket_port) throw new Error("no webssocket port set!")
@@ -38,7 +37,7 @@ export class CentralServer {
 
         if (!opts.apps) throw new Error("no applist provided")
 
-        // this.theme_manager = new ThemeManager(this,opts.themes,opts.uitheme)
+        this.theme_manager = new ThemeManager(this,opts.themes,opts.uitheme)
 
         // this.screens = [
         //     {
@@ -47,7 +46,7 @@ export class CentralServer {
         //     }
         // ]
         // if(opts.screens) this.screens = opts.screens
-        // this.trans = new TranslationManager(this,opts.translations)
+        this.translation_manager = new TranslationManager(this,opts.translations)
         //
         // if(opts.fonts) this.fonts = opts.fonts
 
@@ -131,7 +130,17 @@ export class CentralServer {
             if(msg.type === 'APP_OPEN') return this.app_manager.app_connected(msg,ws)
             if(msg.type === 'MAKE_WindowOpen_name') return this.app_manager.open_window(msg)
             if(msg.type === 'request-font') return this.font_manager.request_font(msg)
-            console.log("server received",msg)
+            if(is_translation(msg)) return this.translation_manager.handle(msg)
+            if(is_theme(msg)) return this.theme_manager.handle(msg)
+            if(msg.type === 'group-message') {
+                if (msg.category === 'graphics') {
+                    return this.app_manager.send_to_type("SCREEN",msg)
+                }
+            }
+            if(msg.type === GRAPHICS.TYPE_DrawRect){
+                return this.app_manager.send_to_type("SCREEN",msg)
+            }
+            console.log("server received",msg.type)
             // this.router.route(ws, msg)
         } catch (e) {
             this.log(e)
