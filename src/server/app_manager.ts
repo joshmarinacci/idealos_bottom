@@ -16,7 +16,8 @@ interface Window {
     y:number,
     width:number,
     height:number,
-    owner:string|NO_OWNER,
+    app_owner:string,
+    parent:string|NO_OWNER,
 }
 
 interface App {
@@ -75,18 +76,40 @@ export class AppManager {
             console.log("attached app")
         }
     }
+    screen_connected(msg:any, ws:WebSocket) {
+        this.log("screen connected",msg)
+        let app = this.create_app({})
+        app.type = "SCREEN"
+        app.connection = ws
+        let win_list = this.get_window_list()
+        let win_map:any = {}
+        win_list.forEach(win => win_map[win.id] = {
+            id:win.id,
+            owner:win.app_owner,
+            x:win.x,
+            y:win.y,
+            width:win.width,
+            height:win.height,
+            parent:win.parent
+        })
+        let resp = WINDOWS.MAKE_window_list({windows:win_map})
+        // console.log("response is",resp)
+        this.send_to_app(app.id,resp)
+    }
 
     open_window(msg: any) {
         this.log("opening a window",msg)
         if(msg.window_type === 'plain') {
             let app = this.get_app_by_id(msg.app)
+            if(app === undefined ) return console.error("app is undefined")
             let win:Window = {
                 x:msg.x,
                 y: msg.y,
                 width:msg.width,
                 height:msg.height,
-                owner: "NO_OWNER",
+                app_owner:app.id,
                 type: "PLAIN",
+                parent:"NO_OWNER",
                 id:"win_"+Math.floor(Math.random()*10000)
             }
             app?.windows.push(win)
@@ -98,7 +121,7 @@ export class AppManager {
                     y:win.y,
                     width:win.width,
                     height:win.height,
-                    owner:win.owner,
+                    owner:win.app_owner,
                     window_type:win.type,
                 }
             }))
@@ -190,6 +213,19 @@ export class AppManager {
         console.log("sending to app",msg.type)
         let app = this.get_app_by_id(appid)
         app?.connection?.send(JSON.stringify(msg))
+    }
+    send_to_target(msg: any) {
+        this.send_to_app(msg.target,msg)
+    }
+
+    private get_window_list():Window[] {
+        let wins: Window[] = []
+        this.apps.forEach(app => {
+            app.windows.forEach(win => {
+                wins.push(win)
+            })
+        })
+        return wins
     }
 
 }

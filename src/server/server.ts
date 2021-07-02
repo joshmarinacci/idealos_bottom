@@ -12,6 +12,8 @@ import {FontManager} from "./FontManager.js";
 import {is_translation, TranslationManager} from "./translations.js"
 // @ts-ignore
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
+// @ts-ignore
+import {WINDOWS} from "idealos_schemas/js/windows.js";
 
 export const hostname = '127.0.0.1'
 export const websocket_port = 8081
@@ -128,8 +130,10 @@ export class CentralServer {
     dispatch(msg: any, ws: WebSocket) {
         try {
             if(msg.type === 'APP_OPEN') return this.app_manager.app_connected(msg,ws)
-            if(msg.type === 'MAKE_WindowOpen_name') return this.app_manager.open_window(msg)
+            if(msg.type === 'MAKE_ScreenStart_name') return this.app_manager.screen_connected(msg,ws)
+            if(msg.type === WINDOWS.TYPE_WindowOpen) return this.app_manager.open_window(msg)
             if(msg.type === 'request-font') return this.font_manager.request_font(msg)
+            if(msg.type === WINDOWS.TYPE_window_refresh_request) return this.app_manager.send_to_target(msg)
             if(is_translation(msg)) return this.translation_manager.handle(msg)
             if(is_theme(msg)) return this.theme_manager.handle(msg)
             if(msg.type === 'group-message') {
