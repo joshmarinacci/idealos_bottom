@@ -2,14 +2,14 @@ import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {App} from './toolkit/guitoolkit.js'
-import {CONSTRAINTS, HBox, TabPanel, VBox} from './toolkit/panels.js'
+import {CONSTRAINTS, GridDebugPanel, HBox, ScrollPanel, TabPanel, VBox} from './toolkit/panels.js'
 import {Label, MultilineLabel, MultilineTextBox, TextBox, TranslatedLabel} from './toolkit/text.js'
 import {Button, PopupButton, ToggleButton} from './toolkit/buttons.js'
 let app = new App(process.argv)
 
 async function init() {
     await app.a_init()
-    let main_window = await app.open_window(0,0,130,100,'plain')
+    let main_window = await app.open_window(0,0,150,150,'plain')
     main_window.root = new VBox({
         width:main_window.width,
         height:main_window.height,
@@ -17,7 +17,7 @@ async function init() {
         constraint:CONSTRAINTS.FILL,
         children:[
             new TabPanel({
-                tab_labels:["labels","buttons","textboxes"],
+                tab_labels:["labels","buttons","textboxes",'scroll'],
                 tab_children:[
                     new VBox({ children: [
                             new TranslatedLabel({text_key:"button.okay"}),
@@ -47,7 +47,16 @@ async function init() {
                                 width:100,
                                 height:50,
                             })
+                        ]}),
+                    new VBox({
+                        constraint:CONSTRAINTS.FILL,
+                        hstretch:true,
+                        children:[
+                        new Label({text:"scroll panel"}),
+                        new ScrollPanel({width:100, height:100, children:[
+                            new GridDebugPanel({width:100, height:100})
                         ]})
+                    ]})
                 ]
             }),
         ]})

@@ -1,5 +1,5 @@
-import {Container} from './guitoolkit.js'
-import {ToggleButton} from './buttons.js'
+import {Component, Container} from './guitoolkit.js'
+import {Button, ToggleButton} from './buttons.js'
 
 export class Panel extends Container {
     constructor(opts) {
@@ -161,5 +161,101 @@ export class TabPanel extends Container {
         this.selected_index = n
         this.tab_buttons.forEach((btn,i)=> btn.selected = (i===this.selected_index))
         this.repaint()
+    }
+}
+
+
+export class ScrollPanel extends Container {
+    constructor(opts) {
+        super(opts);
+        this.up_arrow     = new Button({text:"/\\", action:()=>this.scroll_up()})
+        this.down_arrow   = new Button({text:"\\/", action:()=>this.scroll_down()})
+        this.left_arrow   = new Button({text:"<", action:()=>this.scroll_left()})
+        this.right_arrow  = new Button({text:">", action:()=>this.scroll_right()})
+        this.hslider       = new Button({text:" "})
+        this.vslider       = new Button({text:" "})
+        this.controls = [this.up_arrow,this.down_arrow,this.left_arrow,this.right_arrow,this.hslider,this.vslider]
+        this.content = opts.children
+        this.children = [
+            ...this.controls,
+            ...this.content,
+        ]
+        this.children.forEach(ch => ch.parent = this)
+        this.offsetx = 2
+        this.offsety = 2
+    }
+    scroll_up() {
+        this.offsety += 10
+        this.repaint()
+    }
+    scroll_down() {
+        this.offsety -= 10
+        this.repaint()
+    }
+    scroll_right() {
+        this.offsetx += 10
+        this.repaint()
+    }
+    scroll_left() {
+        this.offsetx -= 10
+        this.repaint()
+    }
+    layout(gfx) {
+        super.layout(gfx)
+        let s = 15
+        this.controls.forEach(b => {
+            b.width = s
+            b.height = s
+        })
+        this.up_arrow.x = this.width-s
+        this.up_arrow.y = 0
+        this.down_arrow.x = this.width-s
+        this.down_arrow.y = this.height-s-s
+        this.left_arrow.x = 0
+        this.left_arrow.y = this.height-s
+        this.right_arrow.x = this.width-s-s
+        this.right_arrow.y = this.height-s
+
+        this.hslider.x = s
+        this.hslider.y = this.height-s
+        this.hslider.width = this.width-s-s-s
+        this.hslider.height = s
+
+        this.vslider.x = this.width -s
+        this.vslider.y = s
+        this.vslider.width = s
+        this.vslider.height = this.height-s-s-s
+
+        this.content.forEach(ch => {
+            ch.x = this.offsetx
+            ch.y = this.offsety
+        })
+    }
+    redraw(gfx) {
+        let b = 2
+        let s = 15
+        gfx.rect(this.x, this.y, this.width-s, this.height-s, 'black')
+        gfx.rect(this.x + b, this.y + b, this.width - b * 2 -s, this.height - b * 2 -s, 'white')
+        //draw content
+        gfx.translate(this.x, this.y)
+        gfx.set_clip_rect(b, b, this.width-s-b*2, this.height-s-b*2)
+        this.content.forEach(ch => ch.redraw(gfx))
+        gfx.clear_clip_rect()
+        gfx.translate(-this.x, -this.y)
+        //draw buttons
+        gfx.translate(this.x, this.y)
+        this.controls.forEach(ch => ch.redraw(gfx))
+        gfx.translate(-this.x, -this.y)
+    }
+}
+
+export class GridDebugPanel extends Component {
+    redraw(gfx) {
+        let s = 5
+        let colors = ['cyan','blue','red','green']
+        for(let i=0; i<colors.length; i++) {
+        // for(let i=0; i<1; i++) {
+            gfx.rect(this.x+i*s, this.y+i*s, this.width-i*s*2, this.height-i*s*2, colors[i])
+        }
     }
 }
