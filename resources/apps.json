@@ -4,7 +4,7 @@
       "name": "menubar",
       "entrypoint": "src/clients/menubar.js",
       "type": "MENUBAR",
-      "disabled": true,
+      "disabled": false,
       "groups": [
         "secure",
         "menubar"
@@ -24,7 +24,7 @@
       "name": "dock",
       "entrypoint": "src/clients/dock.js",
       "type": "DOCK",
-      "disabled": true,
+      "disabled": false,
       "groups": [
         "dock,",
         "secure"
@@ -60,7 +60,7 @@
       "type": "APP",
       "icon": "pixelclock",
       "entrypoint":"src/clients/pixelclock.js",
-      "autostart": true
+      "autostart": false
     },
     {
       "name": "todolist",
@@ -68,7 +68,7 @@
       "type": "APP",
       "icon": "todolist",
       "entrypoint":"src/clients/todolist.js",
-      "autostart": false
+      "autostart": true
     },
     {
       "name": "texteditor",

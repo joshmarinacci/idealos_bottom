@@ -302,4 +302,23 @@ export class AppManager {
     private window_for_id(id:string) {
         return this.get_window_list().find(win => win.id === id)
     }
+
+    set_window_position(msg: any) {
+        let win = this.window_for_id(msg.window)
+        if(!win) return this.log(`no such window ${msg.window}`)
+        if(!win.app_owner) return this.log(`window has no owner ${win.app_owner}`)
+        win.x = msg.x
+        win.y = msg.y
+        this.send_to_app(win.app_owner,msg)
+    }
+
+    set_window_size(msg: any) {
+        // this.log("set window size",msg)
+        let win = this.window_for_id(msg.window)
+        if(!win) return this.log(`no such window ${msg.window}`)
+        if(!win.app_owner) return this.log(`window has no owner ${win.app_owner}`)
+        win.width = msg.width
+        win.height = msg.height
+        this.send_to_app(win.app_owner,msg)
+    }
 }
