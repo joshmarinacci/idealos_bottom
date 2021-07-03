@@ -280,7 +280,6 @@ export class AppManager {
         }))
     }
     handle_list_all_apps(msg:any) {
-        console.log("handling list apps request",msg)
         this.send_to_app(msg.app,DEBUG.MAKE_ListAppsResponse({
             connection_count:this.apps.length,
             apps:this.list_apps(),
@@ -301,13 +300,14 @@ export class AppManager {
     }
 
     send_to_type(app_type: AppType, msg: any) {
+        this.log("send_to_type",app_type,msg.type)
         let apps = this.apps.filter(a => a.type === app_type)
         apps.forEach((app: App) => {
             app.connection?.send(JSON.stringify(msg))
         })
     }
     send_to_app(appid:string, msg:any) {
-        console.log("sending to app",msg.type)
+        this.log("send_to_app",appid,msg.type)
         let app = this.get_app_by_id(appid)
         app?.connection?.send(JSON.stringify(msg))
     }
@@ -382,5 +382,15 @@ export class AppManager {
             // this.apps = this.apps.filter(a => a.id !==app.id)
         }
         console.log("app count",this.apps.length)
+    }
+
+    force_stop_all_apps() {
+        this.apps.forEach(app => {
+            if (app.subprocess) {
+                console.log("killing app dead")
+                app.subprocess.kill('SIGTERM')
+                app.subprocess = undefined
+            }
+        })
     }
 }

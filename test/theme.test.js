@@ -1,6 +1,5 @@
 import {CentralServer, load_applist, load_uitheme} from '../src/server/server.ts'
-import assert from 'assert'
-import {message_compare, start_testapp, start_testguiapp} from './common.js'
+import {message_compare, start_testguiapp} from './common.js'
 
 describe("load apps list", function() {
     it("loads the gui theme", async function() {

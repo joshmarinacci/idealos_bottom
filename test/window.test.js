@@ -1,4 +1,4 @@
-import {CentralServer, load_applist} from '../src/server/server.ts'
+import {CentralServer, load_applist} from '../src/server/server.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import assert from 'assert'
 import {GENERAL} from 'idealos_schemas/js/general.js'
@@ -35,25 +35,28 @@ describe('window drag test',function() {
         await server.start()
         //start the display
         let display = await new HeadlessDisplay(server.hostname, server.websocket_port)
-        await display.wait_for_message(GENERAL.TYPE_Connected)
-        await display.send(GENERAL.MAKE_ScreenStart())
+        console.log("waiting for connected message")
+        await display.wait_for_message(WINDOWS.TYPE_window_list)
 
+        console.log("================")
         //start the test app
         let app = await start_testapp(server,async (app)=>{
-            app.ws.send(JSON.stringify(WINDOWS.MAKE_WindowOpen({
+            await app.send(WINDOWS.MAKE_WindowOpen({
                 x:50,
                 y:50,
                 width:70,
                 height:80,
                 sender:app.id,
-                window_type:'plain'
-            })))
+                window_type:'plain',
+            }))
         })
-        log("got the app")
+
 
         //wait for the app to receive it's open window
+        log('waiting for open response')
         let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
         log("got the window open response",open_msg)
+
         assert.strictEqual(server.wids.has_window_id(open_msg.window),true)
         let win = server.wids.window_for_id(open_msg.window)
         assert.strictEqual(win.type,'root')
@@ -199,14 +202,14 @@ describe("textboxes",function() {
             await display.wait_for_message(GENERAL.TYPE_Connected)
             await display.send(GENERAL.MAKE_ScreenStart())
             let app = await start_testapp(server, async (app) => {
-                app.ws.send(JSON.stringify(WINDOWS.MAKE_WindowOpen({
+                await app.send(WINDOWS.MAKE_WindowOpen({
                     x: 50,
                     y: 50,
                     width: 70,
                     height: 80,
                     sender: app.id,
                     window_type: 'plain'
-                })))
+                }))
             })
             //wait for the app to receive it's open window
             let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)

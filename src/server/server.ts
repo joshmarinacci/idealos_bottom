@@ -74,7 +74,12 @@ export class CentralServer {
             ws.on("message", (m) => {
                 // @ts-ignore
                 let msg = JSON.parse(m)
-                this.dispatch(msg, ws)
+                try {
+                    this.dispatch(msg, ws)
+                    this.log("dispatch complete for",msg.type)
+                } catch (e) {
+                    console.error("big server errror",e)
+                }
             })
             ws.on('close', (code) => {
                 this.app_manager.handle_websocket_closed(ws)
@@ -107,18 +112,12 @@ export class CentralServer {
     async start_app(opts: any) {
         let app = this.app_manager.create_app(opts)
         this.app_manager.start_app_by_id(app.id)
-    }
-
-    async start_app_cb(opts: any) {
-        // let app = this.at.create_app(opts)
-        // return {
-        //     app: app,
-        //     info: this.at.start_cb(app.id)
-        // }
+        return app
     }
 
 
     dispatch(msg: any, ws: WebSocket) {
+        this.log("incoming message",msg.type)
         try {
             if(msg.type === 'APP_OPEN') return this.app_manager.app_connected(msg,ws)
             if(msg.type === 'MAKE_ScreenStart_name') return this.app_manager.screen_connected(msg,ws)
@@ -187,14 +186,14 @@ export class CentralServer {
 
      async shutdown() {
         await this._stop_websocket_server()
-        // await this.db.stop()
+        await this.db.stop()
     }
 
     _stop_websocket_server() {
         return new Promise<void>((res, rej) => {
             this._server.close(() => {
-                // console.log('close is done')
                 this.log("stopped messages")
+                this.app_manager.force_stop_all_apps()
                 res()
             })
         })
@@ -203,14 +202,6 @@ export class CentralServer {
     async get_app_list() {
         // return this.at.list_apps()
     }
-
-    // async stop_app(id) {
-        // return this.at.stop(id)
-    // }
-
-    // start_app_by_id(id) {
-        // return this.at.start(id)
-    // }
 
 }
 
