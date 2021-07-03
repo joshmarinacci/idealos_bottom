@@ -2,8 +2,8 @@
 import Ajv from 'ajv'
 import fs from 'fs'
 import path from 'path'
-// import {AudioService} from './audio.js'
-// import {DataBase} from './db/db.js'
+import {AudioService} from './audio.js'
+import {DataBase, is_database} from './db/db.js'
 import {KeybindingsManager} from './keybindings.js'
 import {is_theme, ThemeManager} from './themes.js'
 import {AppManager} from './app_manager.js'
@@ -29,8 +29,8 @@ export class CentralServer {
     private hostname: string;
     private app_manager: AppManager;
     private apps: any;
-    // private audio: AudioService;
-    // private db_json: string[];
+    private audio: AudioService;
+    private db_json: string[];
     // @ts-ignore
     private _server: WebSocket.Server;
     // @ts-ignore
@@ -38,6 +38,7 @@ export class CentralServer {
     private translation_manager: TranslationManager;
     private theme_manager: ThemeManager;
     private kb: KeybindingsManager|undefined;
+    db: DataBase
     constructor(opts:any) {
         this.log('starting with opts', opts)
         if (!opts.websocket_port) throw new Error("no webssocket port set!")
@@ -51,8 +52,9 @@ export class CentralServer {
         this.app_manager = new AppManager(this,this.hostname,this.websocket_port)
         this.apps = opts.apps
         this.font_manager = new FontManager(this)
-        // this.audio = new AudioService(this)
-        // this.db_json = opts.db_json || []
+        this.audio = new AudioService(this)
+        this.db_json = opts.db_json || []
+        this.db = new DataBase(this)
     }
 
     async start() {
@@ -60,9 +62,8 @@ export class CentralServer {
         this.kb = new KeybindingsManager(this, {
             keybindings:await load_keybindings("resources/keybindings.json")
         })
-        // this.db = new DataBase(this)
-        // this.db.start()
-        // this.db_json.forEach(path => this.db.watch_json(path))
+        await this.db.start()
+        this.db_json.forEach(path => this.db.watch_json(path))
 
         this._server = new WebSocket.Server({
             port: this.websocket_port
@@ -139,6 +140,7 @@ export class CentralServer {
             if(msg.type === 'window-set-size') return this.app_manager.set_window_size(msg)
             if(is_translation(msg)) return this.translation_manager.handle(msg)
             if(is_theme(msg)) return this.theme_manager.handle(msg)
+            if(is_database(msg)) return this.db.handle(msg)
             if(msg.type === 'group-message') {
                 if (msg.category === 'graphics') {
                     return this.app_manager.send_to_type("SCREEN",msg)

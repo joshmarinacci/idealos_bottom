@@ -477,7 +477,7 @@ export class DataBase {
         // console.log("searching database for",msg.query)
         let res = this.QUERY(msg.query)
         // console.log("result is",res.length)
-        this.server.cons.forward_to_app(msg.app,{
+        this.server.app_manager.send_to_app(msg.app,{
             type:"database-query-response",
             app:msg.app,
             docs:res,
@@ -487,7 +487,7 @@ export class DataBase {
     perform_database_watch(msg) {
         this.addEventListener(msg.category,(obj)=>{
             // console.log("db changed with object",msg.category,obj)
-            this.server.cons.forward_to_app(msg.app,{
+            this.server.app_manager.send_to_app(msg.app,{
                 type:"database-watch-update",
                 app:msg.app,
                 object:obj,
