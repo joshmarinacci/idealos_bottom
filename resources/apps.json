@@ -1,9 +1,10 @@
 {
   "system": [
     {
-      "name": "menbuar",
+      "name": "menubar",
       "entrypoint": "src/clients/menubar.js",
-      "disabled": false,
+      "type": "MENUBAR",
+      "disabled": true,
       "groups": [
         "secure",
         "menubar"
@@ -12,7 +13,8 @@
     {
       "name": "sidebar",
       "entrypoint": "src/clients/sidebar/sidebar.js",
-      "disabled": false,
+      "type": "SIDEBAR",
+      "disabled": true,
       "groups": [
         "sidebar",
         "secure"
@@ -21,7 +23,8 @@
     {
       "name": "dock",
       "entrypoint": "src/clients/dock.js",
-      "disabled": false,
+      "type": "DOCK",
+      "disabled": true,
       "groups": [
         "dock,",
         "secure"
@@ -38,6 +41,7 @@
     {
       "name": "fractal",
       "title": "Fractal App",
+      "type": "APP",
       "icon": "mandlebrot",
       "entrypoint": "src/clients/fractal.js",
       "autostart": false
@@ -45,20 +49,23 @@
     {
       "name": "guitest",
       "title": "Cool Gui Tester",
+      "type": "APP",
       "icon": "guitester",
       "entrypoint": "src/clients/gui_test.js",
-      "autostart": true
+      "autostart": false
     },
     {
       "name": "pixelclock",
       "title": "Pixel clock",
+      "type": "APP",
       "icon": "pixelclock",
       "entrypoint":"src/clients/pixelclock.js",
-      "autostart": false
+      "autostart": true
     },
     {
       "name": "todolist",
       "title": "Todo List",
+      "type": "APP",
       "icon": "todolist",
       "entrypoint":"src/clients/todolist.js",
       "autostart": false
@@ -66,6 +73,7 @@
     {
       "name": "texteditor",
       "title": "Text Edit",
+      "type": "APP",
       "icon": "texteditor",
       "entrypoint":"src/clients/texteditor.js",
       "autostart": false
@@ -73,6 +81,7 @@
     {
       "name": "jessecalc",
       "title": "jessecalc",
+      "type": "APP",
       "icon": "jessecalc",
       "entrypoint":"src/clients/jessecalc.js",
       "autostart": false

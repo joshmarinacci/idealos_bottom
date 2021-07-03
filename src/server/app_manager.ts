@@ -62,7 +62,7 @@ export class AppManager {
             id: "app_"+(Math.floor(Math.random()*100000)),
             name: opts.name || "unnamed",
             entrypoint: opts.entrypoint,
-            type:"APP",
+            type:opts.type || "APP",
             args:opts.args || [],
             owner:"NO_OWNER"
         }
@@ -110,40 +110,68 @@ export class AppManager {
 
     open_window(msg: any) {
         this.log("opening a window",msg)
-        if(msg.window_type === 'plain') {
-            let app = this.get_app_by_id(msg.app)
-            if(app === undefined ) return console.error("app is undefined")
-            let win:Window = {
-                x:msg.x,
-                y: msg.y,
-                width:msg.width,
-                height:msg.height,
-                app_owner:app.id,
-                type: "PLAIN",
-                parent:"NO_OWNER",
-                id:"win_"+Math.floor(Math.random()*10000)
-            }
-            app?.windows.push(win)
-            let msg2 = WINDOWS.MAKE_WindowOpenDisplay({
-                target:msg.sender,
-                window:{
-                    id:win.id,
-                    x:win.x,
-                    y:win.y,
-                    width:win.width,
-                    height:win.height,
-                    owner:win.app_owner,
-                    window_type:win.type,
-                }
-            })
-            this.send_to_type("SCREEN",msg2)
-                //send response back to client
-            this.send_to_app(msg.sender,WINDOWS.MAKE_WindowOpenResponse({
-                target:msg.sender,
-                window:win.id,
-            }))
+        let app = this.get_app_by_id(msg.app)
+        if(app === undefined ) return console.error("app is undefined")
+        let win:Window = {
+            x:msg.x,
+            y: msg.y,
+            width:msg.width,
+            height:msg.height,
+            app_owner:app.id,
+            type: "PLAIN",
+            parent:"NO_OWNER",
+            id:"win_"+Math.floor(Math.random()*10000)
         }
+        if(msg.window_type === 'menubar') {
+            win.type = "MENUBAR"
+            win.x = 0
+            win.y = 0
+        }
+        if(msg.window_type === 'dock') {
+            win.type = "DOCK"
+            win.x = 0
+            win.y = 20
+        }
+        if(msg.window_type === 'sidebar') {
+            win.type = "SIDEBAR"
+            win.x = 256-win.width
+            win.y = 20
+        }
+
+
+        app?.windows.push(win)
+        let msg2 = WINDOWS.MAKE_WindowOpenDisplay({
+            target:msg.sender,
+            window:{
+                id:win.id,
+                x:win.x,
+                y:win.y,
+                width:win.width,
+                height:win.height,
+                owner:win.app_owner,
+                window_type:win.type,
+            }
+        })
+        this.send_to_type("SCREEN",msg2)
+        //send response back to client
+        this.send_to_app(msg.sender,WINDOWS.MAKE_WindowOpenResponse({
+            target:msg.sender,
+            window:win.id,
+        }))
     }
+
+
+    // close_window(msg: any) {
+    //     console.log("closing window",msg)
+    //     this.send_to_app(msg.target,msg)
+        // let app = this.get_app_by_id(msg.target)
+        // if(app !== undefined) {
+        //     console.log("app windows are",app.id, app.windows)
+        //     let win = app.windows.find(win => win.id === msg.window)
+        //     console.log("found a window to close",win)
+        // }
+    // }
+
 
     start_app_by_id(id:String) {
         let app = this.get_app_by_id(id)
@@ -187,6 +215,14 @@ export class AppManager {
             apps:this.list_apps(),
         }))
     }
+    handle_list_all_apps2(msg: any) {
+        this.send_to_app(msg.app, {
+            type: "LIST_ALL_APPS_RESPONSE",
+            target: msg.sender,
+            apps: this.list_apps()
+        })
+    }
+
     /*
     handle(msg) {
         if(msg.type === APPS_GROUP.START_SUB_APP) return this.start_sub_app(msg)

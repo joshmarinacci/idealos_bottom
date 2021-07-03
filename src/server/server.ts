@@ -4,7 +4,7 @@ import fs from 'fs'
 import path from 'path'
 // import {AudioService} from './audio.js'
 // import {DataBase} from './db/db.js'
-// import {KeybindingsManager} from './keybindings.js'
+import {KeybindingsManager} from './keybindings.js'
 import {is_theme, ThemeManager} from './themes.js'
 import {AppManager} from './app_manager.js'
 import WebSocket from "ws";
@@ -37,6 +37,7 @@ export class CentralServer {
     private font_manager: FontManager;
     private translation_manager: TranslationManager;
     private theme_manager: ThemeManager;
+    private kb: KeybindingsManager|undefined;
     constructor(opts:any) {
         this.log('starting with opts', opts)
         if (!opts.websocket_port) throw new Error("no webssocket port set!")
@@ -56,9 +57,9 @@ export class CentralServer {
 
     async start() {
         await this.font_manager.load()
-        // this.kb = new KeybindingsManager(this, {
-        //     keybindings:await load_keybindings("resources/keybindings.json")
-        // })
+        this.kb = new KeybindingsManager(this, {
+            keybindings:await load_keybindings("resources/keybindings.json")
+        })
         // this.db = new DataBase(this)
         // this.db.start()
         // this.db_json.forEach(path => this.db.watch_json(path))
@@ -120,8 +121,15 @@ export class CentralServer {
         try {
             if(msg.type === 'APP_OPEN') return this.app_manager.app_connected(msg,ws)
             if(msg.type === 'MAKE_ScreenStart_name') return this.app_manager.screen_connected(msg,ws)
+
             if(msg.type === DEBUG.TYPE_ListAppsRequest)  return this.app_manager.handle_list_all_apps(msg)
+            if(msg.type === "LIST_ALL_APPS") return this.app_manager.handle_list_all_apps2(msg)
+
+            if(msg.type === "MAKE_SetMenubar_name") return this.app_manager.send_to_type("MENUBAR",msg )
+
             if(msg.type === WINDOWS.TYPE_WindowOpen) return this.app_manager.open_window(msg)
+            if(msg.type === WINDOWS.TYPE_window_close_request)  return this.app_manager.send_to_app(msg.target,msg)
+            if(msg.type === WINDOWS.TYPE_window_close_response)  return this.app_manager.send_to_type("SCREEN", msg)
             if(msg.type === 'request-font') return this.font_manager.request_font(msg)
             if(msg.type === WINDOWS.TYPE_window_refresh_request) return this.app_manager.send_to_target(msg)
             if(is_translation(msg)) return this.translation_manager.handle(msg)
@@ -146,7 +154,7 @@ export class CentralServer {
             if(msg.type === INPUT.TYPE_KeyboardDown) {
                 return this.app_manager.send_to_app(msg.target,msg)
             }
-            console.log("unhandled message",msg.type)
+            console.log("===\nunhandled message\n===",msg.type)
             // this.router.route(ws, msg)
         } catch (e) {
             this.log(e)
