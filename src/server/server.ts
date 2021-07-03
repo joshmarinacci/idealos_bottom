@@ -128,6 +128,7 @@ export class CentralServer {
             if(msg.type === DEBUG.TYPE_StartAppByName) return this.app_manager.start_app_by_name(msg)
             if(msg.type === DEBUG.TYPE_StartApp) return this.app_manager.start_app_by_id(msg.target)
             if(msg.type === DEBUG.TYPE_StopApp) return this.app_manager.stop_app(msg).then(()=>console.log("did stop app"))
+            if(msg.type === "START_SUB_APP") return this.app_manager.start_sub_app(msg)
 
             if(msg.type === "MAKE_SetMenubar_name") return this.app_manager.send_to_type("MENUBAR",msg )
 
@@ -143,15 +144,28 @@ export class CentralServer {
             if(is_database(msg)) return this.db.handle(msg)
             if(msg.type === 'group-message') {
                 if (msg.category === 'graphics') {
-                    return this.app_manager.send_to_type("SCREEN",msg)
+                    let app = this.app_manager.get_app_by_id(msg.app)
+                    if(app !== undefined && app.type === "SUB") {
+                        let owner = this.app_manager.get_app_by_id(app.owner)
+                        if(owner !== undefined)  return this.app_manager.send_to_app(owner.id,msg)
+                    } else {
+                        return this.app_manager.send_to_type("SCREEN", msg)
+                    }
                 }
             }
-            if(msg.type === GRAPHICS.TYPE_DrawRect){
-                return this.app_manager.send_to_type("SCREEN",msg)
+
+            if(msg.type === GRAPHICS.TYPE_DrawRect
+                || msg.type === GRAPHICS.TYPE_DrawPixel
+                || msg.type === GRAPHICS.TYPE_DrawImage) {
+                let app = this.app_manager.get_app_by_id(msg.app)
+                if(app !== undefined && app.type === 'SUB') {
+                    let owner = this.app_manager.get_app_by_id(app.owner)
+                    if(owner !== undefined)  return this.app_manager.send_to_app(owner.id,msg)
+                } else {
+                    return this.app_manager.send_to_type("SCREEN", msg)
+                }
             }
-            if(msg.type === GRAPHICS.TYPE_DrawPixel){
-                return this.app_manager.send_to_type("SCREEN",msg)
-            }
+
             if (msg.type === WINDOWS.TYPE_SetFocusedWindow) {
                 return this.app_manager.set_focused_window(msg)
             }

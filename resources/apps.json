@@ -14,7 +14,7 @@
       "name": "sidebar",
       "entrypoint": "src/clients/sidebar/sidebar.js",
       "type": "SIDEBAR",
-      "disabled": true,
+      "disabled": false,
       "groups": [
         "sidebar",
         "secure"

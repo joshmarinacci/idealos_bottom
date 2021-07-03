@@ -8,7 +8,7 @@ import {DEBUG} from "idealos_schemas/js/debug.js";
 import {GENERAL} from "idealos_schemas/js/general.js";
 
 
-type AppType = "SCREEN" | "DEBUG" | "TEST" | "MENUBAR" | "DOCK" | "APP" | "SIDEBAR" | "CHILD"
+type AppType = "SCREEN" | "DEBUG" | "TEST" | "MENUBAR" | "DOCK" | "APP" | "SIDEBAR" | "CHILD" | "SUB"
 type WindowType = "MENUBAR" | "DOCK" | "SIDEBAR" | "DEBUG" | "CHILD" | "PLAIN"
 
 type NO_OWNER = "NO_OWNER"
@@ -108,8 +108,31 @@ export class AppManager {
         this.send_to_app(app.id,resp)
     }
 
+    is_sub_app(id:string) {
+        let app = this.get_app_by_id(id)
+        if(app !== undefined && app.type ==="SUB") return true
+        return false
+    }
+
     open_window(msg: any) {
-        this.log("opening a window",msg)
+        if(this.is_sub_app(msg.app)) {
+            let resp = WINDOWS.MAKE_WindowOpenResponse({target:msg.sender, window:"som_win_id"+Math.random()})
+            this.send_to_app(msg.sender,resp)
+            let app = this.get_app_by_id(msg.app)
+            if(app !== undefined) {
+                let parent = this.get_app_by_id(app.owner)
+                if (parent !== undefined) {
+                    this.send_to_app(parent.id, msg)
+                    this.send_to_app(parent.id, {
+                        type: "SUB_APP_WINDOW_OPEN",
+                        app: msg.app,
+                        window: resp.window
+                    })
+                }
+            }
+            return
+        }
+
         let app = this.get_app_by_id(msg.app)
         if(app === undefined ) return console.error("app is undefined")
         let win:Window = {
@@ -198,6 +221,23 @@ export class AppManager {
         let app = this.apps.find(app => app.name === msg.name)
         if(app !== undefined)  this.start_app_by_id(app.id)
     }
+    start_sub_app(msg: any) {
+        let app = this.create_app({
+            name:"widgetname",
+            entrypoint:msg.entrypoint,
+            args:[],
+        })
+        app.type = "SUB"
+        app.owner = msg.app
+        this.start_app_by_id(app.id)
+        this.send_to_app(msg.app,{
+            type:"START_SUB_APP_RESPONSE",
+            id: "msg_"+Math.floor((Math.random()*10000)),
+            response_to:msg.id,
+            target:msg.app,
+            appid:app.id,
+        })
+    }
 
     stop_app(msg: any) {
         return new Promise<void>((res,rej)=>{
@@ -224,7 +264,7 @@ export class AppManager {
 
 
 
-    private get_app_by_id(id: String):App | undefined {
+    get_app_by_id(id: String):App | undefined {
         return this.apps.find(ap => ap.id === id)
     }
     private log(...args: any[]) {
@@ -254,26 +294,6 @@ export class AppManager {
         })
     }
 
-    /*
-    handle(msg) {
-        if(msg.type === APPS_GROUP.START_SUB_APP) return this.start_sub_app(msg)
-        if(msg.type === DEBUG.TYPE_StartAppByName) return this.start_app_by_name(msg.name);
-        if(msg.type === DEBUG.TYPE_StopApp)  return this.stop(msg.target)
-        if(msg.type === DEBUG.TYPE_StartApp) return this.start(msg.target)
-        if(msg.type === DEBUG.TYPE_ListAppsRequest) {
-            return this.server.cons.forward_to_debug(DEBUG.MAKE_ListAppsResponse({
-                connection_count:this.server.cons.count(),
-                apps:this.server.at.list_apps(),
-            }))
-        }
-    }
-
-
-    is_sub_app(id) {
-        let app = this.get_app_by_id(id)
-        return app && app.type === 'sub';
-    }
-*/
     get_parent_of_sub_app(id: String) {
         let app = this.get_app_by_id(id)
         if(!app) throw new Error("app not found")

@@ -21,7 +21,7 @@ class NotificationsPanel extends Component {
 
 async function init() {
     await app.a_init()
-    await app.send({ type:"SIDEBAR_START", })
+    // await app.send({ type:"SIDEBAR_START", })
     let win = await app.open_window(50,50,82,200,'sidebar')
     win.root = new VBox({width:82, height:300, children:[
             // new NotificationsPanel(),
