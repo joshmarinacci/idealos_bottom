@@ -48,7 +48,7 @@ function init() {
         calc_pixel(count)
         count++
         if(count > width*height) clearInterval(id)
-    }, 400)
+    }, 10)
 
 }
 
@@ -60,7 +60,7 @@ function start() {
         calc_pixel(count)
         count++
         if(count > width*height) clearInterval(interval_id)
-    }, 400)
+    }, 10)
 }
 
 function stop() {
