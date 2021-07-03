@@ -76,7 +76,7 @@ export class CentralServer {
                 this.dispatch(msg, ws)
             })
             ws.on('close', (code) => {
-                // this.cons.remove_connection(ws)
+                this.app_manager.handle_websocket_closed(ws)
             })
         })
         this._server.on("close", (m: any) => {
@@ -129,7 +129,7 @@ export class CentralServer {
 
             if(msg.type === WINDOWS.TYPE_WindowOpen) return this.app_manager.open_window(msg)
             if(msg.type === WINDOWS.TYPE_window_close_request)  return this.app_manager.send_to_app(msg.target,msg)
-            if(msg.type === WINDOWS.TYPE_window_close_response)  return this.app_manager.send_to_type("SCREEN", msg)
+            if(msg.type === WINDOWS.TYPE_window_close_response)  return this.app_manager.close_window(msg)
             if(msg.type === 'request-font') return this.font_manager.request_font(msg)
             if(msg.type === WINDOWS.TYPE_window_refresh_request) return this.app_manager.send_to_target(msg)
             if(msg.type === WINDOWS.TYPE_WindowSetPosition) return this.app_manager.set_window_position(msg)

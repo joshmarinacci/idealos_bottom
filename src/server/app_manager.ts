@@ -161,16 +161,17 @@ export class AppManager {
     }
 
 
-    // close_window(msg: any) {
-    //     console.log("closing window",msg)
-    //     this.send_to_app(msg.target,msg)
-        // let app = this.get_app_by_id(msg.target)
-        // if(app !== undefined) {
-        //     console.log("app windows are",app.id, app.windows)
-        //     let win = app.windows.find(win => win.id === msg.window)
-        //     console.log("found a window to close",win)
-        // }
-    // }
+    close_window(msg: any) {
+        // console.log("really closing window",msg)
+        let app = this.get_app_by_id(msg.target)
+        if(app !== undefined) {
+            // console.log("app windows are",app.id, app.windows)
+            let win = app.windows.find(win => win.id === msg.window)
+            // console.log("found a window to close",win)
+            app.windows = app.windows.filter(win => win.id !== msg.window)
+            this.send_to_type("SCREEN", msg)
+        }
+    }
 
 
     start_app_by_id(id:String) {
@@ -320,5 +321,16 @@ export class AppManager {
         win.width = msg.width
         win.height = msg.height
         this.send_to_app(win.app_owner,msg)
+    }
+
+    handle_websocket_closed(ws: WebSocket) {
+        console.log("websocket is closed now")
+        let app = this.apps.find(app => app.connection === ws)
+        console.log("app count",this.apps.length)
+        if(app !== undefined) {
+            // @ts-ignore
+            this.apps = this.apps.filter(a => a.id !==app.id)
+        }
+        console.log("app count",this.apps.length)
     }
 }
