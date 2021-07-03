@@ -1,6 +1,7 @@
 import {CONSTRAINTS, VBox} from './toolkit/panels.js'
 import {App} from './toolkit/guitoolkit.js'
 import {MultilineTextBox} from './toolkit/text.js'
+import {WINDOWS} from 'idealos_schemas/js/windows.js'
 
 let app = new App(process.argv)
 
@@ -22,3 +23,6 @@ async function init() {
 
 
 app.on('start',()=>init())
+app.on(WINDOWS.TYPE_window_close_request,(e) => {
+    app.a_shutdown().then(()=>console.log("finished"))
+})

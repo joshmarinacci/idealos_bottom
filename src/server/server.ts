@@ -149,6 +149,9 @@ export class CentralServer {
             if(msg.type === GRAPHICS.TYPE_DrawRect){
                 return this.app_manager.send_to_type("SCREEN",msg)
             }
+            if(msg.type === GRAPHICS.TYPE_DrawPixel){
+                return this.app_manager.send_to_type("SCREEN",msg)
+            }
             if (msg.type === WINDOWS.TYPE_SetFocusedWindow) {
                 return this.app_manager.set_focused_window(msg)
             }
