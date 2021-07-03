@@ -194,6 +194,12 @@ export class AppManager {
         console.log("app started")
     }
 
+    start_app_by_name(msg: any) {
+        let app = this.apps.find(app => app.name === msg.name)
+        if(app !== undefined)  this.start_app_by_id(app.id)
+    }
+
+
     private get_app_by_id(id: String):App | undefined {
         return this.apps.find(ap => ap.id === id)
     }
@@ -220,7 +226,7 @@ export class AppManager {
         this.send_to_app(msg.app, {
             type: "LIST_ALL_APPS_RESPONSE",
             target: msg.sender,
-            apps: this.list_apps()
+            apps: this.server.apps
         })
     }
 

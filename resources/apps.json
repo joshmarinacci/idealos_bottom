@@ -68,7 +68,7 @@
       "type": "APP",
       "icon": "todolist",
       "entrypoint":"src/clients/todolist.js",
-      "autostart": true
+      "autostart": false
     },
     {
       "name": "texteditor",

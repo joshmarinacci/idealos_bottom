@@ -93,7 +93,7 @@ export class CentralServer {
             if (app.autostart) {
                 await this.start_app(app)
             } else {
-                // await this.at.create_app(app)
+                await this.app_manager.create_app(app)
             }
         }
 
@@ -124,6 +124,7 @@ export class CentralServer {
 
             if(msg.type === DEBUG.TYPE_ListAppsRequest)  return this.app_manager.handle_list_all_apps(msg)
             if(msg.type === "LIST_ALL_APPS") return this.app_manager.handle_list_all_apps2(msg)
+            if(msg.type === DEBUG.TYPE_StartAppByName) return this.app_manager.start_app_by_name(msg)
 
             if(msg.type === "MAKE_SetMenubar_name") return this.app_manager.send_to_type("MENUBAR",msg )
 
