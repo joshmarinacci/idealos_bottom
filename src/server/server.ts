@@ -2,7 +2,7 @@
 import Ajv from 'ajv'
 import fs from 'fs'
 import path from 'path'
-import {AudioService} from './audio.js'
+import {AudioService, is_audio} from './audio.js'
 import {DataBase, is_database} from './db/db.js'
 import {KeybindingsManager} from './keybindings.js'
 import {is_theme, ThemeManager} from './themes.js'
@@ -141,6 +141,7 @@ export class CentralServer {
             if(is_translation(msg)) return this.translation_manager.handle(msg)
             if(is_theme(msg)) return this.theme_manager.handle(msg)
             if(is_database(msg)) return this.db.handle(msg)
+            if(is_audio(msg)) return this.audio.handle(msg)
             if(msg.type === 'group-message') {
                 if (msg.category === 'graphics') {
                     let app = this.app_manager.get_app_by_id(msg.app)

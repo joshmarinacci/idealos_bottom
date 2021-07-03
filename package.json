@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start-server": "npm run build && node built/start.js",
+    "start-server": "npm run build && node built/src/server/start.js",
     "raylib": "node src/raylib/raylib_screen.js",
     "rust": "cd clients/rust-screen && cargo run",
     "docs": "node tools/docs.js",
