@@ -199,6 +199,30 @@ export class AppManager {
         if(app !== undefined)  this.start_app_by_id(app.id)
     }
 
+    stop_app(msg: any) {
+        return new Promise<void>((res,rej)=>{
+            let app = this.get_app_by_id(msg.target)
+            if(app === undefined) return console.error(`no such app ${msg.target}`)
+            try {
+                if(app.connection !== undefined) {
+                    app.connection.on("close", () => {
+                        res()
+                    })
+                }
+                if (app.subprocess) {
+                    app.subprocess.kill('SIGTERM')
+                    app.subprocess = undefined
+                } else {
+                    console.log("Looks like it was already killed")
+                }
+            } catch (e) {
+                console.log("error",e)
+                res()
+            }
+        })
+    }
+
+
 
     private get_app_by_id(id: String):App | undefined {
         return this.apps.find(ap => ap.id === id)
@@ -335,7 +359,7 @@ export class AppManager {
         console.log("app count",this.apps.length)
         if(app !== undefined) {
             // @ts-ignore
-            this.apps = this.apps.filter(a => a.id !==app.id)
+            // this.apps = this.apps.filter(a => a.id !==app.id)
         }
         console.log("app count",this.apps.length)
     }

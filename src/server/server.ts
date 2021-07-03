@@ -125,6 +125,8 @@ export class CentralServer {
             if(msg.type === DEBUG.TYPE_ListAppsRequest)  return this.app_manager.handle_list_all_apps(msg)
             if(msg.type === "LIST_ALL_APPS") return this.app_manager.handle_list_all_apps2(msg)
             if(msg.type === DEBUG.TYPE_StartAppByName) return this.app_manager.start_app_by_name(msg)
+            if(msg.type === DEBUG.TYPE_StartApp) return this.app_manager.start_app_by_id(msg.target)
+            if(msg.type === DEBUG.TYPE_StopApp) return this.app_manager.stop_app(msg).then(()=>console.log("did stop app"))
 
             if(msg.type === "MAKE_SetMenubar_name") return this.app_manager.send_to_type("MENUBAR",msg )
 
