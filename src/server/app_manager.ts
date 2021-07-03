@@ -46,6 +46,7 @@ export class AppManager {
     private readonly hostname: String;
     private readonly websocket_port: Number;
     private readonly server: any;
+    private active_window: Window | undefined;
     constructor(server:any,hostname:String,websocket_port:Number) {
         this.hostname = hostname
         this.websocket_port = websocket_port
@@ -95,7 +96,8 @@ export class AppManager {
             y:win.y,
             width:win.width,
             height:win.height,
-            parent:win.parent
+            parent:win.parent,
+            window_type:win.type,
         })
         this.send_to_app(app.id, {
             type:GENERAL.TYPE_Connected,
@@ -122,7 +124,7 @@ export class AppManager {
                 id:"win_"+Math.floor(Math.random()*10000)
             }
             app?.windows.push(win)
-            this.send_to_type("SCREEN", WINDOWS.MAKE_WindowOpenDisplay({
+            let msg2 = WINDOWS.MAKE_WindowOpenDisplay({
                 target:msg.sender,
                 window:{
                     id:win.id,
@@ -133,8 +135,9 @@ export class AppManager {
                     owner:win.app_owner,
                     window_type:win.type,
                 }
-            }))
-            //send response back to client
+            })
+            this.send_to_type("SCREEN",msg2)
+                //send response back to client
             this.send_to_app(msg.sender,WINDOWS.MAKE_WindowOpenResponse({
                 target:msg.sender,
                 window:win.id,
@@ -211,13 +214,12 @@ export class AppManager {
     }
 
     send_to_type(app_type: AppType, msg: any) {
-        console.log('sending to type', app_type,msg.type)
         let apps = this.apps.filter(a => a.type === app_type)
         apps.forEach((app: App) => {
             app.connection?.send(JSON.stringify(msg))
         })
     }
-    private send_to_app(appid:string, msg:any) {
+    send_to_app(appid:string, msg:any) {
         console.log("sending to app",msg.type)
         let app = this.get_app_by_id(appid)
         app?.connection?.send(JSON.stringify(msg))
@@ -236,4 +238,32 @@ export class AppManager {
         return wins
     }
 
+    set_focused_window(msg: any) {
+        let win = this.window_for_id(msg.window)
+        if(!win) return this.log(`no such window ${msg.window}`)
+        if(!win.app_owner) return this.log(`window has no owner ${win.app_owner}`)
+        //send focus lost to old window
+        let old_win = this.get_active_window()
+        if(old_win !== undefined) {
+            this.send_to_app(old_win.app_owner,{
+                type:"WINDOW_FOCUS_LOST",
+                app:old_win.app_owner,
+                window:old_win.id
+            })
+        }
+        this.set_active_window(win)
+        this.send_to_app(win.app_owner,msg)
+    }
+
+    set_active_window(win: Window) {
+        this.active_window = win
+    }
+
+    private get_active_window():Window|undefined {
+        return this.active_window
+    }
+
+    private window_for_id(id:string) {
+        return this.get_window_list().find(win => win.id === id)
+    }
 }

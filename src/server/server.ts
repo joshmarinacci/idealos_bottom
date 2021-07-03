@@ -18,6 +18,8 @@ import {WINDOWS} from "idealos_schemas/js/windows.js";
 import {DEBUG} from "idealos_schemas/js/debug.js";
 // @ts-ignore
 import {GENERAL} from "idealos_scemas/js/general.js";
+// @ts-ignore
+import {INPUT} from "idealos_schemas/js/input.js";
 
 export const hostname = '127.0.0.1'
 export const websocket_port = 8081
@@ -132,18 +134,26 @@ export class CentralServer {
             if(msg.type === GRAPHICS.TYPE_DrawRect){
                 return this.app_manager.send_to_type("SCREEN",msg)
             }
-            console.log("server received",msg.type)
+            if (msg.type === WINDOWS.TYPE_SetFocusedWindow) {
+                return this.app_manager.set_focused_window(msg)
+            }
+            if(msg.type === INPUT.TYPE_MouseDown) {
+                return this.app_manager.send_to_app(msg.target,msg)
+            }
+            if(msg.type === INPUT.TYPE_MouseUp) {
+                return this.app_manager.send_to_app(msg.target,msg)
+            }
+            if(msg.type === INPUT.TYPE_KeyboardDown) {
+                return this.app_manager.send_to_app(msg.target,msg)
+            }
+            console.log("unhandled message",msg.type)
             // this.router.route(ws, msg)
         } catch (e) {
             this.log(e)
         }
     }
 
-    // async send(msg) {
-        // this.dispatch(msg)
-    // }
-
-    async shutdown() {
+     async shutdown() {
         await this._stop_websocket_server()
         // await this.db.stop()
     }
