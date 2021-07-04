@@ -249,6 +249,7 @@ impl<'a> SDL2Backend<'a> {
                     match win.window_type.as_str() {
                         "MENUBAR" => {}
                         "DOCK" => {}
+                        "SIDEBAR" => {}
                         "PLAIN" => {
                             self.canvas.set_draw_color(self.calc_window_border_color(win));
                             self.canvas.fill_rect(Rect::new(

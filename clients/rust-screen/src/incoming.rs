@@ -93,11 +93,11 @@ fn parse_message(renderloop_send:&Sender<RenderMessage>, txt:String) -> Result<(
                 renderloop_send.send(RenderMessage::FillRect(msg));
                 return Ok(())
             }
-            // if msg_type == DrawImage_name {
-            //     let msg:DrawImage = serde_json::from_str(txt.as_str())?;
-            //     renderloop_send.send(RenderMessage::DrawImage(msg));
-            //     return Ok(())
-            // }
+            if msg_type == DrawImage_name {
+                let msg:DrawImage = serde_json::from_str(txt.as_str())?;
+                renderloop_send.send(RenderMessage::DrawImage(msg));
+                return Ok(())
+            }
             match &msg_type[..] {
                 "WINDOW_CLOSE" => {
                     let msg:CloseWindowScreen = serde_json::from_str(txt.as_str())?;
