@@ -76,7 +76,7 @@ export class CentralServer {
                 let msg = JSON.parse(m)
                 try {
                     this.dispatch(msg, ws)
-                    this.log("dispatch complete for",msg.type)
+                    // this.log("dispatch complete for",msg.type)
                 } catch (e) {
                     console.error("big server errror",e)
                 }
@@ -117,7 +117,7 @@ export class CentralServer {
 
 
     dispatch(msg: any, ws: WebSocket) {
-        this.log("incoming message",msg.type)
+        // this.log("incoming message",msg.type)
         try {
             if(msg.type === 'APP_OPEN') return this.app_manager.app_connected(msg,ws)
             if(msg.type === 'MAKE_ScreenStart_name') return this.app_manager.screen_connected(msg,ws)

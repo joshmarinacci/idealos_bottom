@@ -300,14 +300,14 @@ export class AppManager {
     }
 
     send_to_type(app_type: AppType, msg: any) {
-        this.log("send_to_type",app_type,msg.type)
+        // this.log("send_to_type",app_type,msg.type)
         let apps = this.apps.filter(a => a.type === app_type)
         apps.forEach((app: App) => {
             app.connection?.send(JSON.stringify(msg))
         })
     }
     send_to_app(appid:string, msg:any) {
-        this.log("send_to_app",appid,msg.type)
+        // this.log("send_to_app",appid,msg.type)
         let app = this.get_app_by_id(appid)
         app?.connection?.send(JSON.stringify(msg))
     }

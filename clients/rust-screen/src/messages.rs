@@ -225,3 +225,21 @@ pub struct MouseUp {
     pub target:String,
     pub window:String,
 }
+
+
+pub const KeyboardDown_name: &str = "MAKE_KeyboardDown_name";
+#[derive(Serialize, Deserialize, Debug)]
+pub struct KeyboardDown {
+    #[serde(rename = "type")]
+    pub type_:String,
+    pub code:String,
+    pub target:String,
+    pub app:String,
+    pub window:String,
+    pub key:String,
+    pub shift:bool,
+    pub alt:bool,
+    pub meta:bool,
+    pub control:bool,
+}
+

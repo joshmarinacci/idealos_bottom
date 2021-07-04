@@ -5,12 +5,12 @@ use websocket::OwnedMessage;
 use serde_json::{json};
 
 use crate::window::{Window, Point, Insets};
-use crate::messages::{RenderMessage, MouseDown, MouseDown_name, MouseUp, MouseUp_name, set_focused_window_message};
+use crate::messages::{RenderMessage, MouseDown, MouseDown_name, MouseUp, MouseUp_name, set_focused_window_message, KeyboardDown, KeyboardDown_name};
 use crate::fontinfo::FontInfo;
 
 
 use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
+use sdl2::keyboard::{Keycode, Mod};
 use sdl2::pixels::{Color, PixelFormatEnum};
 use sdl2::render::{WindowCanvas, Texture, TextureCreator};
 use sdl2::Sdl;
@@ -19,7 +19,6 @@ use sdl2::video::WindowContext;
 use sdl2::rect::Rect;
 use sdl2::mouse::{MouseButton, MouseState};
 use colors_transform::{Rgb, Color as CTColor};
-use idealos_schemas::input::{KeyboardDown, KeyboardDown_name};
 
 const SCALE: u32 = 3;
 const SCALEI: i32 = SCALE as i32;
@@ -216,7 +215,7 @@ impl<'a> SDL2Backend<'a> {
                         println!("quitting");
                         break 'done;
                     },
-                    Event::KeyDown {keycode,..} => self.process_keydown(keycode, windows,output),
+                    Event::KeyDown {keycode,keymod,..} => self.process_keydown(keycode, keymod, windows,output),
                     Event::MouseButtonDown { x, y,mouse_btn, .. } => self.process_mousedown(x,y,mouse_btn, windows, output),
                     Event::MouseButtonUp {x,y,mouse_btn,..} =>  self.process_mouseup(x,y,mouse_btn,windows,output),
                     _ => {}
@@ -277,17 +276,30 @@ impl<'a> SDL2Backend<'a> {
         // self.font.draw_text_at("idealos", 150,0,&Color::GREEN, &mut self.canvas, SCALEI);
         self.canvas.present();
     }
-    fn process_keydown(&self, keycode: Option<Keycode>, windows:&mut HashMap<String,Window>, output: &Sender<OwnedMessage>) {
+    fn process_keydown(&self, keycode: Option<Keycode>,  keymod:Mod, windows:&mut HashMap<String,Window>, output: &Sender<OwnedMessage>) {
         if let Some(keycode) = keycode {
             match keycode {
                 Keycode => {
                     if let Some(id) = &self.active_window {
                         if let Some(win) = windows.get_mut(id) {
                             // println!("got a message {:?}",keycode.name());
+                            // println!("mod is {:?}",keymod);
+                            let mut key = keycode.name().to_lowercase();
+                            let shift = (keymod == Mod::LSHIFTMOD || keymod == Mod::RSHIFTMOD);
+                            if(shift) {
+                                key = keycode.name().to_uppercase();
+                            }
                             let msg = KeyboardDown {
                                 type_: KeyboardDown_name.to_string(),
-                                keyname: keycode.name(),
-                                target: win.owner.clone()
+                                code: format!("{}{}","Key",keycode.name()),
+                                key:key,
+                                shift:shift,
+                                alt:false,
+                                meta:false,
+                                control:false,
+                                app:win.owner.to_string(),
+                                target: win.owner.clone(),
+                                window: win.id.to_string()
                             };
                             output.send(OwnedMessage::Text(json!(msg).to_string()));
                         }

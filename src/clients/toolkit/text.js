@@ -101,15 +101,23 @@ export class TextBox extends Component {
         this.selected = false
         this.name = 'textbox'
     }
+    append_char(ch) {
+        this.text = this.text.slice(0, this.cursor) + ch + this.text.slice(this.cursor)
+        this.cursor += 1
+    }
 
     input(e) {
+        // this.window().log("textbox got input",e)
         if( e.type === INPUT.TYPE_Action) return this.handle_action(e)
         if (e.type === INPUT.TYPE_MouseDown) {
             this.selected = true
             this.repaint(e)
             return
         }
-        if (is_word_char(e)) return this.append_char(e.key)
+        if (is_word_char(e)) {
+            this.append_char(e.key)
+            this.repaint(e)
+        }
         if (e.code === INFO.KEY_NAMES.Backspace) return this.delete_backward()
         if (e.code === INFO.KEY_NAMES.ArrowLeft) return this.nav_left(e)
         if (e.code === INFO.KEY_NAMES.ArrowRight) return this.nav_right(e)

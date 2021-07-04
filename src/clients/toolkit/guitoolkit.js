@@ -143,6 +143,7 @@ export class App {
         })
         this.ws.on("message", (data) => {
             let msg = JSON.parse(data)
+            // this.log("incoming message",msg)
             this.fireLater(msg.type, msg)
         })
         process.on('SIGTERM', () => {
@@ -274,6 +275,7 @@ class EventDispatcher {
     }
 
     dispatch(e) {
+        //this.log("dispatching",e)
         if (e.type === INPUT.TYPE_MouseDown) {
             let evt = {
                 type:e.type,
