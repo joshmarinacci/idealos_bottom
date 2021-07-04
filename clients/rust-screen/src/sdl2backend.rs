@@ -21,7 +21,7 @@ use sdl2::mouse::{MouseButton, MouseState};
 use colors_transform::{Rgb, Color as CTColor};
 use idealos_schemas::input::{KeyboardDown, KeyboardDown_name};
 
-const SCALE: u32 = 4;
+const SCALE: u32 = 3;
 const SCALEI: i32 = SCALE as i32;
 const BORDER:Insets = Insets {
     left: 1,
@@ -56,7 +56,7 @@ impl<'a> SDL2Backend<'a> {
                     // println!("incoming message {:?}",msg);
                     match msg {
                         RenderMessage::OpenWindow(m) => {
-                            // println!("opening a window");
+                            println!("opening a window {:?}",m);
                             let win:Window = Window {
                                 id: m.window.id.clone(),
                                 x: m.window.x as i32,
@@ -245,9 +245,11 @@ impl<'a> SDL2Backend<'a> {
             if let Some(win) = windows.get(id) {
                 if let Some(tex) = self.window_buffers.get(id) {
                     //draw background / border
+                    // println!("drawing window type {:?}",win.window_type);
                     match win.window_type.as_str() {
-                        "menubar" => { }
-                        WINDOW_TYPE_PLAIN => {
+                        "MENUBAR" => {}
+                        "DOCK" => {}
+                        "PLAIN" => {
                             self.canvas.set_draw_color(self.calc_window_border_color(win));
                             self.canvas.fill_rect(Rect::new(
                                 ((win.x-BORDER.left)*(SCALE as i32)) as i32,
@@ -302,13 +304,15 @@ impl<'a> SDL2Backend<'a> {
                 let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
                 for win in windows.values() {
                     if win.contains(&pt) {
-                        self.active_window = Some(win.id.clone());
-                        let window_focus_msg = set_focused_window_message {
-                            type_: "MAKE_SetFocusedWindow_name".to_string(),
-                            window: win.id.to_string()
-                        };
-                        output.send(OwnedMessage::Text(json!(window_focus_msg).to_string()));
-                        self.raise_window(win);
+                        if win.window_type.eq("PLAIN") {
+                            self.active_window = Some(win.id.clone());
+                            let window_focus_msg = set_focused_window_message {
+                                type_: "MAKE_SetFocusedWindow_name".to_string(),
+                                window: win.id.to_string()
+                            };
+                            output.send(OwnedMessage::Text(json!(window_focus_msg).to_string()));
+                            self.raise_window(win);
+                        }
                         let msg = MouseDown {
                             type_:MouseDown_name.to_string(),
                             x: ((pt.x) - win.x) as i64,
