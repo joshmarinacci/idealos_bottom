@@ -393,4 +393,11 @@ export class AppManager {
             }
         })
     }
+
+    dump() {
+        console.log("app manager stage")
+        this.apps.forEach(app => {
+            console.log("app",app.id, app.type, app.name, "running:",app.subprocess!==undefined)
+        })
+    }
 }

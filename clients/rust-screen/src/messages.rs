@@ -191,3 +191,29 @@ pub struct WindowInfo {
     pub owner:String,
     pub window_type:String,
 }
+
+
+
+
+
+pub const MouseDown_name: &str = "MAKE_MouseDown_name";
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MouseDown {
+    #[serde(rename = "type")]
+    pub type_:String,
+    pub x:i64,
+    pub y:i64,
+    pub target:String,
+    pub window:String,
+}
+
+pub const MouseUp_name: &str = "MAKE_MouseUp_name";
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MouseUp {
+    #[serde(rename = "type")]
+    pub type_:String,
+    pub x:i64,
+    pub y:i64,
+    pub target:String,
+    pub window:String,
+}

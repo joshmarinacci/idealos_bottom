@@ -5,7 +5,7 @@ use websocket::OwnedMessage;
 use serde_json::{json};
 
 use crate::window::{Window, Point, Insets};
-use crate::messages::{RenderMessage};
+use crate::messages::{RenderMessage, MouseDown, MouseDown_name, MouseUp, MouseUp_name};
 use crate::fontinfo::FontInfo;
 
 
@@ -19,7 +19,7 @@ use sdl2::video::WindowContext;
 use sdl2::rect::Rect;
 use sdl2::mouse::{MouseButton, MouseState};
 use colors_transform::{Rgb, Color as CTColor};
-use idealos_schemas::input::{KeyboardDown, KeyboardDown_name, MouseUp_name, MouseUp, MouseDown_name, MouseDown};
+use idealos_schemas::input::{KeyboardDown, KeyboardDown_name};
 
 const SCALE: u32 = 4;
 const SCALEI: i32 = SCALE as i32;
@@ -306,7 +306,8 @@ impl<'a> SDL2Backend<'a> {
                             type_:MouseDown_name.to_string(),
                             x: ((pt.x) - win.x) as i64,
                             y: ((pt.y) - win.y) as i64,
-                            target: win.owner.clone()
+                            target: win.owner.clone(),
+                            window: win.id.to_string(),
                         };
                         output.send(OwnedMessage::Text(json!(msg).to_string()));
                         continue;
@@ -332,7 +333,8 @@ impl<'a> SDL2Backend<'a> {
                         type_: MouseUp_name.to_string(),
                         x: ((pt.x) - win.x) as i64,
                         y: ((pt.y) - win.y) as i64,
-                        target: win.owner.clone()
+                        target: win.owner.clone(),
+                        window: win.id.to_string(),
                     };
                     output.send(OwnedMessage::Text(json!(msg).to_string()));
                 }
