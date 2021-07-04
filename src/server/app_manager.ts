@@ -183,6 +183,47 @@ export class AppManager {
         }))
     }
 
+    open_child_window(msg: any) {
+        // this.log("opening a child window with the message",msg)
+        if(!msg.sender) return this.log("open child window message with no sender")
+        let app = this.get_app_by_id(msg.app)
+        if(app === undefined ) return console.error("app is undefined")
+
+        // let win =  "win_"+Math.floor(Math.random()*10000)
+        let win:Window = {
+            type:"CHILD",
+            x:msg.x,
+            y:msg.y,
+            width:msg.width,
+            height:msg.height,
+            id:"win_"+Math.floor(Math.random()*10000),
+            app_owner:app.id,
+            parent: msg.parent,
+        }
+
+        app.windows.push(win)
+
+        this.send_to_type("SCREEN", WINDOWS.MAKE_create_child_window_display({
+            parent:win.parent,
+            sender:app.id,
+            window:{
+                id:win.id,
+                width:win.width,
+                height:win.height,
+                x:win.x,
+                y:win.y,
+                owner:win.app_owner,
+                window_type: win.type,
+            },
+        }));
+        this.send_to_app(app.id,WINDOWS.MAKE_create_child_window_response({
+            target:msg.sender,
+            parent:msg.parent,
+            window:win,
+            sender:msg.sender,
+        }))
+    }
+
 
     close_window(msg: any) {
         // console.log("really closing window",msg)
@@ -195,6 +236,26 @@ export class AppManager {
             this.send_to_type("SCREEN", msg)
         }
     }
+
+    close_child_window(msg: any) {
+        // this.log("closing child window",msg)
+        this.dump()
+        let app = this.get_app_by_id(msg.app)
+        if(app === undefined) return console.error("close_child_window: no app found")
+        let win = app.windows.find(win => win.id === msg.window)
+        if(win === undefined) return console.error("close_child_window. no window found. already closed?")
+        // console.log("found the window",win)
+        // this.log("windows count before", app.windows.length)
+        app.windows = app.windows.filter(win => win.id !== msg.window)
+        // this.log("windows count after", app.windows.length)
+        this.send_to_type("SCREEN",         WINDOWS.MAKE_close_child_window_display({
+                parent:win.parent,
+                sender:app.id,
+                window:win.id,
+            })
+        )
+    }
+
 
 
     start_app_by_id(id:String) {
@@ -360,6 +421,7 @@ export class AppManager {
         if(!win.app_owner) return this.log(`window has no owner ${win.app_owner}`)
         win.x = msg.x
         win.y = msg.y
+        // console.log("set window position to",win)
         this.send_to_app(win.app_owner,msg)
     }
 
@@ -398,6 +460,9 @@ export class AppManager {
         console.log("app manager stage")
         this.apps.forEach(app => {
             console.log("app",app.id, app.type, app.name, "running:",app.subprocess!==undefined)
+            app.windows.forEach(win => {
+                console.log("    win", win.id, win.type, win.x, win.y)
+            })
         })
     }
 }

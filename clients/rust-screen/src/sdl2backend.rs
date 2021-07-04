@@ -5,7 +5,7 @@ use websocket::OwnedMessage;
 use serde_json::{json};
 
 use crate::window::{Window, Point, Insets};
-use crate::messages::{RenderMessage, MouseDown, MouseDown_name, MouseUp, MouseUp_name, set_focused_window_message, KeyboardDown, KeyboardDown_name};
+use crate::messages::{RenderMessage, MouseDown, MouseDown_name, MouseUp, MouseUp_name, set_focused_window_message, KeyboardDown, KeyboardDown_name, WindowSetPosition_message, WindowSetPosition};
 use crate::fontinfo::FontInfo;
 
 
@@ -249,6 +249,7 @@ impl<'a> SDL2Backend<'a> {
                         "MENUBAR" => {}
                         "DOCK" => {}
                         "SIDEBAR" => {}
+                        "CHILD" => {}
                         "PLAIN" => {
                             self.canvas.set_draw_color(self.calc_window_border_color(win));
                             self.canvas.fill_rect(Rect::new(
@@ -349,6 +350,20 @@ impl<'a> SDL2Backend<'a> {
     }
     fn process_mouseup(&mut self, x: i32, y: i32, mouse_btn: MouseButton, windows: &mut HashMap<String, Window>, output: &Sender<OwnedMessage>) {
         self.dragging = false;
+        if let Some(winid) = &self.dragtarget {
+            if let Some(win) = windows.get(winid) {
+                let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
+                let move_msg = WindowSetPosition {
+                    type_: WindowSetPosition_message.to_string(),
+                    app: String::from("someappid"),
+                    window: winid.to_string(),
+                    x: pt.x as i64,
+                    y: pt.y as i64,
+                };
+                // println!("setting window position {:?}",move_msg);
+                output.send(OwnedMessage::Text(json!(move_msg).to_string()));
+            }
+        }
         if let MouseButton::Left = mouse_btn {
             let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
             if let Some(id) = &self.active_window {

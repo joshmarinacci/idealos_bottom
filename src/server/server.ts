@@ -132,11 +132,14 @@ export class CentralServer {
             if(msg.type === "MAKE_SetMenubar_name") return this.app_manager.send_to_type("MENUBAR",msg )
 
             if(msg.type === WINDOWS.TYPE_WindowOpen) return this.app_manager.open_window(msg)
+            if(msg.type === WINDOWS.TYPE_create_child_window) return this.app_manager.open_child_window(msg)
             if(msg.type === WINDOWS.TYPE_window_close_request)  return this.app_manager.send_to_app(msg.target,msg)
+            if(msg.type === WINDOWS.TYPE_close_child_window) return this.app_manager.close_child_window(msg)
             if(msg.type === WINDOWS.TYPE_window_close_response)  return this.app_manager.close_window(msg)
             if(msg.type === 'request-font') return this.font_manager.request_font(msg)
             if(msg.type === WINDOWS.TYPE_window_refresh_request) return this.app_manager.send_to_target(msg)
             if(msg.type === WINDOWS.TYPE_WindowSetPosition) return this.app_manager.set_window_position(msg)
+
             if(msg.type === 'window-set-size') return this.app_manager.set_window_size(msg)
             if(is_translation(msg)) return this.translation_manager.handle(msg)
             if(is_theme(msg)) return this.theme_manager.handle(msg)

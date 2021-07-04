@@ -243,3 +243,16 @@ pub struct KeyboardDown {
     pub control:bool,
 }
 
+
+
+pub const WindowSetPosition_message: &str = "MAKE_WindowSetPosition_name";
+#[derive(Serialize, Deserialize, Debug)]
+pub struct WindowSetPosition {
+    #[serde(rename = "type")]
+    pub type_:String,
+    pub app:String,
+    pub window:String,
+    pub x:i64,
+    pub y:i64,
+}
+
