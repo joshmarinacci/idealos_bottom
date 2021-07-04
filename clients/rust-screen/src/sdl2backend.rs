@@ -5,7 +5,7 @@ use websocket::OwnedMessage;
 use serde_json::{json};
 
 use crate::window::{Window, Point, Insets};
-use crate::messages::{RenderMessage, MouseDown, MouseDown_name, MouseUp, MouseUp_name, set_focused_window_message, KeyboardDown, KeyboardDown_name, WindowSetPosition_message, WindowSetPosition};
+use crate::messages::{RenderMessage, MouseDown, MouseDown_name, MouseUp, MouseUp_name, set_focused_window_message, KeyboardDown, KeyboardDown_name, WindowSetPosition_message, WindowSetPosition, WindowSetSize, WindowSetSize_message};
 use crate::fontinfo::FontInfo;
 
 
@@ -37,6 +37,7 @@ pub struct SDL2Backend<'a> {
     pub window_buffers:HashMap<String,Texture<'a>>,
     pub window_order:Vec<String>,
     pub dragging:bool,
+    pub resizing:bool,
     pub dragtarget:Option<String>,
     // pub font:FontInfo<'a>,
     // pub symbol_font:FontInfo<'a>,
@@ -186,6 +187,18 @@ impl<'a> SDL2Backend<'a> {
         self.window_buffers.insert(win.id.clone(),tex);
         self.window_order.push(win.id.clone());
     }
+    fn resize_window(&mut self, win: &Window) {
+        self.window_buffers.remove(win.id.as_str());
+        let mut tex = self.creator.create_texture_target(PixelFormatEnum::RGBA8888,win.width as u32, win.height as u32)
+            .map_err(|e|e.to_string()).unwrap();
+        self.canvas.with_texture_canvas(&mut tex, |tc|{
+            tc.clear();
+            tc.set_draw_color(Color::RGBA(0,0,0,255));
+            tc
+                .fill_rect(Rect::new(0, 0, (win.width as u32) as u32, (win.height as u32) as u32));
+        });
+        self.window_buffers.insert(win.id.clone(),tex);
+    }
     fn close_window(&mut self, win: &mut Window) {
         // println!("found texture for window");
         //destroy the texture
@@ -317,6 +330,11 @@ impl<'a> SDL2Backend<'a> {
             MouseButton::Left => {
                 let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
                 for win in windows.values() {
+                    if win.resize_contains(&pt) {
+                        self.resizing = true;
+                        self.dragtarget = Some(win.id.clone());
+                        break;
+                    }
                     if win.contains(&pt) {
                         if win.window_type.eq("PLAIN") {
                             self.active_window = Some(win.id.clone());
@@ -349,21 +367,44 @@ impl<'a> SDL2Backend<'a> {
 
     }
     fn process_mouseup(&mut self, x: i32, y: i32, mouse_btn: MouseButton, windows: &mut HashMap<String, Window>, output: &Sender<OwnedMessage>) {
-        self.dragging = false;
-        if let Some(winid) = &self.dragtarget {
-            if let Some(win) = windows.get(winid) {
-                let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
-                let move_msg = WindowSetPosition {
-                    type_: WindowSetPosition_message.to_string(),
-                    app: String::from("someappid"),
-                    window: winid.to_string(),
-                    x: pt.x as i64,
-                    y: pt.y as i64,
-                };
-                // println!("setting window position {:?}",move_msg);
-                output.send(OwnedMessage::Text(json!(move_msg).to_string()));
+        if self.dragging {
+            if let Some(winid) = &self.dragtarget {
+                if let Some(win) = windows.get(winid) {
+                    let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
+                    let move_msg = WindowSetPosition {
+                        type_: WindowSetPosition_message.to_string(),
+                        app: String::from("someappid"),
+                        window: winid.to_string(),
+                        x: pt.x as i64,
+                        y: pt.y as i64,
+                    };
+                    // println!("setting window position {:?}",move_msg);
+                    output.send(OwnedMessage::Text(json!(move_msg).to_string()));
+                }
             }
+            self.dragging = false;
         }
+
+        if self.resizing {
+            if let Some(winid) = &self.dragtarget {
+                if let Some(win) = windows.get(winid) {
+                    let edge = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
+                    let pos = Point { x: win.x, y: win.y };
+                    let size_msg = WindowSetSize {
+                        type_: WindowSetSize_message.to_string(),
+                        app: String::from("someappid"),
+                        window: winid.to_string(),
+                        width: (edge.x - pos.x) as i64,
+                        height: (edge.y - pos.y)as i64,
+                    };
+                    output.send(OwnedMessage::Text(json!(size_msg).to_string()));
+
+                    self.resize_window(win);
+                }
+            }
+            self.resizing = false;
+        }
+
         if let MouseButton::Left = mouse_btn {
             let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
             if let Some(id) = &self.active_window {
@@ -389,14 +430,24 @@ impl<'a> SDL2Backend<'a> {
         }
     }
     fn process_mousedrag(&self, mouse_state:&MouseState, windows:&mut HashMap<String,Window>) -> () {
-        if !self.dragging { return };
-        if let Some(winid) = &self.dragtarget {
-            if let Some(win) = windows.get_mut(winid) {
-                // println!("dragging {} {} with {:?}", mouse_state.x(), mouse_state.y(), win.id);
-                win.x = mouse_state.x()/SCALEI;
-                win.y = mouse_state.y()/SCALEI;
+        if self.dragging {
+            if let Some(winid) = &self.dragtarget {
+                if let Some(win) = windows.get_mut(winid) {
+                    // println!("dragging {} {} with {:?}", mouse_state.x(), mouse_state.y(), win.id);
+                    win.x = mouse_state.x()/SCALEI;
+                    win.y = mouse_state.y()/SCALEI;
+                }
             }
         }
+        if self.resizing {
+            if let Some(winid) = &self.dragtarget {
+                if let Some(win) = windows.get_mut(winid) {
+                    win.width = (mouse_state.x()/SCALEI) - win.x;
+                    win.height = (mouse_state.y()/SCALEI) - win.y;
+                }
+            }
+        }
+
     }
     fn raise_window(&mut self, win: &Window) {
         if let Some(n) = self.window_order.iter().position(|x|x == &win.id) {

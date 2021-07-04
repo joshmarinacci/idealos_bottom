@@ -32,8 +32,7 @@ pub const WINDOW_TYPE_PLAIN:&str = "PLAIN";
 
 
 impl Window {
-    pub fn from_info(
-                     info:&WindowInfo) -> Window {
+    pub fn from_info(info:&WindowInfo) -> Window {
         Window {
             id:info.id.clone(),
             x:info.x,
@@ -68,6 +67,15 @@ impl Window {
         if pt.x > (self.x + self.width+border.right) { return false; }
         if pt.y < self.y-border.top { return false; }
         if pt.y > (self.y + self.height+border.bottom) { return false; }
+        return true
+    }
+    pub fn resize_contains(&self, pt:&Point) -> bool {
+        let corner_x = self.x + self.width - 10;
+        let corner_y = self.y + self.height - 10;
+        if pt.x < corner_x { return false; }
+        if pt.y < corner_y { return false; }
+        if pt.x > corner_x + 10 { return false; }
+        if pt.y > corner_y + 10 { return false; }
         return true
     }
 }

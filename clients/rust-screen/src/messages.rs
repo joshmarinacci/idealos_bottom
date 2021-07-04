@@ -256,3 +256,15 @@ pub struct WindowSetPosition {
     pub y:i64,
 }
 
+
+pub const WindowSetSize_message: &str = "window-set-size";
+#[derive(Serialize, Deserialize, Debug)]
+pub struct WindowSetSize {
+    #[serde(rename = "type")]
+    pub type_:String,
+    pub app:String,
+    pub window:String,
+    pub width:i64,
+    pub height:i64,
+}
+

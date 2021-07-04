@@ -416,6 +416,7 @@ export class AppManager {
     }
 
     set_window_position(msg: any) {
+        // this.log("set_window_position",msg)
         let win = this.window_for_id(msg.window)
         if(!win) return this.log(`no such window ${msg.window}`)
         if(!win.app_owner) return this.log(`window has no owner ${win.app_owner}`)
@@ -423,6 +424,7 @@ export class AppManager {
         win.y = msg.y
         // console.log("set window position to",win)
         this.send_to_app(win.app_owner,msg)
+        // this.dump()
     }
 
     set_window_size(msg: any) {
@@ -433,6 +435,7 @@ export class AppManager {
         win.width = msg.width
         win.height = msg.height
         this.send_to_app(win.app_owner,msg)
+        // this.dump()
     }
 
     handle_websocket_closed(ws: WebSocket) {
@@ -457,11 +460,12 @@ export class AppManager {
     }
 
     dump() {
-        console.log("app manager stage")
+        console.log("============")
+        console.log("app_manager state")
         this.apps.forEach(app => {
             console.log("app",app.id, app.type, app.name, "running:",app.subprocess!==undefined)
             app.windows.forEach(win => {
-                console.log("    win", win.id, win.type, win.x, win.y)
+                console.log("    win", win.id, win.type, `${win.x},${win.y} -> ${win.width}x${win.height}`)
             })
         })
     }

@@ -123,6 +123,7 @@ pub fn main() -> Result<(),String> {
         window_order: vec![],
         dragging: false,
         dragtarget: None,
+        resizing: false,
         // font: main_font,
         // symbol_font: symbol_font,
     };

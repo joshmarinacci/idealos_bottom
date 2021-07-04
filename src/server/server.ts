@@ -119,6 +119,18 @@ export class CentralServer {
     dispatch(msg: any, ws: WebSocket) {
         // this.log("incoming message",msg.type)
         try {
+            if(msg.type === 'group-message') {
+                if (msg.category === 'graphics') {
+                    let app = this.app_manager.get_app_by_id(msg.app)
+                    if(app !== undefined && app.type === "SUB") {
+                        let owner = this.app_manager.get_app_by_id(app.owner)
+                        if(owner !== undefined)  return this.app_manager.send_to_app(owner.id,msg)
+                    } else {
+                        return this.app_manager.send_to_type("SCREEN", msg)
+                    }
+                }
+            }
+
             if(msg.type === 'APP_OPEN') return this.app_manager.app_connected(msg,ws)
             if(msg.type === 'MAKE_ScreenStart_name') return this.app_manager.screen_connected(msg,ws)
 
@@ -145,17 +157,6 @@ export class CentralServer {
             if(is_theme(msg)) return this.theme_manager.handle(msg)
             if(is_database(msg)) return this.db.handle(msg)
             if(is_audio(msg)) return this.audio.handle(msg)
-            if(msg.type === 'group-message') {
-                if (msg.category === 'graphics') {
-                    let app = this.app_manager.get_app_by_id(msg.app)
-                    if(app !== undefined && app.type === "SUB") {
-                        let owner = this.app_manager.get_app_by_id(app.owner)
-                        if(owner !== undefined)  return this.app_manager.send_to_app(owner.id,msg)
-                    } else {
-                        return this.app_manager.send_to_type("SCREEN", msg)
-                    }
-                }
-            }
 
             if(msg.type === GRAPHICS.TYPE_DrawRect
                 || msg.type === GRAPHICS.TYPE_DrawPixel
