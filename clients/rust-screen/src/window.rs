@@ -28,6 +28,9 @@ pub struct Window {
     pub window_type:String,
 }
 
+pub const WINDOW_TYPE_PLAIN:&str = "PLAIN";
+
+
 impl Window {
     pub fn from_info(
                      info:&WindowInfo) -> Window {

@@ -247,7 +247,7 @@ impl<'a> SDL2Backend<'a> {
                     //draw background / border
                     match win.window_type.as_str() {
                         "menubar" => { }
-                        "plain" => {
+                        WINDOW_TYPE_PLAIN => {
                             self.canvas.set_draw_color(self.calc_window_border_color(win));
                             self.canvas.fill_rect(Rect::new(
                                 ((win.x-BORDER.left)*(SCALE as i32)) as i32,
@@ -257,7 +257,9 @@ impl<'a> SDL2Backend<'a> {
                             // self.font.draw_text_at(&*win.id, win.x,win.y-9,&Color::GREEN,  &mut self.canvas, SCALEI);
                             // self.symbol_font.draw_text_at("b",win.x+win.width-7,win.y-8,&Color::BLACK, &mut self.canvas, SCALEI);
                         }
-                        _ => {}
+                        _ => {
+                            println!("unknown window type {:?}",win.window_type);
+                        }
                     }
                     //draw window texture
                     let dst = Some(Rect::new((win.x as u32*SCALE) as i32,
