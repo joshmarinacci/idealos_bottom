@@ -85,6 +85,7 @@ async function init() {
         msg.x = Math.floor(msg.x - wid.x)
         msg.y = Math.floor(msg.y - wid.y)
         msg.app = wid.appid
+        msg.target = wid.appid
         // app.log("sending",msg,'to widget',wid)
         app.ws.send(JSON.stringify(msg))
     }
