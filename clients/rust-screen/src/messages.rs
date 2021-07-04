@@ -29,6 +29,14 @@ pub struct window_list_message {
 
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct set_focused_window_message {
+    #[serde(rename = "type")]
+    pub type_:String,
+    pub window:String,
+}
+
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct drawrect_message {
     #[serde(rename = "type")]
     pub type_:String,

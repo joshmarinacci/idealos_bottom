@@ -5,7 +5,7 @@ use websocket::OwnedMessage;
 use serde_json::{json};
 
 use crate::window::{Window, Point, Insets};
-use crate::messages::{RenderMessage, MouseDown, MouseDown_name, MouseUp, MouseUp_name};
+use crate::messages::{RenderMessage, MouseDown, MouseDown_name, MouseUp, MouseUp_name, set_focused_window_message};
 use crate::fontinfo::FontInfo;
 
 
@@ -127,7 +127,7 @@ impl<'a> SDL2Backend<'a> {
                             }
                         },
                         RenderMessage::FillRect(m) => {
-                            println!("fill rect {:?}",m);
+                            // println!("fill rect {:?}",m);
                             if let Some(win) = windows.get_mut(m.window.as_str()) {
                                 if let Some(tex) = self.window_buffers.get_mut(win.id.as_str()) {
                                     self.canvas.with_texture_canvas(tex, |texture_canvas| {
@@ -303,6 +303,11 @@ impl<'a> SDL2Backend<'a> {
                 for win in windows.values() {
                     if win.contains(&pt) {
                         self.active_window = Some(win.id.clone());
+                        let window_focus_msg = set_focused_window_message {
+                            type_: "MAKE_SetFocusedWindow_name".to_string(),
+                            window: win.id.to_string()
+                        };
+                        output.send(OwnedMessage::Text(json!(window_focus_msg).to_string()));
                         self.raise_window(win);
                         let msg = MouseDown {
                             type_:MouseDown_name.to_string(),
@@ -385,7 +390,10 @@ fn lookup_color(name: &String) -> Color {
         "yellow" => Color::YELLOW,
         "grey" => Color::GREY,
         "gray" => Color::GRAY,
+        "magenta" => Color::MAGENTA,
+        "teal" => Color::RGB(0,128,128),
         "aqua" => Color::RGB(0,255,255),
+        "cyan" => Color::CYAN,
         _ => {
             println!("unknown color {}",name);
             Color::MAGENTA
