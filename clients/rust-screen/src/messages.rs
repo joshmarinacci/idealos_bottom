@@ -1,19 +1,91 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use idealos_schemas::windows::{window_list, WindowOpenDisplay, create_child_window_display, close_child_window_display};
+use idealos_schemas::windows::{WindowOpenDisplay, create_child_window_display, close_child_window_display};
 use idealos_schemas::graphics::{DrawPixel, DrawImage, DrawRect};
+use idealos_schemas::general::{Connected};
+
+
 
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct WindowListMessage  {
+pub struct window_info {
+    // #[serde(rename = "type")]
+    pub id:String,
+    pub width:i64,
+    pub height:i64,
+    pub x:i64,
+    pub y:i64,
+    pub owner:String,
+    pub window_type:String,
+}
+pub type window_map = HashMap<String,window_info>;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct window_list_message {
     #[serde(rename = "type")]
     pub type_:String,
-    pub windows:HashMap<String,WindowInfo>,
+    pub windows:window_map,
 }
+
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct drawrect_message {
+    #[serde(rename = "type")]
+    pub type_:String,
+    pub window:String,
+    color:String,
+    pub x:i64,
+    pub y:i64,
+    pub width:i64,
+    pub height:i64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct drawimage_message {
+    #[serde(rename = "type")]
+    pub type_:String,
+    pub window:String,
+    color:String,
+    pub x:i64,
+    pub y:i64,
+    pub width:i64,
+    pub height:i64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(tag = "type")]
+pub enum any_graphics_message {
+    MAKE_DrawRect_name {
+        window:String,
+        color:String,
+        x:i64,
+        y:i64,
+        width:i64,
+        height:i64,
+    },
+    MAKE_DrawImage_name {
+        window:String,
+        x:i64,
+        y:i64,
+        width:i64,
+        height:i64,
+        pixels:Vec<u8>,
+    },
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct group_message {
+    #[serde(rename = "type")]
+    pub type_:String,
+    pub category:String,
+    pub messages:Vec<any_graphics_message>,
+}
+
 
 #[derive(Debug)]
 pub enum RenderMessage {
-    WindowList(window_list),
+    Connected(Connected),
+    WindowList(window_list_message),
     OpenWindow(WindowOpenDisplay),
     CloseWindow(CloseWindowScreen),
     CreateChildWindow(create_child_window_display),

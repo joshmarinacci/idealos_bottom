@@ -39,8 +39,8 @@ pub struct SDL2Backend<'a> {
     pub window_order:Vec<String>,
     pub dragging:bool,
     pub dragtarget:Option<String>,
-    pub font:FontInfo<'a>,
-    pub symbol_font:FontInfo<'a>,
+    // pub font:FontInfo<'a>,
+    // pub symbol_font:FontInfo<'a>,
 }
 
 
@@ -53,6 +53,7 @@ impl<'a> SDL2Backend<'a> {
         'main: loop {
             match input.try_recv() {
                 Ok(msg) => {
+                    // println!("incoming message {:?}",msg);
                     match msg {
                         RenderMessage::OpenWindow(m) => {
                             // println!("opening a window");
@@ -71,6 +72,7 @@ impl<'a> SDL2Backend<'a> {
                             // println!("window count is {}", windows.len());
                         }
                         RenderMessage::CreateChildWindow(m) => {
+                            // println!("creating a child window");
                             if let Some(win) = windows.get_mut(&m.parent) {
                                 let child:Window = Window {
                                     id:m.window.id.clone(),
@@ -93,6 +95,7 @@ impl<'a> SDL2Backend<'a> {
                             }
                         }
                         RenderMessage::WindowList(m) => {
+                            // println!("window list");
                             for (key, value) in &m.windows {
                                 // println!("make window id {} at {},{}", value.id, value.x, value.y);
                                 let win = Window::from_info2(&value);
@@ -124,6 +127,7 @@ impl<'a> SDL2Backend<'a> {
                             }
                         },
                         RenderMessage::FillRect(m) => {
+                            println!("fill rect {:?}",m);
                             if let Some(win) = windows.get_mut(m.window.as_str()) {
                                 if let Some(tex) = self.window_buffers.get_mut(win.id.as_str()) {
                                     self.canvas.with_texture_canvas(tex, |texture_canvas| {
@@ -250,8 +254,8 @@ impl<'a> SDL2Backend<'a> {
                                 ((win.y-BORDER.top)*(SCALE as i32)) as i32,
                                 (BORDER.left+win.width+BORDER.right)as u32*SCALE as u32,
                                 (BORDER.top+win.height+BORDER.bottom)as u32*SCALE as u32));
-                            self.font.draw_text_at(&*win.id, win.x,win.y-9,&Color::GREEN,  &mut self.canvas, SCALEI);
-                            self.symbol_font.draw_text_at("b",win.x+win.width-7,win.y-8,&Color::BLACK, &mut self.canvas, SCALEI);
+                            // self.font.draw_text_at(&*win.id, win.x,win.y-9,&Color::GREEN,  &mut self.canvas, SCALEI);
+                            // self.symbol_font.draw_text_at("b",win.x+win.width-7,win.y-8,&Color::BLACK, &mut self.canvas, SCALEI);
                         }
                         _ => {}
                     }
@@ -265,7 +269,7 @@ impl<'a> SDL2Backend<'a> {
                 }
             }
         }
-        self.font.draw_text_at("idealos", 150,0,&Color::GREEN, &mut self.canvas, SCALEI);
+        // self.font.draw_text_at("idealos", 150,0,&Color::GREEN, &mut self.canvas, SCALEI);
         self.canvas.present();
     }
     fn process_keydown(&self, keycode: Option<Keycode>, windows:&mut HashMap<String,Window>, output: &Sender<OwnedMessage>) {
@@ -377,6 +381,7 @@ fn lookup_color(name: &String) -> Color {
         "yellow" => Color::YELLOW,
         "grey" => Color::GREY,
         "gray" => Color::GRAY,
+        "aqua" => Color::RGB(0,255,255),
         _ => {
             println!("unknown color {}",name);
             Color::MAGENTA

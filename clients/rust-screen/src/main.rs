@@ -106,13 +106,13 @@ pub fn main() -> Result<(),String> {
     let cursor = Cursor::from_surface(big_surf, 0, 0)?;
     cursor.set();
 
-    let main_font = load_font("../../src/clients/fonts/idealos_font@1.png",
-                              "../../src/clients/fonts/idealos_font@1.json",
-                              &creator)?;
-
-    let symbol_font = load_font("../../src/clients/fonts/symbol_font@1.png",
-                                "../../src/clients/fonts/symbol_font@1.json",
-                                &creator)?;
+    // let main_font = load_font("../../src/clients/fonts/idealos_font@1.png",
+    //                           "../../src/clients/fonts/idealos_font@1.json",
+    //                           &creator)?;
+    //
+    // let symbol_font = load_font("../../src/clients/fonts/symbol_font@1.png",
+    //                             "../../src/clients/fonts/symbol_font@1.json",
+    //                             &creator)?;
 
     let mut backend = SDL2Backend {
         sdl_context: &sdl_context,
@@ -123,8 +123,8 @@ pub fn main() -> Result<(),String> {
         window_order: vec![],
         dragging: false,
         dragtarget: None,
-        font: main_font,
-        symbol_font: symbol_font,
+        // font: main_font,
+        // symbol_font: symbol_font,
     };
     backend.start_loop(
         &mut windows,
