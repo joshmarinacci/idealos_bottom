@@ -1,6 +1,8 @@
 import {INPUT} from 'idealos_schemas/js/input.js'
 
 export class KeybindingsManager {
+    private server: any;
+    private keybindings: any;
     constructor(server,opts) {
         this.server = server
         this.keybindings = opts.keybindings
@@ -15,15 +17,15 @@ export class KeybindingsManager {
             if(binding) {
                 // console.log('doing binding',binding)
                 if(!binding.command) throw new Error("binding missing command " + JSON.stringify(binding) )
-                this.server.cons.forward_to_app(msg.app,INPUT.MAKE_Action({
+                return this.server.app_manager.send_to_app(msg.target,
+                    INPUT.MAKE_Action({
                     command:binding.command,
                     app:msg.app,
                     window:msg.window,
                 }))
-                return
             }
         }
-        this.server.cons.forward_to_app(msg.app,msg)
+        this.server.app_manager.send_to_app(msg.target,msg)
     }
 
 }

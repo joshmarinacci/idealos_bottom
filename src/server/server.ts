@@ -180,7 +180,7 @@ export class CentralServer {
                 return this.app_manager.send_to_app(msg.target,msg)
             }
             if(msg.type === INPUT.TYPE_KeyboardDown) {
-                return this.app_manager.send_to_app(msg.target,msg)
+                return this.kb.handle_keybindings(msg)
             }
             console.log("===\nunhandled message\n===",msg.type)
             // this.router.route(ws, msg)
