@@ -24,9 +24,15 @@ async function init() {
                         children:[new Button({
                             text:"\u{1F600}",
                             font:emoji_font,
+                            action:() => {
+                                let tb = win.root.find({id:'texto'})
+                                tb.tl.append_char('\u{1F600}')
+                                tb.repaint()
+                            }
                         })],
                     }),
                     new MultilineTextBox({
+                        id:"texto",
                         text:"this is some text",
                         width:100,
                         height:100,
