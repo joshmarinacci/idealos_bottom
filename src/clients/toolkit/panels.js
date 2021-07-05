@@ -359,6 +359,16 @@ export class ListView extends Container {
     set_selected(index,e) {
         this.selected_index = index
         this.repaint(e)
+        this.fire('changed',this)
+    }
+
+    set_data(docs) {
+        this.data = docs
+        this.selected_index = -1
+        this.generated = false
+        this.children = []
+        this.fire('changed',this)
+        this.repaint()
     }
 }
 

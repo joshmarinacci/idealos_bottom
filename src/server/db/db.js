@@ -272,6 +272,7 @@ export class DataBase {
 
     async watch_json(file) {
         const refresh_file = async () => {
+            this.log("file changed on disk",file)
             let raw = await fs.promises.readFile(file)
             let json = JSON.parse(raw.toString())
             this.data = []
@@ -343,6 +344,7 @@ export class DataBase {
         return this.object_cache[id]
     }
     setProp(obj,key,value) {
+        // this.log("setting",key,'to',value,'on',obj)
         if(!obj) return
         if(!obj.hasOwnProperty('props')) {
             if(obj.hasOwnProperty(key)) {
@@ -361,11 +363,12 @@ export class DataBase {
     }
 
     _fireUpdate(obj) {
+        if(!obj) return console.error("can't update an empty object",obj)
         if(!obj.category) {
             console.warn("object missing category")
             return
         }
-        this.listeners[obj.category].forEach(l => l(obj))
+        if(this.listeners[obj.category]) this.listeners[obj.category].forEach(l => l(obj))
     }
 
     // loadPresetData() {
