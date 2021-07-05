@@ -326,6 +326,7 @@ export class ListView extends Container {
             this.children = this.data.map((item,i) => {
                 let ch = this.template_function(item)
                 let li = new ListItem({children:[ch], padding:2})
+                li.fill_color = 'transparent'
                 li.parent = this
                 li.list_view = this
                 li.action = ()=>this.set_selected(i)
@@ -362,6 +363,10 @@ export class ListView extends Container {
 }
 
 class ListItem extends HBox {
+    constructor(opts) {
+        super(opts);
+        this.selected = false
+    }
     input(e) {
         this.action(e)
     }

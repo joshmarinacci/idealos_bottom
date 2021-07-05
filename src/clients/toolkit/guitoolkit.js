@@ -545,6 +545,7 @@ class Gfx {
         this.clip_rect = {x:0,y:0,width:1000,height:1000}
     }
     rect(x,y,width,height,color) {
+        if(color === 'transparent') return
         let bounds  = {
             x: this.tx + x,
             y: this.ty + y,
