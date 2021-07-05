@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use websocket::OwnedMessage;
 use serde_json::{json};
 
-use crate::window::{Window, Point, Insets};
+use crate::window::{Window, Point, Insets, Bounds, Dimensions};
 use crate::messages::{RenderMessage, MouseDown, MouseDown_name, MouseUp, MouseUp_name, set_focused_window_message, KeyboardDown, KeyboardDown_name, WindowSetPosition_message, WindowSetPosition, WindowSetSize, WindowSetSize_message};
 use crate::fontinfo::FontInfo;
 
@@ -27,6 +27,10 @@ const BORDER:Insets = Insets {
     right: 1,
     top: 9,
     bottom: 1,
+};
+const RESIZE:Dimensions = Dimensions {
+    width: 10,
+    height: 10
 };
 
 pub struct SDL2Backend<'a> {
@@ -330,7 +334,7 @@ impl<'a> SDL2Backend<'a> {
             MouseButton::Left => {
                 let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
                 for win in windows.values() {
-                    if win.resize_contains(&pt) {
+                    if win.resize_contains(&pt, &RESIZE) {
                         self.resizing = true;
                         self.dragtarget = Some(win.id.clone());
                         break;

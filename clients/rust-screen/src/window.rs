@@ -11,6 +11,18 @@ pub struct Rect {
     pub color:String,
 }
 
+pub struct Dimensions {
+    pub width:i32,
+    pub height:i32,
+}
+
+pub struct Bounds {
+    pub x:i32,
+    pub y:i32,
+    pub width:i32,
+    pub height:i32,
+}
+
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Point {
@@ -69,13 +81,13 @@ impl Window {
         if pt.y > (self.y + self.height+border.bottom) { return false; }
         return true
     }
-    pub fn resize_contains(&self, pt:&Point) -> bool {
-        let corner_x = self.x + self.width - 10;
-        let corner_y = self.y + self.height - 10;
+    pub fn resize_contains(&self, pt:&Point, size:&Dimensions) -> bool {
+        let corner_x = self.x + self.width - size.width;
+        let corner_y = self.y + self.height - size.height;
         if pt.x < corner_x { return false; }
         if pt.y < corner_y { return false; }
-        if pt.x > corner_x + 10 { return false; }
-        if pt.y > corner_y + 10 { return false; }
+        if pt.x > corner_x + size.width { return false; }
+        if pt.y > corner_y + size.height { return false; }
         return true
     }
 }

@@ -36,11 +36,6 @@ interface App {
     connection:WebSocket|undefined
 }
 
-export const APPS_GROUP = {
-    LIST_ALL_APPS: "LIST_ALL_APPS",
-    "START_SUB_APP":"START_SUB_APP"
-}
-
 export class AppManager {
     private apps: App[];
     private readonly hostname: String;
