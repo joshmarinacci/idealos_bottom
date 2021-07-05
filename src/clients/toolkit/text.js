@@ -530,7 +530,7 @@ export class MultilineTextBox extends TextBox {
         this.tl.layout_as_blocks_with_breaks_and_font(this.width,gfx.font())
     }
     handle_action(e) {
-        console.log("action",e)
+        // console.log("action",e)
         if(e.command === "navigate-cursor-right")      this.tl.nav_right()
         if(e.command === "navigate-cursor-left")       this.tl.nav_left()
         if(e.command === "navigate-cursor-up")         this.tl.nav_up()
