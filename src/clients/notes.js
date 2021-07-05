@@ -2,12 +2,15 @@ import {App} from './toolkit/guitoolkit.js'
 import {CONSTRAINTS, HBox, ListView, VBox} from './toolkit/panels.js'
 import {Label, MultilineTextBox, TextBox} from './toolkit/text.js'
 import {Button} from './toolkit/buttons.js'
+import {CATEGORIES} from '../server/db/schema.js'
+import {WINDOWS} from 'idealos_schemas/js/windows.js'
 
 let app = new App(process.argv)
 async function init() {
     await app.a_init()
 
     let win = await app.open_window(0, 0, 150,100, 'plain')
+    let save = new Button({text:'save'})
     let toolbar = new HBox({
         vstretch:true,
         fill_color:'red',
@@ -21,15 +24,29 @@ async function init() {
             }),
             new Button({
                 text:'archive'
-            })
+            }),
+            save,
         ]})
     let list = new ListView({
         width:50,
-        data:["1","2","3"],
+        data:[],
         template_function:(item)=>{
-            return new Label({text:'an item'})
-    }})
-    let editor = new MultilineTextBox({flex:1.0, width: 100, text:"your notes"})
+            return new Label({text:item.props.title})
+        },
+    })
+    let title = new TextBox({text:"title", height:15})
+    let editor = new MultilineTextBox({flex:1.0, width: 100, text:""})
+
+    list.on('changed',() => {
+        if(list.selected_index >= 0) {
+            let note = list.data[list.selected_index]
+            title.set_text(note.props.title)
+            editor.set_text(note.props.body)
+        } else {
+            title.set_text('')
+            title.set_text('')
+        }
+    })
 
 
 
@@ -40,15 +57,77 @@ async function init() {
             toolbar,
             new HBox({
                 flex:1.0,
-                fill_color:'cyan',
                 height:60,
                 width: 150,
                 vstretch:true,
-                children:[list,editor,]
+                children:[list, new VBox({
+                    constraint:CONSTRAINTS.FILL,
+                    hstretch:true,
+                    flex:1,
+                    children:[title,editor]
+                })],
             })
         ]
     })
     win.redraw()
-    console.log(JSON.stringify(win.root.dump(),null, '  '))
+    // console.log(JSON.stringify(win.root.dump(),null, '  '))
+
+    const query = {
+        and: [
+            {
+                TYPE: CATEGORIES.NOTE.TYPES.NOTE
+            },
+            {
+                CATEGORY: CATEGORIES.NOTE.ID
+            }
+        ]
+    }
+
+    win.app.on("database-watch-update",t => {
+        console.log("===========\ngot database update",t)
+        win.send({
+            type:"database-query",
+            query: query
+        })
+    })
+    win.app.on("database-query-response",(t) => {
+        let notes = t.payload.docs
+        console.log("got database result",notes)
+        list.set_data(notes)
+    })
+    const category =  CATEGORIES.NOTE.ID
+
+    win.send({
+        type:"database-watch",
+        category:category,
+    })
+    win.send({
+        type:"database-query",
+        query: query
+    })
+
+    const do_save = () => {
+        console.log("saving")
+        if(list.selected_index >= 0) {
+            let note = list.data[list.selected_index]
+            let msg = {
+                type:"database-update",
+                object:{
+                    id:note.id,
+                    props:{
+                        "title":title.text,
+                        "body":editor.tl.text
+                    },
+                }
+            }
+            win.log("sending message",msg)
+            win.send(msg)
+        }
+    }
+    save.on('action',do_save)
+    title.on('action',do_save)
 }
 app.on('start',()=>init())
+app.on(WINDOWS.TYPE_window_close_request,(e) => {
+    app.a_shutdown().then(()=>console.log("finished"))
+})
