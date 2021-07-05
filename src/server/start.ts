@@ -13,7 +13,8 @@ async function doit() {
         emoji: JSON.parse((await fs.promises.readFile("resources/fonts/emoji.json")).toString())
     }
     let db_json = [
-        "resources/database/tasks.json"
+        "resources/database/tasks.json",
+        "resources/database/notes.json",
     ]
 
     let server = new CentralServer({

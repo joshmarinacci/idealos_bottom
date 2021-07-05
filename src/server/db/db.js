@@ -255,18 +255,18 @@ export class DataBase {
     }
     constructor(server) {
         // this._original_data = data
-        this.data = []
+        this.data_file_contents = {}
+        this.changed_data = []
         this.log("making database")
         this.object_cache = {}
         this.listeners = {}
         this.scm = new SchemaManager()
-        // Object.keys(CATEGORIES).forEach(cat => this.listeners[cat] = [])
-        // this.loadPresetData()
-        // this.loadLocalStorage()
-        // this.validateData()
-
         this.file_watchers = []
         this.server = server
+    }
+
+    flat_data() {
+        return Object.values(this.object_cache)
     }
 
 
@@ -275,13 +275,12 @@ export class DataBase {
             this.log("file changed on disk",file)
             let raw = await fs.promises.readFile(file)
             let json = JSON.parse(raw.toString())
-            this.data = []
+            this.data_file_contents[file] = []
             json.forEach(item => {
-                // this.log("checking item",item)
                 if(!this.scm.isValid(item)) {
                     this.log("invalid item",item)
                 } else {
-                    this.data.push(item)
+                    this.data_file_contents[file].push(item)
                     this.object_cache[item.id] = item
                 }
             })
@@ -295,7 +294,6 @@ export class DataBase {
             this.log(e)
         }
     }
-
 
     async start() {
 
@@ -313,33 +311,23 @@ export class DataBase {
         this.listeners[cat] = this.listeners[cat].filter(l => l !== listener)
     }
     QUERY(...args) {
-        return query(this.data,...args)
+        return query(this.flat_data(),...args)
     }
     add(obj) {
-        this.data.push(obj)
+        this.changed_data.push(obj)
         obj.local = true
         obj.createdtime = new Date()
         obj.modifiedtime = new Date()
         this._fireUpdate(obj)
     }
-    bulk_add(objs, cat) {
-        let now = new Date()
-        objs.forEach(obj => {
-            this.data.push(obj)
-            obj.local = true
-            obj.createdtime = now
-            obj.modifiedtime = now
-        })
-        this.listeners[cat].forEach(l => l())
-    }
-    remove(obj) {
-        obj.removedtime = new Date()
-        this.data = this.data.filter(d => d.id !== obj.id)
-        this._fireUpdate(obj)
-    }
-    make(category,type, customSchema) {
-        return makeNewObject(type,category, customSchema)
-    }
+    // remove(obj) {
+    //     obj.removedtime = new Date()
+    //     this.data = this.data.filter(d => d.id !== obj.id)
+    //     this._fireUpdate(obj)
+    // }
+    // make(category,type, customSchema) {
+    //     return makeNewObject(type,category, customSchema)
+    // }
     findObject(id) {
         return this.object_cache[id]
     }
@@ -427,14 +415,14 @@ export class DataBase {
     //         return value
     //     }))
     // }
-    persist_to_plainobject() {
-        let local = this.data.filter(i => i.local === true)
-        let str = JSON.stringify(local,function(key,value){
-            if(key === 'props') return encode_props_with_types(value)
-            return value
-        })
-        return JSON.parse(str)
-    }
+    // persist_to_plainobject() {
+    //     let local = this.data.filter(i => i.local === true)
+    //     let str = JSON.stringify(local,function(key,value){
+    //         if(key === 'props') return encode_props_with_types(value)
+    //         return value
+    //     })
+    //     return JSON.parse(str)
+    // }
     // reload(key) {
     //     this.object_cache = {}
     //     this.loadPresetData(this._original_data)
@@ -515,42 +503,42 @@ export class DataBase {
     }
 }
 
+//
+// export async function makeDB_with_json_files(files) {
+//     let data = []
+//     for(let file of files) {
+//         let raw = await fs.promises.readFile(file)
+//         let json = JSON.parse(raw.toString())
+//         data.push(...json)
+//     }
+//     return new DataBase(data)
+// }
 
-export async function makeDB_with_json_files(files) {
-    let data = []
-    for(let file of files) {
-        let raw = await fs.promises.readFile(file)
-        let json = JSON.parse(raw.toString())
-        data.push(...json)
-    }
-    return new DataBase(data)
-}
 
-
-// TODO: extend this to use the real schemas
-function encode_props_with_types(value) {
-    let props = {}
-    Object.keys(value).forEach(k => {
-        let prefix = ''
-        let val = value[k]
-        if(value[k] instanceof Date) {
-            prefix = '_date_'
-            val = val.toISOString()
-        }
-        props[prefix+k] = val
-    })
-    return props
-}
-
-function decode_props_with_types(value) {
-    let props = {}
-    Object.keys(value).forEach(k => {
-        if(k.startsWith('_date_')) {
-            let k2 = k.replace('_date_','')
-            props[k2] = new Date(value[k])
-        } else {
-            props[k] = value[k]
-        }
-    })
-    return props
-}
+// // TODO: extend this to use the real schemas
+// function encode_props_with_types(value) {
+//     let props = {}
+//     Object.keys(value).forEach(k => {
+//         let prefix = ''
+//         let val = value[k]
+//         if(value[k] instanceof Date) {
+//             prefix = '_date_'
+//             val = val.toISOString()
+//         }
+//         props[prefix+k] = val
+//     })
+//     return props
+// }
+//
+// function decode_props_with_types(value) {
+//     let props = {}
+//     Object.keys(value).forEach(k => {
+//         if(k.startsWith('_date_')) {
+//             let k2 = k.replace('_date_','')
+//             props[k2] = new Date(value[k])
+//         } else {
+//             props[k] = value[k]
+//         }
+//     })
+//     return props
+// }
