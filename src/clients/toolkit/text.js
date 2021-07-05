@@ -101,6 +101,10 @@ export class TextBox extends Component {
         this.selected = false
         this.name = 'textbox'
     }
+    set_text(text) {
+        this.text = text
+        this.cursor = 2
+    }
     append_char(ch) {
         this.text = this.text.slice(0, this.cursor) + ch + this.text.slice(this.cursor)
         this.cursor += 1
@@ -213,6 +217,12 @@ export class TextLayout {
         this.lines = [""]
     }
 
+    set_text(txt) {
+        this.text = txt
+        this.cursor = 0
+        this.bias = BIAS.LEFT
+        this.lines = [""]
+    }
     append_char(ch) {
         this.text = this.text.slice(0, this.cursor) + ch + this.text.slice(this.cursor)
         this.cursor += 1
@@ -507,6 +517,10 @@ export class MultilineTextBox extends TextBox {
         this.padding = new Insets(2)
         this.selected = false
         this.name = 'textbox'
+    }
+    set_text(txt) {
+        this.tl.set_text(txt)
+        this.repaint()
     }
     input(e) {
         if( e.type === INPUT.TYPE_Action) return this.handle_action(e)
