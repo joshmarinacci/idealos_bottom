@@ -3,8 +3,9 @@ import fs from "fs";
 export class FontManager {
     private fonts: any;
     private server: any;
-    constructor(server: any) {
+    constructor(server: any, fonts:any) {
         this.server = server
+        this.fonts = fonts
     }
 
 

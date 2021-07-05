@@ -51,7 +51,7 @@ export class CentralServer {
         this.translation_manager = new TranslationManager(this,opts.translations)
         this.app_manager = new AppManager(this,this.hostname,this.websocket_port)
         this.apps = opts.apps
-        this.font_manager = new FontManager(this)
+        this.font_manager = new FontManager(this,opts.fonts)
         this.audio = new AudioService(this)
         this.db_json = opts.db_json || []
         this.db = new DataBase(this)

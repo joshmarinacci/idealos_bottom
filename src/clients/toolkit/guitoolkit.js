@@ -61,11 +61,12 @@ export class JoshFont {
 
     draw_text(app,x,y,text,color,win) {
         let dx = 0
-        for(let i=0; i<text.length; i++) {
+        let codepoints = [...text]
+        for(let i=0; i<codepoints.length; i++) {
             let cp = text.codePointAt(i)
+            if(cp === 0xde00) continue //skip astral plane indicators
             let g = this.find_glyph_by_id(cp)
             let bitmap = this.get_bitmap_for_glyph(g)
-            // console.log(i,text,text[i],cp)
             app.send(GRAPHICS.MAKE_DrawImage({
                 x:x+dx-g.left,
                 y:y-g.baseline+g.height,
@@ -78,12 +79,12 @@ export class JoshFont {
         }
     }
     measure_text(app,text) {
-        // console.log("measuring text",text)
         let dx = 0
         let my = 0
-        for(let i=0; i<text.length; i++) {
+        let codepoints = [...text]
+        for(let i=0; i<codepoints.length; i++) {
             let cp = text.codePointAt(i)
-            // console.log(i,text,text[i],cp)
+            if(cp === 0xde00) continue //skip astral plane indicators
             let g = this.find_glyph_by_id(cp)
             dx += g.width - g.left - g.right
             my = Math.max(my,g.height)
@@ -95,9 +96,16 @@ export class JoshFont {
     }
 
     find_glyph_by_id(id) {
-        // console.log("looking up glpyh for ",id)
-        // console.log(this.info.glyphs)
-        return this.info.glyphs.find(g => g.id === id)
+        let g = this.info.glyphs.find(g => g.id === id)
+        if(!g) {
+            console.log("missing glyph for codepoint",id)
+            if(this.info.name === 'emoji') {
+                return this.find_glyph_by_id(128512)
+            } else {
+                return this.find_glyph_by_id(27)
+            }
+        }
+        return g
     }
 
     get_bitmap_for_glyph(a_glyph) {

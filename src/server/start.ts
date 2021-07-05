@@ -9,7 +9,8 @@ async function doit() {
     let base_translation = await load_translation("resources/translations/base.json")
     let lolcat_translation = await load_translation("resources/translations/lolcat.json")
     let fonts = {
-        base: JSON.parse((await fs.promises.readFile("resources/fonts/font.json")).toString())
+        base: JSON.parse((await fs.promises.readFile("resources/fonts/font.json")).toString()),
+        emoji: JSON.parse((await fs.promises.readFile("resources/fonts/emoji.json")).toString())
     }
     let db_json = [
         "resources/database/tasks.json"
