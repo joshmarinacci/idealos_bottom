@@ -353,7 +353,7 @@ export class TextLayout {
         for(let i=0; i<this.text.length; i++) {
             _count++
             if(_count > 1000) {
-                throw new Error("infinite loop")
+                throw new Error(`infinite loop: width = ${w}`)
             }
             let ch = this.text[i]
             if(ch === ' ') {

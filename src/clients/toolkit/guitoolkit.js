@@ -624,6 +624,7 @@ class Gfx {
 export class Component {
     constructor(opts) {
         if(!opts) opts = {}
+        this.name = "unnamed component"
         this.id = opts.id || ""
         this.x = opts.x || 0
         this.y = opts.y || 0
@@ -633,6 +634,7 @@ export class Component {
         this.children = []
         this.font = opts.font || null
         this.visible = true
+        this.flex = opts.flex || 0
         if(opts.hasOwnProperty('visible')) this.visible = opts.visible
     }
 
@@ -725,6 +727,23 @@ export class Component {
     }
     translation_changed() {
         this._translations = {}
+    }
+    dump() {
+        return {
+            name:this.name,
+            id:this.id,
+            flex:this.flex,
+            bounds:{
+                x:this.x,
+                y:this.y,
+                width:this.width,
+                height:this.height,
+            },
+            children:this.children.map(ch => {
+                if(ch.dump) return ch.dump()
+                return "missing dump"
+            })
+        }
     }
 }
 

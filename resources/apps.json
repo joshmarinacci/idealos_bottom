@@ -85,6 +85,14 @@
       "icon": "jessecalc",
       "entrypoint":"src/clients/jessecalc.js",
       "autostart": false
+    },
+    {
+      "name": "notes",
+      "title": "Notes",
+      "type": "APP",
+      "icon": "texteditor",
+      "entrypoint":"src/clients/notes.js",
+      "autostart": false
     }
   ],
   "services": [
