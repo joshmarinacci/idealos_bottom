@@ -71,14 +71,6 @@
       "autostart": false
     },
     {
-      "name": "texteditor",
-      "title": "Text Edit",
-      "type": "APP",
-      "icon": "texteditor",
-      "entrypoint":"src/clients/texteditor.js",
-      "autostart": false
-    },
-    {
       "name": "jessecalc",
       "title": "jessecalc",
       "type": "APP",

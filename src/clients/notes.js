@@ -4,6 +4,9 @@ import {Label, MultilineTextBox, TextBox} from './toolkit/text.js'
 import {Button} from './toolkit/buttons.js'
 import {CATEGORIES} from '../server/db/schema.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
+import {MENUS} from 'idealos_schemas/js/menus.js'
+import {INPUT} from 'idealos_schemas/js/input.js'
+import {AND, IS_CATEGORY, IS_PROP_SUBSTRING, IS_TYPE} from '../server/db/query.js'
 
 let app = new App(process.argv)
 async function init() {
@@ -11,22 +14,12 @@ async function init() {
 
     let win = await app.open_window(0, 0, 150,100, 'plain')
     let save = new Button({text:'save'})
+    let add_note = new Button({text:'add'})
+    let query_box = new TextBox({width:50, text:"search"})
     let toolbar = new HBox({
         vstretch:true,
         fill_color:'red',
-        children:[
-            new TextBox({
-                width:50,
-                text:"query"
-            }),
-            new Button({
-                text:'add'
-            }),
-            new Button({
-                text:'archive'
-            }),
-            save,
-        ]})
+        children:[ query_box, add_note, save, ]})
     let list = new ListView({
         width:50,
         data:[],
@@ -72,17 +65,10 @@ async function init() {
     win.redraw()
     // console.log(JSON.stringify(win.root.dump(),null, '  '))
 
-    const query = {
-        and: [
-            {
-                TYPE: CATEGORIES.NOTE.TYPES.NOTE
-            },
-            {
-                CATEGORY: CATEGORIES.NOTE.ID
-            }
-        ]
-    }
-
+    const query = AND(
+        IS_TYPE(CATEGORIES.NOTE.TYPES.NOTE),
+        IS_CATEGORY(CATEGORIES.NOTE.ID)
+    )
     win.app.on("database-watch-update",t => {
         console.log("===========\ngot database update",t)
         win.send({
@@ -106,8 +92,7 @@ async function init() {
         query: query
     })
 
-    const do_save = () => {
-        console.log("saving")
+    const do_save_note = () => {
         if(list.selected_index >= 0) {
             let note = list.data[list.selected_index]
             let msg = {
@@ -124,8 +109,64 @@ async function init() {
             win.send(msg)
         }
     }
-    save.on('action',do_save)
-    title.on('action',do_save)
+    save.on('action',do_save_note)
+    title.on('action',do_save_note)
+
+    const do_add_note = () => {
+        console.log("adding an element")
+    }
+    add_note.on('action',do_add_note)
+
+    query_box.on("change",() => {
+        let str = query_box.text.trim()
+        let q = null
+        if(str.length === 0) {
+            q = AND(
+                IS_TYPE(CATEGORIES.NOTE.TYPES.NOTE),
+                IS_CATEGORY(CATEGORIES.NOTE.ID)
+                )
+        } else {
+            q = AND(
+                IS_TYPE(CATEGORIES.NOTE.TYPES.NOTE),
+                IS_CATEGORY(CATEGORIES.NOTE.ID),
+                IS_PROP_SUBSTRING("title",str),
+            )
+        }
+        win.send({type: "database-query",query: q})
+    })
+
+
+    app.on(WINDOWS.TYPE_SetFocusedWindow,()=>{
+        let menu = {
+            type:"root",
+            children:[
+                {
+                    type:'top',
+                    label:'File',
+                    children:[
+                        {
+                            type:'item',
+                            label:'New Note',
+                            command:'new_note'
+                        },
+                        {
+                            type:'item',
+                            label:'Save',
+                            command:'save_note'
+                        }
+                    ]
+                },
+            ]
+        }
+        let msg =  MENUS.MAKE_SetMenubar({menu:menu})
+        app.send(msg)
+    })
+
+    app.on(INPUT.TYPE_Action,(e) => {
+        if (e.payload.command === 'save_note') do_save_note()
+        if (e.payload.command === 'new_note') do_add_note()
+    })
+
 }
 app.on('start',()=>init())
 app.on(WINDOWS.TYPE_window_close_request,(e) => {

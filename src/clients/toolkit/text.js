@@ -109,6 +109,7 @@ export class TextBox extends Component {
     append_char(ch) {
         this.text = this.text.slice(0, this.cursor) + ch + this.text.slice(this.cursor)
         this.cursor += 1
+        this.fire("change",{target:this})
     }
 
     input(e) {
@@ -156,6 +157,7 @@ export class TextBox extends Component {
             let after = this.text.substring(this.cursor)
             this.text = before.substring(0, before.length - 1) + after
             this.cursor = Math.max(this.cursor - 1, 0)
+            this.fire("change",{target:this})
             this.repaint(e)
         }
     }
@@ -165,6 +167,7 @@ export class TextBox extends Component {
         this.text = before + after.substring(1)
         // this.cursor += 1
         if(this.cursor >= this.text.length) this.cursor = this.text.length
+        this.fire("change",{target:this})
         this.repaint(e)
     }
 
