@@ -23,33 +23,14 @@
   "button": {
     "name": "button",
     "border-color": "white",
-    "background-color": "green",
+    "background-color": "black",
     "color": "white",
     "states": {
-      "hover": {
+      "pressed": {
         "background-color": "white"
       },
-      "pressed": {
-        "background-color": "blue"
-      },
       "selected": {
-        "background-color": "red"
-      }
-    },
-    "styles": {
-      "toggle": {
-        "border-color": "red",
-        "background-color": "white",
-        "color": "red",
-        "styles": {
-          "hover": {
-            "background-color": "red",
-            "color": "black"
-          },
-          "selected": {
-            "background-color": "blue"
-          }
-        }
+        "background-color": "white"
       }
     }
   }

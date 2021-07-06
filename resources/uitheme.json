@@ -16,40 +16,25 @@
     "color": "black",
     "states": {
       "focused": {
-        "background-color": "yellow"
+        "background-color": "white"
       }
     }
   },
   "button": {
     "name": "button",
     "border-color": "black",
-    "background-color": "aqua",
+    "background-color": "white",
     "color": "black",
     "states": {
-      "hover": {
-        "background-color": "white"
-      },
       "pressed": {
-        "background-color": "blue"
+        "border-color": "white",
+        "background-color": "black",
+        "color": "white"
       },
       "selected": {
-        "background-color": "red"
-      }
-    },
-    "styles": {
-      "toggle": {
-        "border-color": "red",
-        "background-color": "white",
-        "color": "red",
-        "styles": {
-          "hover": {
-            "background-color": "red",
-            "color": "black"
-          },
-          "selected": {
-            "background-color": "blue"
-          }
-        }
+        "border-color": "white",
+        "background-color": "black",
+        "color": "white"
       }
     }
   }

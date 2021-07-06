@@ -382,7 +382,7 @@ class ListItem extends HBox {
     }
     redraw(gfx) {
         if(this.selected) {
-            gfx.rect(this.x,this.y,this.width,this.height,'cyan')
+            gfx.rect(this.x,this.y,this.width,this.height,'black')
         } else {
             gfx.rect(this.x,this.y,this.width,this.height,'white')
         }
