@@ -26,7 +26,7 @@ async function init() {
                             font:emoji_font,
                             action:() => {
                                 let tb = win.root.find({id:'texto'})
-                                tb.tl.append_char('\u{1F600}')
+                                tb.tl.insert_char_at_cursor('\u{1F600}')
                                 tb.repaint()
                             }
                         })],

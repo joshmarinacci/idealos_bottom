@@ -227,8 +227,11 @@ export class TextLayout {
         this.bias = BIAS.LEFT
         this.lines = [""]
     }
-    append_char(ch) {
-        this.text = this.text.slice(0, this.cursor) + ch + this.text.slice(this.cursor)
+    insert_char_at_cursor(ch) {
+        let n = this.cursor
+        if(this.bias === BIAS.LEFT) n = this.cursor
+        if(this.bias === BIAS.RIGHT) n = this.cursor+1
+        this.text = this.text.slice(0, n) + ch + this.text.slice(n)
         this.cursor += 1
     }
 
@@ -508,6 +511,15 @@ export class TextLayout {
         this.text = before + after.substring(1)
         if(this.cursor >= this.text.length) this.cursor = this.text.length
     }
+
+    dump() {
+        return {
+            text:this.text,
+            cursor:this.cursor,
+            bias:this.bias,
+            lines:this.lines.slice()
+        }
+    }
 }
 
 
@@ -534,7 +546,7 @@ export class MultilineTextBox extends TextBox {
             return
         }
         if (is_word_char(e)) {
-            this.tl.append_char(e.key)
+            this.tl.insert_char_at_cursor(e.key)
             return this.repaint(e)
         }
         if (e.code === INFO.KEY_NAMES.Backspace) {
