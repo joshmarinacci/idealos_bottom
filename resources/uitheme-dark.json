@@ -50,6 +50,18 @@
         "color": "black"
       }
     }
+  },
+  "menu-bar": {
+    "name": "menu-bar",
+    "border-color": "black",
+    "background-color": "black",
+    "color": "white"
+  },
+  "menu-item": {
+    "name": "menu-item",
+    "border-color": "black",
+    "background-color": "black",
+    "color": "white"
   }
 }
 

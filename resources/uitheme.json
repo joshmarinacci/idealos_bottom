@@ -50,6 +50,25 @@
         "color": "white"
       }
     }
+  },
+  "menu-bar": {
+    "name": "menu-bar",
+    "border-color": "black",
+    "background-color": "white",
+    "color": "black"
+  },
+  "menu-item": {
+    "name": "menu-item",
+    "border-color": "black",
+    "background-color": "white",
+    "color": "black",
+    "states": {
+      "pressed": {
+        "border-color": "white",
+        "background-color": "black",
+        "color": "white"
+      }
+    }
   }
 }
 

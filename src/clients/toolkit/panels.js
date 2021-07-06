@@ -185,7 +185,7 @@ export class TabPanel extends Container {
         })
     }
     redraw(gfx) {
-        gfx.rect(this.x,this.y,this.width,this.height,'cyan')
+        gfx.rect(this.x,this.y,this.width,this.height,'white')
         super.redraw(gfx)
     }
     select_tab(n) {

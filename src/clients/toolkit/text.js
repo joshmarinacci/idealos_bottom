@@ -8,6 +8,7 @@ export class Label extends Component {
         super(opts)
         this.text = opts.text || "label"
         this.name = 'label'
+        this.padding = 2
     }
 
     input(e) {
@@ -16,8 +17,8 @@ export class Label extends Component {
 
     layout(gfx) {
         let met = gfx.text_size(this.text,this.font)
-        this.width = met.width
-        this.height = met.height
+        this.width = this.padding + met.width + this.padding
+        this.height = this.padding + met.height + this.padding
     }
 
     redraw(gfx) {
@@ -25,7 +26,7 @@ export class Label extends Component {
         let bg = this.lookup_theme_part("background-color",null)
         let co = this.lookup_theme_part('color',null)
         gfx.rect(this.x, this.y, this.width, this.height,bg)
-        gfx.text(this.x, this.y, this.text,co,this.font)
+        gfx.text(this.x+this.padding, this.y+this.padding, this.text,co,this.font)
     }
 }
 
