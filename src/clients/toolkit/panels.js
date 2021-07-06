@@ -344,7 +344,8 @@ export class ListView extends Container {
         })
     }
     redraw(gfx) {
-        gfx.rect(this.x,this.y,this.width,this.height,'red')
+        let bg = this.lookup_theme_part("background-color",null)
+        gfx.rect(this.x,this.y,this.width,this.height,bg)
         gfx.translate(this.x,this.y)
         this.children.forEach((ch,i) => {
             if(this.selected_index === i) {
@@ -375,17 +376,15 @@ export class ListView extends Container {
 class ListItem extends HBox {
     constructor(opts) {
         super(opts);
+        this.name = "list-item"
         this.selected = false
     }
     input(e) {
         this.action(e)
     }
     redraw(gfx) {
-        if(this.selected) {
-            gfx.rect(this.x,this.y,this.width,this.height,'black')
-        } else {
-            gfx.rect(this.x,this.y,this.width,this.height,'white')
-        }
+        let bg = this.lookup_theme_part("background-color",this.selected?"selected":null)
+        gfx.rect(this.x,this.y,this.width,this.height,bg)
         super.redraw(gfx)
     }
 }

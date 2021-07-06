@@ -67,14 +67,18 @@ export class JoshFont {
             if(cp === 0xde00) continue //skip astral plane indicators
             let g = this.find_glyph_by_id(cp)
             let bitmap = this.get_bitmap_for_glyph(g)
-            app.send(GRAPHICS.MAKE_DrawImage({
+            let msg = GRAPHICS.MAKE_DrawImage({
                 x:x+dx-g.left,
                 y:y-g.baseline+g.height,
                 width:g.width,
                 height:g.height,
                 pixels:bitmap,
                 window:win._winid,
-            }))
+            })
+            msg.depth=1
+            msg.channels = 4
+            msg.color = color
+            app.send(msg)
             dx += (g.width-g.left-g.right)
         }
     }

@@ -27,10 +27,27 @@
     "color": "white",
     "states": {
       "pressed": {
-        "background-color": "white"
+        "background-color": "white",
+        "border-color": "black",
+        "color": "black"
       },
       "selected": {
-        "background-color": "white"
+        "background-color": "white",
+        "color": "black",
+        "border-color": "black"
+      }
+    }
+  },
+  "list-item": {
+    "name": "list-item",
+    "border-color": "black",
+    "background-color": "black",
+    "color": "white",
+    "states": {
+      "selected": {
+        "border-color": "white",
+        "background-color": "white",
+        "color": "black"
       }
     }
   }
