@@ -184,7 +184,6 @@ export class AppManager {
         let app = this.get_app_by_id(msg.app)
         if(app === undefined ) return console.error("app is undefined")
 
-        // let win =  "win_"+Math.floor(Math.random()*10000)
         let win:Window = {
             type:"CHILD",
             x:msg.x,
@@ -234,7 +233,7 @@ export class AppManager {
 
     close_child_window(msg: any) {
         // this.log("closing child window",msg)
-        this.dump()
+        // this.dump()
         let app = this.get_app_by_id(msg.app)
         if(app === undefined) return console.error("close_child_window: no app found")
         let win = app.windows.find(win => win.id === msg.window)
@@ -370,6 +369,14 @@ export class AppManager {
     send_to_target(msg: any) {
         this.send_to_app(msg.target,msg)
     }
+    send_to_focused_app(msg: any) {
+        // this.log("sending to focused app",msg)
+        if(!this.active_window) return console.error('cannot forward message to focused app. no action window')
+        // this.log('sending to app',this.active_window.app_owner)
+        this.send_to_app(this.active_window.app_owner,msg)
+        this.dump()
+    }
+
 
     private get_window_list():Window[] {
         let wins: Window[] = []
