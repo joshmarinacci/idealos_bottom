@@ -11,10 +11,6 @@ export class Label extends Component {
         this.padding = 2
     }
 
-    input(e) {
-        // console.log("label got event",e.type)
-    }
-
     layout(gfx) {
         let met = gfx.text_size(this.text,this.font)
         this.width = this.padding + met.width + this.padding
@@ -118,18 +114,21 @@ export class TextBox extends Component {
         if (e.type === INPUT.TYPE_MouseDown) {
             this.selected = true
             this.repaint(e)
-            return
+            return true
         }
         if (is_word_char(e)) {
             this.append_char(e.key)
             this.repaint(e)
+            return true
         }
         if (e.code === INFO.KEY_NAMES.Backspace) return this.delete_backward()
         if (e.code === INFO.KEY_NAMES.ArrowLeft) return this.nav_left(e)
         if (e.code === INFO.KEY_NAMES.ArrowRight) return this.nav_right(e)
         if (e.key === "Enter") {
             this.fire('action', {target: this})
+            return true
         }
+        return false
     }
 
     redraw(gfx) {
@@ -160,6 +159,7 @@ export class TextBox extends Component {
             this.fire("change",{target:this})
             this.repaint(e)
         }
+        return true
     }
     delete_forward(e) {
         let before = this.text.substring(0, this.cursor)
@@ -174,10 +174,12 @@ export class TextBox extends Component {
     nav_left(e) {
         this.cursor = Math.max(this.cursor - 1, 0)
         this.repaint(e)
+        return true
     }
     nav_right(e) {
         this.cursor = Math.min(this.cursor + 1, this.text.length)
         this.repaint(e)
+        return true
     }
     nav_up(e) {
         // console.log("nav up")
@@ -543,17 +545,23 @@ export class MultilineTextBox extends TextBox {
         if (e.type === INPUT.TYPE_MouseDown) {
             this.selected = true
             this.repaint(e)
-            return
+            return true
         }
         if (is_word_char(e)) {
             this.tl.insert_char_at_cursor(e.key)
-            return this.repaint(e)
+            this.repaint(e)
+            return true
         }
         if (e.code === INFO.KEY_NAMES.Backspace) {
             this.tl.delete_backward()
-            return this.repaint(e)
+            this.repaint(e)
+            return true
         }
-        if (e.key === "Enter") return this.fire('action', {target: this})
+        if (e.key === "Enter") {
+            this.fire('action', {target: this})
+            return true
+        }
+        return false
     }
     layout(gfx) {
         //wrap and draw the text
@@ -570,6 +578,7 @@ export class MultilineTextBox extends TextBox {
         if(e.command === "delete-character-backward")  this.tl.delete_backward()
         if(e.command === "delete-character-forward")   this.tl.delete_forward()
         this.repaint(e)
+        return true
     }
 
 

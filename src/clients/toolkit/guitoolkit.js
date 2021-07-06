@@ -332,7 +332,13 @@ class EventDispatcher {
         this.mouse_target = node
         this.keyboard_target = node
         this.window.set_focused(node)
-        node.input(evt)
+        // this.log("mousedown sent to",node.dump())
+        while(node !== undefined && node._type !== 'window') {
+            let ret = node.input(evt)
+            if(ret) break
+            // this.log("not consumed. going up to the parent")
+            node = node.parent
+        }
     }
 
     dispatch_mouseup(evt,node) {

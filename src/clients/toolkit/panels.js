@@ -381,6 +381,7 @@ class ListItem extends HBox {
     }
     input(e) {
         this.action(e)
+        return true
     }
     redraw(gfx) {
         let bg = this.lookup_theme_part("background-color",this.selected?"selected":null)

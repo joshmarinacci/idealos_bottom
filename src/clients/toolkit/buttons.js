@@ -17,6 +17,7 @@ export class Button extends Component {
         if(e.type === INPUT.TYPE_MouseDown) {
             this.pressed = true
             this.repaint(e)
+            return true
         }
         if(e.type === INPUT.TYPE_MouseUp) {
             this.pressed = false
