@@ -113,6 +113,7 @@ export class DataBase {
     }
     add(obj) {
         this.changed_data.push(obj)
+        this.object_cache[obj.id] = obj
         obj.local = true
         obj.createdtime = new Date()
         obj.modifiedtime = new Date()
@@ -176,6 +177,11 @@ export class DataBase {
         })
     }
     perform_database_add(msg) {
+        if(!msg.object.type) return console.error("cannot add object. missing type")
+        if(!msg.object.category) return console.error("cannot add object. missing category")
+        if(msg.object.id) return console.error('cannot add object, already has an id')
+        msg.object.id = "obj"+Math.floor(Math.random()*10000)
+        this.log('adding',msg.object)
         this.add(msg.object)
     }
     perform_database_update(msg) {

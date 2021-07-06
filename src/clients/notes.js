@@ -113,7 +113,18 @@ async function init() {
     title.on('action',do_save_note)
 
     const do_add_note = () => {
-        console.log("adding an element")
+        let new_note = {
+            category: CATEGORIES.NOTE.ID,
+            type: CATEGORIES.NOTE.TYPES.NOTE,
+            props: {
+                title: "unnamed",
+                body: "no text",
+            }
+        }
+        win.send({
+            type:"database-add",
+            object:new_note
+        })
     }
     add_note.on('action',do_add_note)
 
