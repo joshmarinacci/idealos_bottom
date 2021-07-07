@@ -15,14 +15,22 @@ export class CommonApp {
         this.listeners = {}
         this.ws = new WebSocket(addr);
         this.ws.on('open',()=>{
-            this.ws.send(JSON.stringify(WINDOWS.MAKE_WindowOpen({
+            this.send({
+                type:"APP_OPEN",
+                app_type:"CLIENT",
+                app:this.appid
+            })
+            let req_win = WINDOWS.MAKE_WindowOpen({
                 x:50,
                 y:50,
                 width:this.width,
                 height:this.height,
                 sender:appid,
+                app:appid,
                 window_type:window_type
-            })))
+            })
+            req_win.app = appid
+            this.ws.send(JSON.stringify(req_win))
         })
         this.ws.on("message",(data)=>{
             let msg = JSON.parse(data)

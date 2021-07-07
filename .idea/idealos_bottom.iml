@@ -8,6 +8,8 @@
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
       <excludeFolder url="file://$MODULE_DIR$/clients/rust-screen/target" />
+      <excludeFolder url="file://$MODULE_DIR$/build3" />
+      <excludeFolder url="file://$MODULE_DIR$/built" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

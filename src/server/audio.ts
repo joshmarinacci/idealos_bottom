@@ -14,6 +14,8 @@ export function is_audio(msg) {
 }
 
 export class AudioService {
+    private server: any;
+    private players: {};
     constructor(server) {
         this.server = server
         this.log("made an audio server")

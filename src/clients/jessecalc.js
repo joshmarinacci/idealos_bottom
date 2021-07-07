@@ -2,6 +2,7 @@ import {CONSTRAINTS, HBox, VBox} from './toolkit/panels.js'
 import {App} from './toolkit/guitoolkit.js'
 import {Label, MultilineLabel, MultilineTextBox, TextBox} from './toolkit/text.js'
 import {Button, CheckButton, ToggleButton} from './toolkit/buttons.js'
+import {WINDOWS} from 'idealos_schemas/js/windows.js'
 
 let app = new App(process.argv)
 
@@ -31,3 +32,6 @@ async function init() {
 
 
 app.on('start',()=>init())
+app.on(WINDOWS.TYPE_window_close_request,(e) => {
+    app.a_shutdown().then(()=>console.log("finished"))
+})

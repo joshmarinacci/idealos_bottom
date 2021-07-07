@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::messages::WindowInfo;
-use idealos_schemas::windows::window_info;
+use crate::messages::{WindowInfo, window_info};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Rect {
@@ -10,6 +9,18 @@ pub struct Rect {
     pub width:i32,
     pub height:i32,
     pub color:String,
+}
+
+pub struct Dimensions {
+    pub width:i32,
+    pub height:i32,
+}
+
+pub struct Bounds {
+    pub x:i32,
+    pub y:i32,
+    pub width:i32,
+    pub height:i32,
 }
 
 
@@ -29,9 +40,11 @@ pub struct Window {
     pub window_type:String,
 }
 
+pub const WINDOW_TYPE_PLAIN:&str = "PLAIN";
+
+
 impl Window {
-    pub fn from_info(
-                     info:&WindowInfo) -> Window {
+    pub fn from_info(info:&WindowInfo) -> Window {
         Window {
             id:info.id.clone(),
             x:info.x,
@@ -66,6 +79,15 @@ impl Window {
         if pt.x > (self.x + self.width+border.right) { return false; }
         if pt.y < self.y-border.top { return false; }
         if pt.y > (self.y + self.height+border.bottom) { return false; }
+        return true
+    }
+    pub fn resize_contains(&self, pt:&Point, size:&Dimensions) -> bool {
+        let corner_x = self.x + self.width - size.width;
+        let corner_y = self.y + self.height - size.height;
+        if pt.x < corner_x { return false; }
+        if pt.y < corner_y { return false; }
+        if pt.x > corner_x + size.width { return false; }
+        if pt.y > corner_y + size.height { return false; }
         return true
     }
 }

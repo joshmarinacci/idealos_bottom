@@ -8,8 +8,8 @@
     "text_color": "black"
   },
   "button": {
-    "background_color": "blue",
-    "text_color": "white"
+    "background_color": "white",
+    "text_color": "black"
   },
   "button:pressed": {
     "background_color": "black",

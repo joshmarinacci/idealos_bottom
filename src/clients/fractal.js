@@ -6,6 +6,8 @@ import {INPUT} from 'idealos_schemas/js/input.js'
 
 let width = 50
 let height = 50
+let buffer = new Array(width*height*4)
+buffer.fill(0)
 
 let app = new CommonApp(process.argv, width, height)
 
@@ -35,12 +37,32 @@ function calc_pixel(count) {
     while (i < 255 && (zx * zx + zy * zy) < 4)
     i = 255-i;
     let h = i.toString(16);
+    buffer[count*4+0] = i
+    buffer[count*4+1] = i
+    buffer[count*4+2] = i
+    buffer[count*4+3] = 255
+    // console.log(i)
     let color_hex =  '#' + h + h + h
-    // app.log('drawing',x,y,'=',i,'color =',color_hex)
     app.send(GRAPHICS.MAKE_DrawPixel({x:x, y:y, color: color_hex, window:app.win_id}))
 }
 
 let interval_id = -999
+
+function refresh() {
+    let msg =GRAPHICS.MAKE_DrawImage({
+        window:app.win_id,
+        x:0,
+        y:0,
+        width,
+        height,
+        pixels:buffer,
+        depth:8,
+        channels:4,
+    })
+    msg.depth = 8
+    msg.channels = 4
+    app.send(msg)
+}
 
 function init() {
     let count = 0
@@ -48,7 +70,7 @@ function init() {
         calc_pixel(count)
         count++
         if(count > width*height) clearInterval(id)
-    }, 400)
+    }, 10)
 
 }
 
@@ -60,7 +82,7 @@ function start() {
         calc_pixel(count)
         count++
         if(count > width*height) clearInterval(interval_id)
-    }, 400)
+    }, 10)
 }
 
 function stop() {
@@ -76,6 +98,9 @@ app.on(WINDOWS.TYPE_window_close_request,(e) => {
     app.a_shutdown().then(()=>console.log("done shutting down"))
 })
 
+app.on(WINDOWS.TYPE_window_refresh_request, () => {
+    refresh()
+})
 app.on(WINDOWS.TYPE_SetFocusedWindow,()=>{
     let menu = {
         type:"root",

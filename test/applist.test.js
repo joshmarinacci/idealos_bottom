@@ -1,4 +1,4 @@
-import {CentralServer, load_applist} from '../src/server/server.js'
+import {CentralServer, load_applist} from '../src/server/server.ts'
 import assert from 'assert'
 import {sleep} from '../src/common.js'
 import {HeadlessDisplay} from './common.js'

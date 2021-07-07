@@ -1,4 +1,4 @@
-import {CentralServer} from '../src/server/server.js'
+import {CentralServer} from '../src/server/server.ts'
 import {GENERAL} from 'idealos_schemas/js/general.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {INFO} from 'idealos_schemas/js/keyboard_map.js'
