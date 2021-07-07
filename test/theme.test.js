@@ -36,7 +36,7 @@ describe("load apps list", function() {
             type:"get_control_theme_response",
             theme: {
                 "name":"button",
-                "background-color": "aqua",
+                "background-color": "white",
                 "border-color": "black",
                 "color": "black",
             }
