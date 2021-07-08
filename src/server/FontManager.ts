@@ -28,7 +28,6 @@ class FontWatcher {
 
     async init() {
         await this.fully_reload()
-        console.log("loaded font watcher for",this.name, this.paths)
         this.watchers = this.paths.map((file,i) => {
             return fs.watch(file,()=>{
                 this.fully_reload().then(()=> {
@@ -67,6 +66,7 @@ class FontWatcher {
             }
             // console.log("merging to to build virtual")
             this.virtual = new JFont(v)
+            this.log("fully reloaded",this.name)
             this.manager.fire_event({
                 type: "font-update",
                 success: true,
@@ -175,7 +175,10 @@ export class FontManager {
             if (msg.type === 'request-font') {
                 let font = await this.get_font(msg.name)
                 this.server.app_manager.send_to_app(msg.app, make_response(msg, {
-                    font: font.info
+                    type:'request-font-response',
+                    font: font.info,
+                    succeeded:true,
+                    name:msg.name,
                 }))
             }
         } catch (e) {
