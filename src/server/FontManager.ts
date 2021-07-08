@@ -15,51 +15,27 @@ export class JFont {
 
 class FontWatcher {
     private virtual: JFont;
-    private singles: JFont[];
-    private paths: string[];
+    private readonly paths: string[];
     private watchers: FSWatcher[];
-    private name: string;
+    private readonly name: string;
     private manager: FontManager;
     constructor(manager:FontManager, name: string, paths: string[]) {
         this.manager = manager
         this.name = name
         this.virtual = null
-        this.singles = []
         this.paths = paths
     }
 
     async init() {
-        this.singles = await Promise.all(this.paths.map(file => this.refresh_file(file)))
+        await this.fully_reload()
         console.log("loaded font watcher for",this.name, this.paths)
-        this.watchers = this.paths.map(file => {
-            return fs.watch(file,()=>this.refresh_file(file))
+        this.watchers = this.paths.map((file,i) => {
+            return fs.watch(file,()=>{
+                this.fully_reload().then(()=> {
+                    console.log(`fully refreshed ${file}`)
+                })
+            })
         })
-    }
-
-    private async refresh_file(file: string):Promise<JFont> {
-        console.log("refreshing the file", file)
-        try {
-            let data = await read_json(file)
-            console.log("sauccess loading",data,typeof data)
-            if(typeof data !== 'object') throw new Error(`error parsing file ${file}`)
-            let font = new JFont(data)
-            this.virtual = font
-            console.log('set virtual to ',this.virtual)
-            this.manager.fire_event({
-                type: "font-update",
-                success: true,
-                fontname: this.name
-            })
-            return font
-        } catch (e) {
-            this.log("error loading font",e)
-            this.log("virtual is still",this.virtual)
-            this.manager.fire_event({
-                type: "font-update",
-                success: false,
-                fontname: this.name
-            })
-        }
     }
 
     async get_virtual_font():Promise<JFont> {
@@ -73,6 +49,38 @@ class FontWatcher {
 
     private log(...args) {
         this.manager.log(...args)
+    }
+
+    private async fully_reload() {
+        try {
+            let v = {
+                glyphs:[],
+                name:this.name,
+            }
+            for (let file of this.paths) {
+                let data = await read_json(file)
+                // console.log("loaded loading", data, typeof data)
+                if (typeof data !== 'object') throw new Error(`error parsing file ${file}`)
+                let font = new JFont(data)
+                v.glyphs.push(...font.info.glyphs)
+                // console.log("glphy count",v.glyphs.length)
+            }
+            // console.log("merging to to build virtual")
+            this.virtual = new JFont(v)
+            this.manager.fire_event({
+                type: "font-update",
+                success: true,
+                fontname: this.name
+            })
+        } catch (e) {
+            this.log("error loading font",e)
+            // this.log("virtual is still",this.virtual)
+            this.manager.fire_event({
+                type: "font-update",
+                success: false,
+                fontname: this.name
+            })
+        }
     }
 }
 
@@ -142,10 +150,7 @@ export class FontManager {
 
     wait_for_event(fontUpdate: string) {
         return new Promise((res,rej)=>{
-            this.on(fontUpdate, (e) => {
-                console.log("event happend")
-                res(e)
-            })
+            this.on(fontUpdate, (e) => res(e))
         })
 
     }

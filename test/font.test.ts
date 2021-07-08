@@ -28,7 +28,6 @@ describe('font manager',function() {
         ])
         //fetch a single merged font
         let font:JFont = await fm.get_font("base")
-        console.log("font is",font)
         //confirm it has the correct number of glyphs
         assert.strictEqual(font.info.glyphs.length,1)
         fm.shutdown()
@@ -103,19 +102,20 @@ describe('font manager',function() {
         assert.strictEqual(font.info.glyphs.length,1)
         fm.shutdown()
     })
-/*
+
     it('groups two fonts', async function () {
         //init font manager
-        let fm = new FontManager(null,null);
+        let fm = new FontManager(null);
         //specify two fonts in a single group
         //specify a font
         let font1 = "test/resources/fonts/font1.json"
         let font2 = "test/resources/fonts/font2.json"
-        let temp = copy_to_temp(font2)
+        let temp = await copy_to_temp(font2)
         fm.watch_font_from_paths("base",[ font1, temp ])
         //confirm glyph count is the merger of both
-        let font = await fm.get_font("base")
-        assert.strictEqual(font.glyphs.length,3)
+        let font
+        font = await fm.get_font("base")
+        assert.strictEqual(font.info.glyphs.length,3)
         //write new file to replace one of the fonts with fewer glyphs
         let json = await read_json(temp)
         json.glyphs.pop()
@@ -128,12 +128,12 @@ describe('font manager',function() {
             fontname:"base"
         })
         //get virtual font
-        let font = await fm.get_font("base")
+        font = await fm.get_font("base")
         //confirm it has the shorter length
-        assert.strictEqual(font.glyphs.length,2)
+        assert.strictEqual(font.info.glyphs.length,2)
         fm.shutdown()
     })
-*/
+
 })
 
 
