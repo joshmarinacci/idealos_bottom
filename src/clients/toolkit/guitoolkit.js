@@ -61,29 +61,34 @@ export class JoshFont {
 
     draw_text(app,x,y,text,color,win) {
         let dx = 0
-        for(let i=0; i<text.length; i++) {
+        let codepoints = [...text]
+        for(let i=0; i<codepoints.length; i++) {
             let cp = text.codePointAt(i)
+            if(cp === 0xde00) continue //skip astral plane indicators
             let g = this.find_glyph_by_id(cp)
             let bitmap = this.get_bitmap_for_glyph(g)
-            // console.log(i,text,text[i],cp)
-            app.send(GRAPHICS.MAKE_DrawImage({
+            let msg = GRAPHICS.MAKE_DrawImage({
                 x:x+dx-g.left,
                 y:y-g.baseline+g.height,
                 width:g.width,
                 height:g.height,
                 pixels:bitmap,
                 window:win._winid,
-            }))
+            })
+            msg.depth=1
+            msg.channels = 4
+            msg.color = color
+            app.send(msg)
             dx += (g.width-g.left-g.right)
         }
     }
     measure_text(app,text) {
-        // console.log("measuring text",text)
         let dx = 0
         let my = 0
-        for(let i=0; i<text.length; i++) {
+        let codepoints = [...text]
+        for(let i=0; i<codepoints.length; i++) {
             let cp = text.codePointAt(i)
-            // console.log(i,text,text[i],cp)
+            if(cp === 0xde00) continue //skip astral plane indicators
             let g = this.find_glyph_by_id(cp)
             dx += g.width - g.left - g.right
             my = Math.max(my,g.height)
@@ -95,9 +100,16 @@ export class JoshFont {
     }
 
     find_glyph_by_id(id) {
-        // console.log("looking up glpyh for ",id)
-        // console.log(this.info.glyphs)
-        return this.info.glyphs.find(g => g.id === id)
+        let g = this.info.glyphs.find(g => g.id === id)
+        if(!g) {
+            console.log("missing glyph for codepoint",id)
+            if(this.info.name === 'emoji') {
+                return this.find_glyph_by_id(128512)
+            } else {
+                return this.find_glyph_by_id(27)
+            }
+        }
+        return g
     }
 
     get_bitmap_for_glyph(a_glyph) {
@@ -134,10 +146,16 @@ export class App {
         this._started = false
         this.ws.on('open', () => {
             this._started = true
+            this.send({
+                type:"APP_OPEN",
+                app_type:"CLIENT",
+                app:this._appid
+            })
             this.fireLater('start', {})
         })
         this.ws.on("message", (data) => {
             let msg = JSON.parse(data)
+            // this.log("incoming message",msg)
             this.fireLater(msg.type, msg)
         })
         process.on('SIGTERM', () => {
@@ -269,6 +287,7 @@ class EventDispatcher {
     }
 
     dispatch(e) {
+        //this.log("dispatching",e)
         if (e.type === INPUT.TYPE_MouseDown) {
             let evt = {
                 type:e.type,
@@ -313,7 +332,13 @@ class EventDispatcher {
         this.mouse_target = node
         this.keyboard_target = node
         this.window.set_focused(node)
-        node.input(evt)
+        // this.log("mousedown sent to",node.dump())
+        while(node !== undefined && node._type !== 'window') {
+            let ret = node.input(evt)
+            if(ret) break
+            // this.log("not consumed. going up to the parent")
+            node = node.parent
+        }
     }
 
     dispatch_mouseup(evt,node) {
@@ -530,6 +555,7 @@ class Gfx {
         this.clip_rect = {x:0,y:0,width:1000,height:1000}
     }
     rect(x,y,width,height,color) {
+        if(color === 'transparent') return
         let bounds  = {
             x: this.tx + x,
             y: this.ty + y,
@@ -609,6 +635,7 @@ class Gfx {
 export class Component {
     constructor(opts) {
         if(!opts) opts = {}
+        this.name = "unnamed component"
         this.id = opts.id || ""
         this.x = opts.x || 0
         this.y = opts.y || 0
@@ -618,6 +645,7 @@ export class Component {
         this.children = []
         this.font = opts.font || null
         this.visible = true
+        this.flex = opts.flex || 0
         if(opts.hasOwnProperty('visible')) this.visible = opts.visible
     }
 
@@ -710,6 +738,23 @@ export class Component {
     }
     translation_changed() {
         this._translations = {}
+    }
+    dump() {
+        return {
+            name:this.name,
+            id:this.id,
+            flex:this.flex,
+            bounds:{
+                x:this.x,
+                y:this.y,
+                width:this.width,
+                height:this.height,
+            },
+            children:this.children.map(ch => {
+                if(ch.dump) return ch.dump()
+                return "missing dump"
+            })
+        }
     }
 }
 

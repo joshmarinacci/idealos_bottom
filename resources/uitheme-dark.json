@@ -23,35 +23,45 @@
   "button": {
     "name": "button",
     "border-color": "white",
-    "background-color": "green",
+    "background-color": "black",
     "color": "white",
     "states": {
-      "hover": {
-        "background-color": "white"
-      },
       "pressed": {
-        "background-color": "blue"
+        "background-color": "white",
+        "border-color": "black",
+        "color": "black"
       },
       "selected": {
-        "background-color": "red"
-      }
-    },
-    "styles": {
-      "toggle": {
-        "border-color": "red",
         "background-color": "white",
-        "color": "red",
-        "styles": {
-          "hover": {
-            "background-color": "red",
-            "color": "black"
-          },
-          "selected": {
-            "background-color": "blue"
-          }
-        }
+        "color": "black",
+        "border-color": "black"
       }
     }
+  },
+  "list-item": {
+    "name": "list-item",
+    "border-color": "black",
+    "background-color": "black",
+    "color": "white",
+    "states": {
+      "selected": {
+        "border-color": "white",
+        "background-color": "white",
+        "color": "black"
+      }
+    }
+  },
+  "menu-bar": {
+    "name": "menu-bar",
+    "border-color": "black",
+    "background-color": "black",
+    "color": "white"
+  },
+  "menu-item": {
+    "name": "menu-item",
+    "border-color": "black",
+    "background-color": "black",
+    "color": "white"
   }
 }
 

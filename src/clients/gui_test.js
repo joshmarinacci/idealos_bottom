@@ -113,7 +113,7 @@ app.on(WINDOWS.TYPE_SetFocusedWindow,()=>{
         children:[
             {
                 type:'top',
-                label:'Hi',
+                label:'GuiTest',
                 children:[
                     {
                         type:'item',
@@ -129,7 +129,7 @@ app.on(WINDOWS.TYPE_SetFocusedWindow,()=>{
             },
             {
                 type:'top',
-                label:"There",
+                label:"Test",
                 children:[
                     {
                         type:'item',

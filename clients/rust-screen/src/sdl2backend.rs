@@ -4,13 +4,13 @@ use std::collections::HashMap;
 use websocket::OwnedMessage;
 use serde_json::{json};
 
-use crate::window::{Window, Point, Insets};
-use crate::messages::{RenderMessage};
+use crate::window::{Window, Point, Insets, Bounds, Dimensions};
+use crate::messages::{RenderMessage, MouseDown, MouseDown_name, MouseUp, MouseUp_name, set_focused_window_message, KeyboardDown, KeyboardDown_name, WindowSetPosition_message, WindowSetPosition, WindowSetSize, WindowSetSize_message};
 use crate::fontinfo::FontInfo;
 
 
 use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
+use sdl2::keyboard::{Keycode, Mod};
 use sdl2::pixels::{Color, PixelFormatEnum};
 use sdl2::render::{WindowCanvas, Texture, TextureCreator};
 use sdl2::Sdl;
@@ -19,15 +19,18 @@ use sdl2::video::WindowContext;
 use sdl2::rect::Rect;
 use sdl2::mouse::{MouseButton, MouseState};
 use colors_transform::{Rgb, Color as CTColor};
-use idealos_schemas::input::{KeyboardDown, KeyboardDown_name, MouseUp_name, MouseUp, MouseDown_name, MouseDown};
 
-const SCALE: u32 = 4;
+const SCALE: u32 = 3;
 const SCALEI: i32 = SCALE as i32;
 const BORDER:Insets = Insets {
     left: 1,
     right: 1,
     top: 9,
     bottom: 1,
+};
+const RESIZE:Dimensions = Dimensions {
+    width: 10,
+    height: 10
 };
 
 pub struct SDL2Backend<'a> {
@@ -38,9 +41,10 @@ pub struct SDL2Backend<'a> {
     pub window_buffers:HashMap<String,Texture<'a>>,
     pub window_order:Vec<String>,
     pub dragging:bool,
+    pub resizing:bool,
     pub dragtarget:Option<String>,
-    pub font:FontInfo<'a>,
-    pub symbol_font:FontInfo<'a>,
+    // pub font:FontInfo<'a>,
+    // pub symbol_font:FontInfo<'a>,
 }
 
 
@@ -53,9 +57,10 @@ impl<'a> SDL2Backend<'a> {
         'main: loop {
             match input.try_recv() {
                 Ok(msg) => {
+                    // println!("incoming message {:?}",msg);
                     match msg {
                         RenderMessage::OpenWindow(m) => {
-                            // println!("opening a window");
+                            println!("opening a window {:?}",m);
                             let win:Window = Window {
                                 id: m.window.id.clone(),
                                 x: m.window.x as i32,
@@ -71,6 +76,7 @@ impl<'a> SDL2Backend<'a> {
                             // println!("window count is {}", windows.len());
                         }
                         RenderMessage::CreateChildWindow(m) => {
+                            // println!("creating a child window");
                             if let Some(win) = windows.get_mut(&m.parent) {
                                 let child:Window = Window {
                                     id:m.window.id.clone(),
@@ -93,6 +99,7 @@ impl<'a> SDL2Backend<'a> {
                             }
                         }
                         RenderMessage::WindowList(m) => {
+                            // println!("window list");
                             for (key, value) in &m.windows {
                                 // println!("make window id {} at {},{}", value.id, value.x, value.y);
                                 let win = Window::from_info2(&value);
@@ -124,6 +131,7 @@ impl<'a> SDL2Backend<'a> {
                             }
                         },
                         RenderMessage::FillRect(m) => {
+                            // println!("fill rect {:?}",m);
                             if let Some(win) = windows.get_mut(m.window.as_str()) {
                                 if let Some(tex) = self.window_buffers.get_mut(win.id.as_str()) {
                                     self.canvas.with_texture_canvas(tex, |texture_canvas| {
@@ -183,6 +191,18 @@ impl<'a> SDL2Backend<'a> {
         self.window_buffers.insert(win.id.clone(),tex);
         self.window_order.push(win.id.clone());
     }
+    fn resize_window(&mut self, win: &Window) {
+        self.window_buffers.remove(win.id.as_str());
+        let mut tex = self.creator.create_texture_target(PixelFormatEnum::RGBA8888,win.width as u32, win.height as u32)
+            .map_err(|e|e.to_string()).unwrap();
+        self.canvas.with_texture_canvas(&mut tex, |tc|{
+            tc.clear();
+            tc.set_draw_color(Color::RGBA(0,0,0,255));
+            tc
+                .fill_rect(Rect::new(0, 0, (win.width as u32) as u32, (win.height as u32) as u32));
+        });
+        self.window_buffers.insert(win.id.clone(),tex);
+    }
     fn close_window(&mut self, win: &mut Window) {
         // println!("found texture for window");
         //destroy the texture
@@ -212,7 +232,7 @@ impl<'a> SDL2Backend<'a> {
                         println!("quitting");
                         break 'done;
                     },
-                    Event::KeyDown {keycode,..} => self.process_keydown(keycode, windows,output),
+                    Event::KeyDown {keycode,keymod,..} => self.process_keydown(keycode, keymod, windows,output),
                     Event::MouseButtonDown { x, y,mouse_btn, .. } => self.process_mousedown(x,y,mouse_btn, windows, output),
                     Event::MouseButtonUp {x,y,mouse_btn,..} =>  self.process_mouseup(x,y,mouse_btn,windows,output),
                     _ => {}
@@ -241,19 +261,25 @@ impl<'a> SDL2Backend<'a> {
             if let Some(win) = windows.get(id) {
                 if let Some(tex) = self.window_buffers.get(id) {
                     //draw background / border
+                    // println!("drawing window type {:?}",win.window_type);
                     match win.window_type.as_str() {
-                        "menubar" => { }
-                        "plain" => {
+                        "MENUBAR" => {}
+                        "DOCK" => {}
+                        "SIDEBAR" => {}
+                        "CHILD" => {}
+                        "PLAIN" => {
                             self.canvas.set_draw_color(self.calc_window_border_color(win));
                             self.canvas.fill_rect(Rect::new(
                                 ((win.x-BORDER.left)*(SCALE as i32)) as i32,
                                 ((win.y-BORDER.top)*(SCALE as i32)) as i32,
                                 (BORDER.left+win.width+BORDER.right)as u32*SCALE as u32,
                                 (BORDER.top+win.height+BORDER.bottom)as u32*SCALE as u32));
-                            self.font.draw_text_at(&*win.id, win.x,win.y-9,&Color::GREEN,  &mut self.canvas, SCALEI);
-                            self.symbol_font.draw_text_at("b",win.x+win.width-7,win.y-8,&Color::BLACK, &mut self.canvas, SCALEI);
+                            // self.font.draw_text_at(&*win.id, win.x,win.y-9,&Color::GREEN,  &mut self.canvas, SCALEI);
+                            // self.symbol_font.draw_text_at("b",win.x+win.width-7,win.y-8,&Color::BLACK, &mut self.canvas, SCALEI);
                         }
-                        _ => {}
+                        _ => {
+                            println!("unknown window type {:?}",win.window_type);
+                        }
                     }
                     //draw window texture
                     let dst = Some(Rect::new((win.x as u32*SCALE) as i32,
@@ -265,20 +291,33 @@ impl<'a> SDL2Backend<'a> {
                 }
             }
         }
-        self.font.draw_text_at("idealos", 150,0,&Color::GREEN, &mut self.canvas, SCALEI);
+        // self.font.draw_text_at("idealos", 150,0,&Color::GREEN, &mut self.canvas, SCALEI);
         self.canvas.present();
     }
-    fn process_keydown(&self, keycode: Option<Keycode>, windows:&mut HashMap<String,Window>, output: &Sender<OwnedMessage>) {
+    fn process_keydown(&self, keycode: Option<Keycode>,  keymod:Mod, windows:&mut HashMap<String,Window>, output: &Sender<OwnedMessage>) {
         if let Some(keycode) = keycode {
             match keycode {
                 Keycode => {
                     if let Some(id) = &self.active_window {
                         if let Some(win) = windows.get_mut(id) {
                             // println!("got a message {:?}",keycode.name());
+                            // println!("mod is {:?}",keymod);
+                            let mut key = keycode.name().to_lowercase();
+                            let shift = (keymod == Mod::LSHIFTMOD || keymod == Mod::RSHIFTMOD);
+                            if(shift) {
+                                key = keycode.name().to_uppercase();
+                            }
                             let msg = KeyboardDown {
                                 type_: KeyboardDown_name.to_string(),
-                                keyname: keycode.name(),
-                                target: win.owner.clone()
+                                code: format!("{}{}","Key",keycode.name()),
+                                key:key,
+                                shift:shift,
+                                alt:false,
+                                meta:false,
+                                control:false,
+                                app:win.owner.to_string(),
+                                target: win.owner.clone(),
+                                window: win.id.to_string()
                             };
                             output.send(OwnedMessage::Text(json!(msg).to_string()));
                         }
@@ -295,14 +334,27 @@ impl<'a> SDL2Backend<'a> {
             MouseButton::Left => {
                 let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
                 for win in windows.values() {
+                    if win.resize_contains(&pt, &RESIZE) {
+                        self.resizing = true;
+                        self.dragtarget = Some(win.id.clone());
+                        break;
+                    }
                     if win.contains(&pt) {
-                        self.active_window = Some(win.id.clone());
-                        self.raise_window(win);
+                        if win.window_type.eq("PLAIN") {
+                            self.active_window = Some(win.id.clone());
+                            let window_focus_msg = set_focused_window_message {
+                                type_: "MAKE_SetFocusedWindow_name".to_string(),
+                                window: win.id.to_string()
+                            };
+                            output.send(OwnedMessage::Text(json!(window_focus_msg).to_string()));
+                            self.raise_window(win);
+                        }
                         let msg = MouseDown {
                             type_:MouseDown_name.to_string(),
                             x: ((pt.x) - win.x) as i64,
                             y: ((pt.y) - win.y) as i64,
-                            target: win.owner.clone()
+                            target: win.owner.clone(),
+                            window: win.id.to_string(),
                         };
                         output.send(OwnedMessage::Text(json!(msg).to_string()));
                         continue;
@@ -319,7 +371,44 @@ impl<'a> SDL2Backend<'a> {
 
     }
     fn process_mouseup(&mut self, x: i32, y: i32, mouse_btn: MouseButton, windows: &mut HashMap<String, Window>, output: &Sender<OwnedMessage>) {
-        self.dragging = false;
+        if self.dragging {
+            if let Some(winid) = &self.dragtarget {
+                if let Some(win) = windows.get(winid) {
+                    let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
+                    let move_msg = WindowSetPosition {
+                        type_: WindowSetPosition_message.to_string(),
+                        app: String::from("someappid"),
+                        window: winid.to_string(),
+                        x: pt.x as i64,
+                        y: pt.y as i64,
+                    };
+                    // println!("setting window position {:?}",move_msg);
+                    output.send(OwnedMessage::Text(json!(move_msg).to_string()));
+                }
+            }
+            self.dragging = false;
+        }
+
+        if self.resizing {
+            if let Some(winid) = &self.dragtarget {
+                if let Some(win) = windows.get(winid) {
+                    let edge = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
+                    let pos = Point { x: win.x, y: win.y };
+                    let size_msg = WindowSetSize {
+                        type_: WindowSetSize_message.to_string(),
+                        app: String::from("someappid"),
+                        window: winid.to_string(),
+                        width: (edge.x - pos.x) as i64,
+                        height: (edge.y - pos.y)as i64,
+                    };
+                    output.send(OwnedMessage::Text(json!(size_msg).to_string()));
+
+                    self.resize_window(win);
+                }
+            }
+            self.resizing = false;
+        }
+
         if let MouseButton::Left = mouse_btn {
             let pt = Point { x: x / SCALE as i32, y: y / SCALE as i32, };
             if let Some(id) = &self.active_window {
@@ -328,7 +417,8 @@ impl<'a> SDL2Backend<'a> {
                         type_: MouseUp_name.to_string(),
                         x: ((pt.x) - win.x) as i64,
                         y: ((pt.y) - win.y) as i64,
-                        target: win.owner.clone()
+                        target: win.owner.clone(),
+                        window: win.id.to_string(),
                     };
                     output.send(OwnedMessage::Text(json!(msg).to_string()));
                 }
@@ -344,14 +434,24 @@ impl<'a> SDL2Backend<'a> {
         }
     }
     fn process_mousedrag(&self, mouse_state:&MouseState, windows:&mut HashMap<String,Window>) -> () {
-        if !self.dragging { return };
-        if let Some(winid) = &self.dragtarget {
-            if let Some(win) = windows.get_mut(winid) {
-                // println!("dragging {} {} with {:?}", mouse_state.x(), mouse_state.y(), win.id);
-                win.x = mouse_state.x()/SCALEI;
-                win.y = mouse_state.y()/SCALEI;
+        if self.dragging {
+            if let Some(winid) = &self.dragtarget {
+                if let Some(win) = windows.get_mut(winid) {
+                    // println!("dragging {} {} with {:?}", mouse_state.x(), mouse_state.y(), win.id);
+                    win.x = mouse_state.x()/SCALEI;
+                    win.y = mouse_state.y()/SCALEI;
+                }
             }
         }
+        if self.resizing {
+            if let Some(winid) = &self.dragtarget {
+                if let Some(win) = windows.get_mut(winid) {
+                    win.width = (mouse_state.x()/SCALEI) - win.x;
+                    win.height = (mouse_state.y()/SCALEI) - win.y;
+                }
+            }
+        }
+
     }
     fn raise_window(&mut self, win: &Window) {
         if let Some(n) = self.window_order.iter().position(|x|x == &win.id) {
@@ -377,6 +477,10 @@ fn lookup_color(name: &String) -> Color {
         "yellow" => Color::YELLOW,
         "grey" => Color::GREY,
         "gray" => Color::GRAY,
+        "magenta" => Color::MAGENTA,
+        "teal" => Color::RGB(0,128,128),
+        "aqua" => Color::RGB(0,255,255),
+        "cyan" => Color::CYAN,
         _ => {
             println!("unknown color {}",name);
             Color::MAGENTA

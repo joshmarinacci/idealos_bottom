@@ -50,15 +50,24 @@ export class VBox extends Container {
             this.height = this.parent.height
             this.children.forEach(ch => ch.layout(gfx))
             let y = this.padding
+            let min_space = 0
+            this.children.forEach(ch => min_space += ch.height)
+            let extra_space = this.height - min_space
             this.children.forEach(ch => {
                 ch.x = this.padding
                 ch.y = y
+                if(ch.flex === 1.0) {
+                    ch.height = ch.height+extra_space
+                }
                 y += ch.height
                 y += this.padding
             })
             let maxx = this.width - this.padding
-            if (this.hstretch) {
-                this.children.forEach(ch => ch.width = maxx)
+            if(this.hstretch) {
+                this.children.forEach(ch => {
+                    ch.width = maxx
+                    ch.layout(gfx)
+                })
             }
         }
     }
@@ -78,21 +87,44 @@ export class HBox extends Container {
         super(opts);
         this.padding = opts.padding || 0
         this.name = 'panel'
+        this.vstretch = opts.vstretch || false
+        this.fill_color = opts.fill_color
     }
     layout(gfx) {
         this.children.forEach(ch => ch.layout(gfx))
         let x = this.padding
         let maxy = this.padding
+        let min_space = 0
+        this.children.forEach(ch => min_space += ch.width)
+        let extra_space = this.width - min_space
         this.children.forEach(ch => {
             if(!ch.visible) return
             ch.x = x
             ch.y = this.padding
+            if(ch.flex === 1.0) {
+                ch.width = ch.width +extra_space
+            }
             x += ch.width
             x += this.padding
             maxy = Math.max(maxy,this.padding+ch.height+this.padding)
         })
+        if(this.vstretch) {
+            this.children.forEach(ch => {
+                ch.height = this.height
+                ch.layout(gfx)
+            })
+        }
         this.width = x
         this.height = maxy
+    }
+    redraw(gfx) {
+        if(this.fill_color) {
+            gfx.rect(this.x,this.y,this.width,this.height,this.fill_color)
+        } else {
+            let bg = this.lookup_theme_part("background-color")
+            gfx.rect(this.x, this.y, this.width, this.height, bg)
+        }
+        super.redraw(gfx)
     }
 
 }
@@ -153,7 +185,7 @@ export class TabPanel extends Container {
         })
     }
     redraw(gfx) {
-        gfx.rect(this.x,this.y,this.width,this.height,'cyan')
+        gfx.rect(this.x,this.y,this.width,this.height,'white')
         super.redraw(gfx)
     }
     select_tab(n) {
@@ -294,6 +326,7 @@ export class ListView extends Container {
             this.children = this.data.map((item,i) => {
                 let ch = this.template_function(item)
                 let li = new ListItem({children:[ch], padding:2})
+                li.fill_color = 'transparent'
                 li.parent = this
                 li.list_view = this
                 li.action = ()=>this.set_selected(i)
@@ -311,7 +344,8 @@ export class ListView extends Container {
         })
     }
     redraw(gfx) {
-        gfx.rect(this.x,this.y,this.width,this.height,'red')
+        let bg = this.lookup_theme_part("background-color",null)
+        gfx.rect(this.x,this.y,this.width,this.height,bg)
         gfx.translate(this.x,this.y)
         this.children.forEach((ch,i) => {
             if(this.selected_index === i) {
@@ -326,19 +360,32 @@ export class ListView extends Container {
     set_selected(index,e) {
         this.selected_index = index
         this.repaint(e)
+        this.fire('changed',this)
+    }
+
+    set_data(docs) {
+        this.data = docs
+        this.selected_index = -1
+        this.generated = false
+        this.children = []
+        this.fire('changed',this)
+        this.repaint()
     }
 }
 
 class ListItem extends HBox {
+    constructor(opts) {
+        super(opts);
+        this.name = "list-item"
+        this.selected = false
+    }
     input(e) {
         this.action(e)
+        return true
     }
     redraw(gfx) {
-        if(this.selected) {
-            gfx.rect(this.x,this.y,this.width,this.height,'cyan')
-        } else {
-            gfx.rect(this.x,this.y,this.width,this.height,'white')
-        }
+        let bg = this.lookup_theme_part("background-color",this.selected?"selected":null)
+        gfx.rect(this.x,this.y,this.width,this.height,bg)
         super.redraw(gfx)
     }
 }

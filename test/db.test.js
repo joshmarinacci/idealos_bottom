@@ -5,7 +5,7 @@ import {promises as fs} from "fs"
 import {AND, IS_PROP_TRUE, IS_TYPE} from '../src/server/db/query.js'
 import {compareAsc} from 'date-fns'
 import {sleep} from '../src/common.js'
-import {CentralServer} from '../src/server/server.js'
+import {CentralServer} from '../src/server/server.ts'
 import {HeadlessDisplay, start_testguiapp} from './common.js'
 import {GENERAL} from 'idealos_schemas/js/general.js'
 import {Component} from '../src/clients/toolkit/guitoolkit.js'

@@ -1,4 +1,5 @@
-import {CentralServer, load_applist, load_translation, load_uitheme} from './server.js'
+import {CentralServer, load_applist, load_translation, load_uitheme} from "./server.js"
+// @ts-ignore
 import fs from 'fs'
 
 async function doit() {
@@ -8,10 +9,12 @@ async function doit() {
     let base_translation = await load_translation("resources/translations/base.json")
     let lolcat_translation = await load_translation("resources/translations/lolcat.json")
     let fonts = {
-        base: JSON.parse((await fs.promises.readFile("resources/fonts/font.json")).toString())
+        base: JSON.parse((await fs.promises.readFile("resources/fonts/font.json")).toString()),
+        emoji: JSON.parse((await fs.promises.readFile("resources/fonts/emoji.json")).toString())
     }
     let db_json = [
-        "resources/database/tasks.json"
+        "resources/database/tasks.json",
+        "resources/database/notes.json",
     ]
 
     let server = new CentralServer({

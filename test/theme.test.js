@@ -1,6 +1,5 @@
-import {CentralServer, load_applist, load_uitheme} from '../src/server/server.js'
-import assert from 'assert'
-import {message_compare, start_testapp, start_testguiapp} from './common.js'
+import {CentralServer, load_applist, load_uitheme} from '../src/server/server.ts'
+import {message_compare, start_testguiapp} from './common.js'
 
 describe("load apps list", function() {
     it("loads the gui theme", async function() {
@@ -37,7 +36,7 @@ describe("load apps list", function() {
             type:"get_control_theme_response",
             theme: {
                 "name":"button",
-                "background-color": "aqua",
+                "background-color": "white",
                 "border-color": "black",
                 "color": "black",
             }

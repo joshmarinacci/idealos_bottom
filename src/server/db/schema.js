@@ -494,6 +494,28 @@ const categories = {
             }
         }
     },
+    NOTE: {
+        TYPES:{
+            NOTE:"NOTE",
+        },
+        SCHEMAS:{
+            NOTE:{
+                title:'note',
+                props: {
+                    title:{
+                        key:'title',
+                        type:STRING,
+                        default:'untitled'
+                    },
+                    body:{
+                        key:'body',
+                        type:STRING,
+                        default:'empty body'
+                    },
+                }
+            }
+        }
+    }
 }
 
 Object.entries(categories).forEach(([cat_name,cat_def]) => {

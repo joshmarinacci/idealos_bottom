@@ -2,6 +2,7 @@ import {App, Component} from './toolkit/guitoolkit.js'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {VBox} from './toolkit/panels.js'
+import {Button} from './toolkit/buttons.js'
 
 export class IconButton extends Component {
     constructor(opts) {
@@ -39,22 +40,18 @@ export class IconButton extends Component {
 }
 
 let app = new App(process.argv)
-let wind = null
+let win
 async function init() {
     await app.a_init()
-    let win = await app.open_window(0, 0, 1+16+1, 16 * 8, 'dock')
+    win = await app.open_window(0, 0, 1+16+1, 16 * 8, 'dock')
     win.root = new VBox({
         width: 16,
         height: 16 * 5,
         padding:1,
         id:'vbox',
         children: [
-            // new IconButton({text: "s",appname:'fractal', font:app._symbol_font}),
-            // new IconButton({text: "t",appname:'guitest', font:app._symbol_font}),
-            // new IconButton({text: "r",appname:'dotclock', font:app._symbol_font}),
         ]
     })
-    wind = win
     app.send({ type:"LIST_ALL_APPS" })
     win.redraw()
 }
@@ -62,26 +59,26 @@ async function init() {
 app.on('start',()=>init())
 
 function icon_for_app(name) {
-    console.log("checking for icon for name",name)
     if(name === "debug") return String.fromCodePoint(12)
     if(name === "fractal") return String.fromCodePoint(2)
     if(name === "guitest") return String.fromCodePoint(11)
     if(name === "pixelclock") return String.fromCodePoint(10)
     if(name === "texteditor") return String.fromCodePoint(17)
+    if(name === "notes") return String.fromCodePoint(17)
     if(name === "todolist") return String.fromCodePoint(18)
     if(name === "jessecalc") return String.fromCodePoint(19)
-    return String.fromCodePoint(1)
+    return String.fromCodePoint(22)
 }
 
 app.on('LIST_ALL_APPS_RESPONSE',(msg)=>{
     // console.log("============ got the list of apps",msg.payload.apps.user, wind)
-    wind.root.children = msg.payload.apps.user.map(app => {
+    win.root.children = msg.payload.apps.user.map(app => {
         let icon = icon_for_app(app.name)
         return new IconButton({
             text:icon,
             appname:app.name,
-            font:wind.app._symbol_font
         })
     })
-    wind.redraw()
+    win.root.children.forEach(ch => ch.parent = win.root)
+    win.repaint()
 })

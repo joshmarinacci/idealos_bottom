@@ -5,11 +5,11 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start-server": "node src/server/start.js",
+    "start-server": "npm run build && node built/src/server/start.js",
     "raylib": "node src/raylib/raylib_screen.js",
-    "rust": "cd clients/rust-screen && cargo run",
-    "docs": "node tools/docs.js"
+    "rust": "cd clients/rust-screen && RUST_BACKTRACE=1 cargo run",
+    "docs": "node tools/docs.js",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
@@ -22,14 +22,19 @@
     "expect": "^27.0.2",
     "idealos_schemas": "^0.2.3",
     "mingo": "^4.1.2",
-    "mocha": "^8.3.2",
     "node-lame": "^1.3.1",
     "pureimage": "^0.3.2",
     "raylib": "^0.7.0",
     "ws": "^7.4.4"
   },
   "devDependencies": {
+    "@types/mocha": "latest",
+    "@types/node": "latest",
+    "@types/ws": "^7.4.5",
+    "mocha": "latest",
     "ohm-js": "^15.5.0",
-    "static-build-tools": "^0.1.1"
+    "static-build-tools": "^0.1.1",
+    "ts-node": "latest",
+    "typescript": "latest"
   }
 }

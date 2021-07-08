@@ -1,4 +1,4 @@
-import {CentralServer, load_applist, load_translation} from '../src/server/server.js'
+import {CentralServer, load_applist, load_translation} from '../src/server/server.ts'
 import {message_compare, start_testguiapp} from './common.js'
 import {VBox} from '../src/clients/toolkit/panels.js'
 
@@ -25,19 +25,16 @@ describe("load translations", function() {
                 }))
             })
             let translation_message = await app.wait_for_message("translation_get_value_response")
-            // console.log("got the response",translation_message)
             message_compare(translation_message,{
                 type:"translation_get_value_response",
                 key:"button.okay",
                 value:"okay",
                 succeeded:true,
             })
-            // console.log("here")
             await app.send({
                 type:'translation_set_language',
                 language:"lolcat"
             })
-            // console.log("waiting")
             let change_msg = await app.wait_for_message('translation_language_changed')
             message_compare(change_msg,{
                 type:'translation_language_changed',
@@ -56,7 +53,6 @@ describe("load translations", function() {
                 value:"K",
                 succeeded:true,
             })
-
             await server.shutdown()
         } catch (e) {
             console.log(e)

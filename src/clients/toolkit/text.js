@@ -8,16 +8,13 @@ export class Label extends Component {
         super(opts)
         this.text = opts.text || "label"
         this.name = 'label'
-    }
-
-    input(e) {
-        // console.log("label got event",e.type)
+        this.padding = 2
     }
 
     layout(gfx) {
         let met = gfx.text_size(this.text,this.font)
-        this.width = met.width
-        this.height = met.height
+        this.width = this.padding + met.width + this.padding
+        this.height = this.padding + met.height + this.padding
     }
 
     redraw(gfx) {
@@ -25,7 +22,7 @@ export class Label extends Component {
         let bg = this.lookup_theme_part("background-color",null)
         let co = this.lookup_theme_part('color',null)
         gfx.rect(this.x, this.y, this.width, this.height,bg)
-        gfx.text(this.x, this.y, this.text,co,this.font)
+        gfx.text(this.x+this.padding, this.y+this.padding, this.text,co,this.font)
     }
 }
 
@@ -101,21 +98,37 @@ export class TextBox extends Component {
         this.selected = false
         this.name = 'textbox'
     }
+    set_text(text) {
+        this.text = text
+        this.cursor = 2
+    }
+    append_char(ch) {
+        this.text = this.text.slice(0, this.cursor) + ch + this.text.slice(this.cursor)
+        this.cursor += 1
+        this.fire("change",{target:this})
+    }
 
     input(e) {
+        // this.window().log("textbox got input",e)
         if( e.type === INPUT.TYPE_Action) return this.handle_action(e)
         if (e.type === INPUT.TYPE_MouseDown) {
             this.selected = true
             this.repaint(e)
-            return
+            return true
         }
-        if (is_word_char(e)) return this.append_char(e.key)
+        if (is_word_char(e)) {
+            this.append_char(e.key)
+            this.repaint(e)
+            return true
+        }
         if (e.code === INFO.KEY_NAMES.Backspace) return this.delete_backward()
         if (e.code === INFO.KEY_NAMES.ArrowLeft) return this.nav_left(e)
         if (e.code === INFO.KEY_NAMES.ArrowRight) return this.nav_right(e)
         if (e.key === "Enter") {
             this.fire('action', {target: this})
+            return true
         }
+        return false
     }
 
     redraw(gfx) {
@@ -143,8 +156,10 @@ export class TextBox extends Component {
             let after = this.text.substring(this.cursor)
             this.text = before.substring(0, before.length - 1) + after
             this.cursor = Math.max(this.cursor - 1, 0)
+            this.fire("change",{target:this})
             this.repaint(e)
         }
+        return true
     }
     delete_forward(e) {
         let before = this.text.substring(0, this.cursor)
@@ -152,16 +167,19 @@ export class TextBox extends Component {
         this.text = before + after.substring(1)
         // this.cursor += 1
         if(this.cursor >= this.text.length) this.cursor = this.text.length
+        this.fire("change",{target:this})
         this.repaint(e)
     }
 
     nav_left(e) {
         this.cursor = Math.max(this.cursor - 1, 0)
         this.repaint(e)
+        return true
     }
     nav_right(e) {
         this.cursor = Math.min(this.cursor + 1, this.text.length)
         this.repaint(e)
+        return true
     }
     nav_up(e) {
         // console.log("nav up")
@@ -205,10 +223,17 @@ export class TextLayout {
         this.lines = [""]
     }
 
-    append_char(ch) {
-        let cur = this.cursor
-        if(this.bias === BIAS.RIGHT) cur++
-        this.text = this.text.slice(0, cur) + ch + this.text.slice(cur)
+    set_text(txt) {
+        this.text = txt
+        this.cursor = 0
+        this.bias = BIAS.LEFT
+        this.lines = [""]
+    }
+    insert_char_at_cursor(ch) {
+        let n = this.cursor
+        if(this.bias === BIAS.LEFT) n = this.cursor
+        if(this.bias === BIAS.RIGHT) n = this.cursor+1
+        this.text = this.text.slice(0, n) + ch + this.text.slice(n)
         this.cursor += 1
     }
 
@@ -347,7 +372,7 @@ export class TextLayout {
         for(let i=0; i<this.text.length; i++) {
             _count++
             if(_count > 1000) {
-                throw new Error("infinite loop")
+                throw new Error(`infinite loop: width = ${w}`)
             }
             let ch = this.text[i]
             if(ch === ' ') {
@@ -488,6 +513,15 @@ export class TextLayout {
         this.text = before + after.substring(1)
         if(this.cursor >= this.text.length) this.cursor = this.text.length
     }
+
+    dump() {
+        return {
+            text:this.text,
+            cursor:this.cursor,
+            bias:this.bias,
+            lines:this.lines.slice()
+        }
+    }
 }
 
 
@@ -502,29 +536,39 @@ export class MultilineTextBox extends TextBox {
         this.selected = false
         this.name = 'textbox'
     }
+    set_text(txt) {
+        this.tl.set_text(txt)
+        this.repaint()
+    }
     input(e) {
         if( e.type === INPUT.TYPE_Action) return this.handle_action(e)
         if (e.type === INPUT.TYPE_MouseDown) {
             this.selected = true
             this.repaint(e)
-            return
+            return true
         }
         if (is_word_char(e)) {
-            this.tl.append_char(e.key)
-            return this.repaint(e)
+            this.tl.insert_char_at_cursor(e.key)
+            this.repaint(e)
+            return true
         }
         if (e.code === INFO.KEY_NAMES.Backspace) {
             this.tl.delete_backward()
-            return this.repaint(e)
+            this.repaint(e)
+            return true
         }
-        if (e.key === "Enter") return this.fire('action', {target: this})
+        if (e.key === "Enter") {
+            this.fire('action', {target: this})
+            return true
+        }
+        return false
     }
     layout(gfx) {
         //wrap and draw the text
         this.tl.layout_as_blocks_with_breaks_and_font(this.width,gfx.font())
     }
     handle_action(e) {
-        console.log("action",e)
+        // console.log("action",e)
         if(e.command === "navigate-cursor-right")      this.tl.nav_right()
         if(e.command === "navigate-cursor-left")       this.tl.nav_left()
         if(e.command === "navigate-cursor-up")         this.tl.nav_up()
@@ -534,6 +578,7 @@ export class MultilineTextBox extends TextBox {
         if(e.command === "delete-character-backward")  this.tl.delete_backward()
         if(e.command === "delete-character-forward")   this.tl.delete_forward()
         this.repaint(e)
+        return true
     }
 
 

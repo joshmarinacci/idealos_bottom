@@ -17,6 +17,7 @@ export class Button extends Component {
         if(e.type === INPUT.TYPE_MouseDown) {
             this.pressed = true
             this.repaint(e)
+            return true
         }
         if(e.type === INPUT.TYPE_MouseUp) {
             this.pressed = false
@@ -28,7 +29,7 @@ export class Button extends Component {
 
     layout(gfx) {
         if(this.text_key) this.text = this.lookup_translated_text(this.text_key)
-        let met = gfx.text_size(this.text)
+        let met = gfx.text_size(this.text,this.font)
         this.width = this.padding.left + met.width + this.padding.right
         this.height = this.padding.top + met.height + this.padding.bottom
     }
@@ -40,7 +41,7 @@ export class Button extends Component {
         let co = this.lookup_theme_part('color',state)
         gfx.rect(this.x, this.y, this.width, this.height,bd)
         gfx.rect(this.x+1, this.y+1, this.width-2, this.height-2,bg)
-        gfx.text(this.padding.left + this.x, this.y, this.text,co)
+        gfx.text(this.padding.left + this.x, this.y, this.text,co,this.font)
     }
 
 }
