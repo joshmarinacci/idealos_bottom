@@ -51,14 +51,18 @@ export class CentralServer {
         this.translation_manager = new TranslationManager(this,opts.translations)
         this.app_manager = new AppManager(this,this.hostname,this.websocket_port)
         this.apps = opts.apps
-        this.font_manager = new FontManager(this,opts.fonts)
+        this.font_manager = new FontManager(this)
+        if(!opts.fonts) opts.fonts =     {base: [ "resources/fonts/font.json"]}
+        Object.entries(opts.fonts).map(([name,paths])=>{
+            // @ts-ignore
+            this.font_manager.watch_font_from_paths(name,paths)
+        })
         this.audio = new AudioService(this)
         this.db_json = opts.db_json || []
         this.db = new DataBase(this)
     }
 
     async start() {
-        await this.font_manager.load()
         this.kb = new KeybindingsManager(this, {
             keybindings:await load_keybindings("resources/keybindings.json")
         })
@@ -75,7 +79,8 @@ export class CentralServer {
                 // @ts-ignore
                 let msg = JSON.parse(m)
                 try {
-                    this.dispatch(msg, ws)
+                    let ret = this.dispatch(msg, ws)
+                    if(ret && ret.then) ret.then(()=>{})
                     // this.log("dispatch complete for",msg.type)
                 } catch (e) {
                     console.error("big server errror",e)
@@ -148,7 +153,7 @@ export class CentralServer {
             if(msg.type === WINDOWS.TYPE_window_close_request)  return this.app_manager.send_to_app(msg.target,msg)
             if(msg.type === WINDOWS.TYPE_close_child_window) return this.app_manager.close_child_window(msg)
             if(msg.type === WINDOWS.TYPE_window_close_response)  return this.app_manager.close_window(msg)
-            if(msg.type === 'request-font') return this.font_manager.request_font(msg)
+            if(msg.type === 'request-font') return this.font_manager.handle(msg)
             if(msg.type === WINDOWS.TYPE_window_refresh_request) return this.app_manager.send_to_target(msg)
             if(msg.type === WINDOWS.TYPE_WindowSetPosition) return this.app_manager.set_window_position(msg)
 

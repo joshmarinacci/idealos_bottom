@@ -140,6 +140,7 @@ export class FontManager {
     }
 
     async get_font(base: string) : Promise<JFont> {
+        if(!this.fonts.has(base)) throw new Error(`no such font ${base}`)
         return this.fonts.get(base).get_virtual_font()
     }
 
@@ -166,6 +167,20 @@ export class FontManager {
 
     private on(type: string, cb: (e) => void) {
         this.get_listeners(type).push(cb)
+    }
+
+    async handle(msg: any) {
+        console.log("hanlding mesg",msg)
+        try {
+            if (msg.type === 'request-font') {
+                let font = await this.get_font(msg.name)
+                this.server.app_manager.send_to_app(msg.app, make_response(msg, {
+                    font: font.info
+                }))
+            }
+        } catch (e) {
+            console.log("error hanlding the font request",e)
+        }
     }
 }
 
