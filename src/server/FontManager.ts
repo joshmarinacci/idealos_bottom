@@ -98,43 +98,6 @@ export class FontManager {
         console.log("FONT_MANAGER:",...args)
     }
 
-    // async load() {
-    //     if(!this.fonts) {
-    //         this.fonts = {
-    //             base: JSON.parse((await fs.promises.readFile("resources/fonts/font.json")).toString())
-    //         }
-    //     }
-    // }
-
-    // request_font(msg: any) {
-    //     let resp = null
-    //     if(!this.fonts[msg.name]) {
-    //         resp = make_response(msg, {
-    //             type: 'request-font-response',
-    //             name:msg.name,
-    //             succeeded: false,
-    //         })
-    //     } else {
-    //         resp = make_response(msg,{
-    //             type: 'request-font-response',
-    //             succeeded: true,
-    //             name:msg.name,
-    //             font:this.fonts[msg.name]
-    //         })
-    //     }
-    //     // @ts-ignore
-    //     resp.app = msg.app
-    //     // console.log("sending font to app",resp.app,resp)
-    //     // @ts-ignore
-    //     if(resp.app) {
-    //         // @ts-ignore
-    //         this.server.app_manager.send_to_app(resp.app,resp)
-    //     } else {
-    //         this.server.app_manager.send_to_type("SCREEN", resp)
-    //     }
-    //
-    // }
-
     watch_font_from_paths(name: string, paths: string[]) {
         this.fonts.set(name, new FontWatcher(this,name,paths))
     }
