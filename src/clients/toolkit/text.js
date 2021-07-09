@@ -8,7 +8,7 @@ export class Label extends Component {
         super(opts)
         this.text = opts.text || "label"
         this.name = 'label'
-        this.padding = 2
+        this.padding = 3
     }
 
     layout(gfx) {
@@ -26,7 +26,7 @@ export class Label extends Component {
     }
 }
 
-export class TranslatedLabel extends Component {
+export class TranslatedLabel extends Label {
     constructor(opts) {
         super(opts)
         this.text = "-----"
@@ -35,15 +35,7 @@ export class TranslatedLabel extends Component {
     }
     layout(gfx) {
         this.text = this.lookup_translated_text(this.text_key)
-        let met = gfx.text_size(this.text,this.font)
-        this.width = met.width
-        this.height = met.height
-    }
-    redraw(gfx) {
-        let bg = this.lookup_theme_part("background-color",null)
-        let co = this.lookup_theme_part('color',null)
-        gfx.rect(this.x, this.y, this.width, this.height,bg)
-        gfx.text(this.x, this.y, this.text,co,this.font)
+        super.layout(gfx)
     }
 }
 

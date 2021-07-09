@@ -41,7 +41,7 @@ export class Button extends Component {
         let co = this.lookup_theme_part('color',state)
         gfx.rect(this.x, this.y, this.width, this.height,bd)
         gfx.rect(this.x+1, this.y+1, this.width-2, this.height-2,bg)
-        gfx.text(this.padding.left + this.x, this.y, this.text,co,this.font)
+        gfx.text(this.padding.left + this.x, this.y+this.padding.top, this.text,co,this.font)
     }
 
 }
@@ -67,7 +67,7 @@ export class ToggleButton extends Button {
         let txt = this.lookup_theme_part('color',state)
         gfx.rect(this.x, this.y, this.width, this.height,bd)
         gfx.rect(this.x+1, this.y+1, this.width-2, this.height-2,bg)
-        gfx.text(this.padding.left + this.x, this.y, this.text, txt);
+        gfx.text(this.padding.left + this.x, this.y+this.padding.top, this.text, txt);
     }
 }
 

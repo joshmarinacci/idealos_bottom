@@ -69,7 +69,7 @@ export class JoshFont {
             let bitmap = this.get_bitmap_for_glyph(g)
             let msg = GRAPHICS.MAKE_DrawImage({
                 x:x+dx-g.left,
-                y:y-g.baseline+g.height,
+                y:y-g.baseline+g.height-g.descent,
                 width:g.width,
                 height:g.height,
                 pixels:bitmap,
