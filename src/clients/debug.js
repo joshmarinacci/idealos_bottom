@@ -1,7 +1,8 @@
 import {App} from './toolkit/guitoolkit.js'
-import {VBox} from './toolkit/panels.js'
+import {CONSTRAINTS, VBox} from './toolkit/panels.js'
 import {Button} from './toolkit/buttons.js'
 import {TranslatedLabel} from './toolkit/text.js'
+import {WINDOWS} from 'idealos_schemas/js/windows.js'
 
 let app = new App(process.argv)
 let wind = null
@@ -12,6 +13,7 @@ async function init() {
     let win = await app.open_window(0,0,100,50, 'debug')
     win.root = new VBox({
         id:'vbox',
+        constraint:CONSTRAINTS.FILL,
         children: [
             new Button({text:'toggle theme',action:()=>{
                 console.log("clicked")
@@ -34,4 +36,7 @@ app.on("theme-changed",(msg)=>{
 })
 app.on("translation_language_changed",msg => {
     language = msg.payload.language
+})
+app.on(WINDOWS.TYPE_window_close_request,(e) => {
+    app.a_shutdown().then(()=>console.log("finished"))
 })
