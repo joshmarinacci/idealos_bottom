@@ -7,7 +7,7 @@ The purpose of this prototype is to experiment with desktop OS ideas. How can we
 functionality modern people expect with 1% of the code and at many times the speed (or on meager
 hardware like a Raspberry PI).
 
-![image](docs/screenshots/basic01.png)
+![image](docs/screenshots/mark5.png)
 
 ## Achitecture
 
@@ -26,13 +26,12 @@ and Rust bindings to those messages.
 
 ## Steps to Run
 
-* make sure you have SDL2 installed on your machine already.
-* make sure you have cargo and rust installed already. 
-* check out the code with git
+* you should already have [NodeJS installed](https://nodejs.org/en/)
+* clone [this repo](https://github.com/joshmarinacci/idealos_bottom) (idealos_bottom) 
 * install deps with `npm install`
 * run the main server and default apps with `npm run start-server`
-* run the rust display server `npm run rust`
-* if all goes well, you'll see some overlapped windows. You can drag them around
-by the titlebar and click on buttons in one of the apps. Another app will slowly
-  draw a mandlebrot fractal.
-* press 'escape' in the display app to quit (or just ^C everything)
+
+* clone the [testing display server repo](https://github.com/joshmarinacci/idealos_sidecar)
+* install deps with `npm install`
+* run the display server with `npm start`
+* it will compile then open your browser with a page. press the 'connect' button to connect to the server.
