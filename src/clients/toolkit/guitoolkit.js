@@ -151,6 +151,16 @@ export class App {
                 app_type:"CLIENT",
                 app:this._appid
             })
+            this.send_and_wait_for_response({
+                type: "request-font",
+                name: 'base',
+            }).then(r  => {
+                if (r.succeeded) {
+                    this.base_font = new JoshFont(r.font)
+                } else {
+                    this.log("warning. no font loaded")
+                }
+            })
             this.fireLater('start', {})
         })
         this.ws.on("message", (data) => {
@@ -169,6 +179,9 @@ export class App {
         })
         this.on('translation_language_changed',() => {
             this.windows.forEach(win => win.translation_changed())
+        })
+        this.on('font-update',() => {
+            this.windows.forEach(win => win.font_changed())
         })
     }
 
@@ -204,20 +217,8 @@ export class App {
             let handler = (e) => {
                 this.off(WINDOWS.TYPE_WindowOpenResponse,handler)
                 let win = new Window(this,width,height,e.payload.window,null,false)
-                win.send_and_wait({
-                    type: "request-font",
-                    name: 'base',
-                }).then(r  => {
-                    if(r.succeeded) {
-                        win.base_font = new JoshFont(r.font)
-                        win.repaint()
-                    } else {
-                        this.log("warning. no font loaded")
-                    }
-                }).then(()=>{
-                    this.windows.push(win)
-                    res(win)
-                })
+                this.windows.push(win)
+                res(win)
             }
             this.on(WINDOWS.TYPE_WindowOpenResponse,handler)
         })
@@ -439,7 +440,7 @@ export class Window {
     }
     redraw(trigger) {
         if(!this.root) return
-        if(!this.base_font) {
+        if(!this.app.base_font) {
             this.app.log("no base font yet!")
             return
         }
@@ -480,13 +481,6 @@ export class Window {
             let handler = (e) => {
                 this.app.off(WINDOWS.TYPE_create_child_window_response,handler)
                 let win = new Window(this.app,width,height,e.payload.window.id,this,true)
-                win.send_and_wait({
-                    type: "request-font",
-                    name: 'base',
-                }).then(r  => {
-                    win.base_font = new JoshFont(r.font)
-                    win.repaint()
-                })
                 this.app.windows.push(win)
                 res(win)
             }
@@ -526,6 +520,9 @@ export class Window {
     translation_changed() {
         this.root.translation_changed()
         this.repaint()
+    }
+    font_changed() {
+        this.redraw()
     }
     async send_and_wait(msg) {
         msg.id = "msg_"+Math.floor((Math.random()*10000))
@@ -608,14 +605,14 @@ class Gfx {
         }
 
         if (font) return font.draw_text(this, this.tx + x, this.ty + y, text, color, this.win)
-        return this.win.base_font.draw_text(this, this.tx + x, this.ty + y, text, color, this.win)
+        return this.win.app.base_font.draw_text(this, this.tx + x, this.ty + y, text, color, this.win)
     }
     font() {
-        return this.win.base_font
+        return this.win.app.base_font
     }
     text_size(text, font) {
         if(font) return font.measure_text(this.app,text)
-        return this.win.base_font.measure_text(this.app,text)
+        return this.win.app.base_font.measure_text(this.app,text)
     }
     theme_bg_color(name, def) {
         return this.theme_part(name,'background_color',def)
