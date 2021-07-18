@@ -5,7 +5,7 @@ import {CLIENT_TYPES, make_response} from './connections.js'
 import {is_window} from './windows.js'
 import {MENUS} from 'idealos_schemas/js/menus.js'
 import {DEBUG} from 'idealos_schemas/js/debug.js'
-import {is_audio} from './audio.ts'
+// import {is_audio} from './audio.ts'
 import {is_translation} from './translations.ts'
 import {is_theme} from './themes.ts'
 import {APPS_GROUP, is_apps} from './apps.js'
@@ -89,7 +89,7 @@ export class EventRouter {
 
         if(is_database(msg)) return this.server.db.handle(msg)
         if(is_translation(msg)) return this.server.trans.handle(msg)
-        if(is_audio(msg)) return this.server.audio.handle(msg)
+        // if(is_audio(msg)) return this.server.audio.handle(msg)
 
         if(msg.type === 'group-message') {
             if(msg.category === 'graphics') {

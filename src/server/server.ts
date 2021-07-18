@@ -2,7 +2,7 @@
 import Ajv from 'ajv'
 import fs from 'fs'
 import path from 'path'
-import {AudioService, is_audio} from './audio.js'
+// import {AudioService, is_audio} from './audio.js'
 import {DataBase, is_database} from './db/db.js'
 import {KeybindingsManager} from './keybindings.js'
 import {is_theme, ThemeManager} from './themes.js'
@@ -29,7 +29,7 @@ export class CentralServer {
     private hostname: string;
     private app_manager: AppManager;
     private apps: any;
-    private audio: AudioService;
+    // private audio: AudioService;
     private db_json: string[];
     // @ts-ignore
     private _server: WebSocket.Server;
@@ -57,7 +57,7 @@ export class CentralServer {
             // @ts-ignore
             this.font_manager.watch_font_from_paths(name,paths)
         })
-        this.audio = new AudioService(this)
+        // this.audio = new AudioService(this)
         this.db_json = opts.db_json || []
         this.db = new DataBase(this)
     }
@@ -161,7 +161,7 @@ export class CentralServer {
             if(is_translation(msg)) return this.translation_manager.handle(msg)
             if(is_theme(msg)) return this.theme_manager.handle(msg)
             if(is_database(msg)) return this.db.handle(msg)
-            if(is_audio(msg)) return this.audio.handle(msg)
+            // if(is_audio(msg)) return this.audio.handle(msg)
 
             if(msg.type === GRAPHICS.TYPE_DrawRect
                 || msg.type === GRAPHICS.TYPE_DrawPixel

@@ -1,4 +1,4 @@
-import {CentralServer, load_applist} from '../src/server/server.js'
+import {CentralServer} from '../src/server/server.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import assert from 'assert'
 import {GENERAL} from 'idealos_schemas/js/general.js'
