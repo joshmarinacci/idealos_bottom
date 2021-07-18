@@ -2,6 +2,10 @@ import {ServiceDef, ServicesManager} from '../src/server/services.js'
 import {Message, MessageBroker} from "../src/server/messages.js"
 import WebSocket from "ws";
 
+function genid(prefix) {
+    return prefix+"_"+Math.floor(Math.random()*1000*1000)
+}
+
 // let PATH = "resources/hilton.mp3"
 let PATH= "examples_music.mp3"
 
@@ -58,20 +62,11 @@ class TestingServer extends EventHandler implements MessageBroker {
             this.connection = ws
             ws.on("message", (m) => {
                 this.log('incoming message',m)
-                let parts = m.toString().split(":")
-                let msg:AudioMessage = {
-                    type:"AUDIO",
-                    command:parts[0],
-                    resource:parts[1]
-                }
+                let msg = JSON.parse(m.toString())
                 this.fire(msg.type,msg)
-                // @ts-ignore
-                // let msg = JSON.parse(m)
-                // this.log("got message complete for",msg.type)
             })
             ws.on('close', (code) => {
                 this.log("connection closed")
-                // this.app_manager.handle_websocket_closed(ws)
             })
         })
         this._server.on("close", (m: any) => {
@@ -85,11 +80,8 @@ class TestingServer extends EventHandler implements MessageBroker {
     }
 
     send(msg: Message) {
-        if(msg.type === 'AUDIO') {
-            let msg2 = msg as AudioMessage
-            this.connection.send(msg2.command+":"+msg2.resource)
-            return
-        }
+        // @ts-ignore
+        if(!msg.hasOwnProperty('id')) msg.id = genid("message")
         this.connection.send(JSON.stringify(msg))
     }
 
