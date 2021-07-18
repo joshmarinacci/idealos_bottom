@@ -2,7 +2,7 @@
 import Ajv from 'ajv'
 import fs from 'fs'
 import path from 'path'
-// import {AudioService, is_audio} from './audio.js'
+import {MessageBroker} from "./messages.js"
 import {DataBase, is_database} from './db/db.js'
 import {KeybindingsManager} from './keybindings.js'
 import {is_theme, ThemeManager} from './themes.js'
@@ -10,6 +10,7 @@ import {AppManager} from './app_manager.js'
 import WebSocket from "ws";
 import {FontManager} from "./FontManager.js";
 import {is_translation, TranslationManager} from "./translations.js"
+import {ServicesManager} from "./services.js";
 // @ts-ignore
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 // @ts-ignore
@@ -29,7 +30,6 @@ export class CentralServer {
     private hostname: string;
     private app_manager: AppManager;
     private apps: any;
-    // private audio: AudioService;
     private db_json: string[];
     // @ts-ignore
     private _server: WebSocket.Server;
@@ -39,6 +39,7 @@ export class CentralServer {
     private theme_manager: ThemeManager;
     private kb: KeybindingsManager|undefined;
     db: DataBase
+    private services: ServicesManager;
     constructor(opts:any) {
         this.log('starting with opts', opts)
         if (!opts.websocket_port) throw new Error("no webssocket port set!")
@@ -57,9 +58,9 @@ export class CentralServer {
             // @ts-ignore
             this.font_manager.watch_font_from_paths(name,paths)
         })
-        // this.audio = new AudioService(this)
         this.db_json = opts.db_json || []
         this.db = new DataBase(this)
+        this.services = new ServicesManager(this,opts.services)
     }
 
     async start() {
@@ -107,7 +108,7 @@ export class CentralServer {
                 await this.app_manager.create_app(app)
             }
         }
-
+        this.services.start()
     }
 
     log(...args: (string | Error)[]) {
@@ -161,7 +162,7 @@ export class CentralServer {
             if(is_translation(msg)) return this.translation_manager.handle(msg)
             if(is_theme(msg)) return this.theme_manager.handle(msg)
             if(is_database(msg)) return this.db.handle(msg)
-            // if(is_audio(msg)) return this.audio.handle(msg)
+            if(this.services.is_service(msg)) this.services.handle(msg)
 
             if(msg.type === GRAPHICS.TYPE_DrawRect
                 || msg.type === GRAPHICS.TYPE_DrawPixel
