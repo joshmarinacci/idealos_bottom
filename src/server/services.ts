@@ -14,7 +14,7 @@ export class ServicesManager {
 
     constructor(server: MessageBroker, defs: ServiceDef[]) {
         this.server = server
-        this.defs = defs
+        this.defs = defs || []
     }
     handle(msg:any) {
     }

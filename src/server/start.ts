@@ -36,15 +36,11 @@ async function doit() {
         ],
         translations:[base_translation,lolcat_translation],
         db_json:db_json,
-        services:{
-            'audio':{
-                name:'audio',
-                root:'../idealos_audioservice',
-                command:'cargo run'
-            }
-        }
-
-
+        services: [{
+            name:'audio',
+            root:'../idealos_audioservice',
+            command:'cargo run'
+        }]
     })
 
     await server.start()
