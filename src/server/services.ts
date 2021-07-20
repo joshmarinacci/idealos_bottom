@@ -25,25 +25,29 @@ export class ServicesManager {
         this.log('starting services')
         this.log(this.defs)
         this.defs.forEach(def => {
-            let args:string[] = [def.root,
-                // `ws://${this.hostname}:${this.websocket_port}`,
-                // app.id,
-                // ...app.args
-            ]
-            def.subprocess = spawn('cargo', ['run'],{
-                cwd:def.root,
-            })
-            // @ts-ignore
-            def.subprocess.stdout.on('data',(data:any)=>this.log(`STDOUT ${def.name}: ${data}`))
-            // @ts-ignore
-            def.subprocess.stderr.on('data',(data:any)=>this.log(`STDERR ${def.name}: ${data}`))
-            def.subprocess.on('close',(e) =>{
-                this.log("closed",e)
-            })
-            def.subprocess.on('error',(e)=>{
-                this.log('error',e)
-            })
-            this.log("started service",def.root,def.command)
+            try {
+                let args: string[] = [def.root,
+                    // `ws://${this.hostname}:${this.websocket_port}`,
+                    // app.id,
+                    // ...app.args
+                ]
+                def.subprocess = spawn('cargo', ['run'], {
+                    cwd: def.root,
+                })
+                // @ts-ignore
+                def.subprocess.stdout.on('data', (data: any) => this.log(`STDOUT ${def.name}: ${data}`))
+                // @ts-ignore
+                def.subprocess.stderr.on('data', (data: any) => this.log(`STDERR ${def.name}: ${data}`))
+                def.subprocess.on('close', (e) => {
+                    this.log("closed", e)
+                })
+                def.subprocess.on('error', (e) => {
+                    this.log('error', e)
+                })
+                this.log("started service", def.root, def.command)
+            } catch (e) {
+                this.log(e)
+            }
         })
     }
 

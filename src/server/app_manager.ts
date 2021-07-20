@@ -152,7 +152,7 @@ export class AppManager {
         }
         if(msg.window_type === 'sidebar') {
             win.type = "SIDEBAR"
-            win.x = 256-win.width
+            win.x = 512-win.width
             win.y = 20
         }
 

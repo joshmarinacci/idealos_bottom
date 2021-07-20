@@ -181,7 +181,7 @@ class CustomMenu extends VBox {
 
 async function init() {
     await app.a_init()
-    let win = await app.open_window(0,0,1024/4,18,'menubar')
+    let win = await app.open_window(0,0,512,18,'menubar')
     win.root = new CustomMenuBar({width:win.width, height:win.height},menu_tree,app,win)
     win.redraw()
 }
