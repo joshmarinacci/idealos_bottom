@@ -456,6 +456,17 @@ export class Window {
         this.app.send_with_trigger(GRAPHICS.MAKE_DrawRect({
             x:0, y:0, width:1, height:1, color:'red', window:this._winid}),trigger)
     }
+    shrink_to_fit() {
+        this.redraw()
+        if(this.root.width !== this.width) {
+            this.app.send({
+                type:"window-set-size-request",
+                window:this._winid,
+                width:this.root.width,
+                height:this.root.height,
+            })
+        }
+    }
     is_focused(el) {
         if(this.focused && this.focused === el) return true
         return false

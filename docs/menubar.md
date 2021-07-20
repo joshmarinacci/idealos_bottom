@@ -3,7 +3,8 @@
 There is the concept of a focused app. The display sets this when a window is selected to be
 focused. It looks up the app for that window and tells the server that this is the focused app. Thus
 the server is the single source of truth for who is the focused app and the focused window.  The
-focused app determines the menubar. The focused window determines where keystroke and mouse events
+focused app determines the menubar. The focused window determin
+es where keystroke and mouse events
 are sent to.  __A window that is not focused but is part of the focused app can still get events if
 it wants to (??)__  
 

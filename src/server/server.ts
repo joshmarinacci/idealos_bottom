@@ -159,6 +159,7 @@ export class CentralServer {
             if(msg.type === WINDOWS.TYPE_WindowSetPosition) return this.app_manager.set_window_position(msg)
 
             if(msg.type === 'window-set-size') return this.app_manager.set_window_size(msg)
+            if(msg.type === "window-set-size-request") return this.app_manager.send_to_type("SCREEN", msg)
             if(is_translation(msg)) return this.translation_manager.handle(msg)
             if(is_theme(msg)) return this.theme_manager.handle(msg)
             if(is_database(msg)) return this.db.handle(msg)

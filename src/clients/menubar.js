@@ -1,7 +1,7 @@
 import {MENUS} from 'idealos_schemas/js/menus.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {App, Component, Container, Insets} from './toolkit/guitoolkit.js'
-import {HBox, VBox} from './toolkit/panels.js'
+import {CONSTRAINTS, HBox, VBox} from './toolkit/panels.js'
 let app = new App(process.argv)//,1024/4,10,'menubar')
 
 let menu_tree = MENUS.MAKE_root({
@@ -131,7 +131,7 @@ class CustomMenuBar extends Container {
                             {width:popup.width, height:popup.height},
                             item,app,popup)
                         this.popup.root.parent = this.popup
-                        this.popup.repaint()
+                        this.popup.shrink_to_fit()
                     })
                 }})
             })
@@ -168,6 +168,9 @@ class CustomMenu extends VBox {
         this.item = item
         this.app = app
         this.win = win
+        this.constraint = CONSTRAINTS.WRAP
+        this.hstretch = true
+        this.fill_color = 'red'
         this.children = this.item.children.map((item,i) => {
             return new MenuItem({text:item.label, item:item, win:win, action:()=>{
                 win.close()

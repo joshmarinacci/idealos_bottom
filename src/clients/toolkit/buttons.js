@@ -118,7 +118,7 @@ export class PopupButton extends Button {
                     })
                 })
                 this.popup.root.parent = this.popup
-                this.popup.repaint()
+                this.popup.shrink_to_fit()
             })
         })
         this.arrow = String.fromCharCode(16)
