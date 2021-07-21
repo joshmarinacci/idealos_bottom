@@ -27,14 +27,14 @@
     "color": "white",
     "states": {
       "pressed": {
-        "background-color": "white",
         "border-color": "black",
+        "background-color": "white",
         "color": "black"
       },
       "selected": {
+        "border-color": "black",
         "background-color": "white",
-        "color": "black",
-        "border-color": "black"
+        "color": "black"
       }
     }
   },
