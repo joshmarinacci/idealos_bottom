@@ -16,7 +16,7 @@
     "ajv": "^6.12.6",
     "date-fns": "^2.22.1",
     "expect": "^27.0.2",
-    "idealos_schemas": "^0.2.3",
+    "idealos_schemas": "^0.2.5",
     "mingo": "^4.1.2",
     "pureimage": "^0.3.2",
     "ws": "^7.4.4"

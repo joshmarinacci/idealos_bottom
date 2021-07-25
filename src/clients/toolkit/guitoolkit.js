@@ -60,6 +60,7 @@ export class JoshFont {
     }
 
     draw_text(app,x,y,text,color,win) {
+        if(!color) color = 'black'
         let dx = 0
         let codepoints = [...text]
         for(let i=0; i<codepoints.length; i++) {
@@ -68,16 +69,16 @@ export class JoshFont {
             let g = this.find_glyph_by_id(cp)
             let bitmap = this.get_bitmap_for_glyph(g)
             let msg = GRAPHICS.MAKE_DrawImage({
+                color:color,
                 x:x+dx-g.left,
                 y:y-g.baseline+g.height-g.descent,
                 width:g.width,
                 height:g.height,
+                depth:1,
+                channels:4,
                 pixels:bitmap,
                 window:win._winid,
             })
-            msg.depth=1
-            msg.channels = 4
-            msg.color = color
             app.send(msg)
             dx += (g.width-g.left-g.right)
         }
