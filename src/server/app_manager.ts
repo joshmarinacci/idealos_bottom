@@ -111,7 +111,7 @@ export class AppManager {
 
     open_window(msg: any) {
         if(this.is_sub_app(msg.app)) {
-            let resp = WINDOWS.MAKE_WindowOpenResponse({target:msg.sender, window:"som_win_id"+Math.random()})
+            let resp = WINDOWS.MAKE_WindowOpenResponse({target:msg.sender, window:"som_win_id"+Math.random(),x:0,y:0,width:20,height:20,})
             this.send_to_app(msg.sender,resp)
             let app = this.get_app_by_id(msg.app)
             if(app !== undefined) {
