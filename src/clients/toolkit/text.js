@@ -85,7 +85,7 @@ export class TextBox extends Component {
     constructor(opts) {
         super(opts)
         this.text = opts.text || "textbox"
-        this.padding = new Insets(5)
+        this.padding = new Insets(3)
         this.cursor = 2
         this.selected = false
         this.name = 'textbox'
@@ -133,7 +133,7 @@ export class TextBox extends Component {
 
         gfx.rect(this.x , this.y, this.width , this.height, bd)
         gfx.rect(this.x + 1, this.y + 1, this.width - 2, this.height - 2, bg)
-        gfx.text(this.padding.left + this.x, this.y, this.text, co)
+        gfx.text(this.padding.left + this.x, this.y+this.padding.top, this.text, co)
         if (gfx.win.is_focused(this)) {
             let before = this.text.substring(0, this.cursor)
             let before_metrics = gfx.text_size(before)
