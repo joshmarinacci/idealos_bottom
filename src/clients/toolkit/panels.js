@@ -334,12 +334,13 @@ export class ListView extends Container {
             })
             this.generated = true
         }
-        this.height = this.children.length*12
+        let lh = 21
+        this.height = this.children.length*lh
         super.layout(gfx)
         this.children.forEach((ch,i) => {
             ch.x = 0
-            ch.y = i*14
-            ch.height = 14
+            ch.y = i*lh
+            ch.height = lh-1
             ch.width = this.width
         })
     }
