@@ -216,8 +216,11 @@ export class App {
                 window_type: window_type
             }))
             let handler = (e) => {
+                let msg = e.payload
                 this.off(WINDOWS.TYPE_WindowOpenResponse,handler)
-                let win = new Window(this,width,height,e.payload.window,null,false)
+                let win = new Window(this,msg.width,msg.height,e.payload.window,null,false)
+                win.x = msg.x
+                win.y = msg.y
                 this.windows.push(win)
                 res(win)
             }

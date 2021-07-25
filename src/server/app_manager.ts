@@ -175,6 +175,10 @@ export class AppManager {
         this.send_to_app(msg.sender,WINDOWS.MAKE_WindowOpenResponse({
             target:msg.sender,
             window:win.id,
+            x:win.x,
+            y:win.y,
+            width:win.width,
+            height:win.height,
         }))
     }
 
@@ -215,6 +219,10 @@ export class AppManager {
             parent:msg.parent,
             window:win,
             sender:msg.sender,
+            x:win.x,
+            y:win.y,
+            width:win.width,
+            height:win.height,
         }))
     }
 
