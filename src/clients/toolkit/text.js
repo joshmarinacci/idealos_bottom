@@ -589,7 +589,7 @@ export class MultilineTextBox extends TextBox {
         let x = this.padding.left
         let y = this.padding.top
         this.tl.lines.forEach((line,i) => {
-            gfx.text(this.x+x,this.y+y+i*10,line)
+            gfx.text(this.x+x,this.y+y+i*10,line, co)
         })
 
         if (gfx.win.is_focused(this)) {
