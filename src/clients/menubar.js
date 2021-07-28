@@ -2,6 +2,7 @@ import {MENUS} from 'idealos_schemas/js/menus.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {App, Component, Container, Insets} from './toolkit/guitoolkit.js'
 import {CONSTRAINTS, HBox, VBox} from './toolkit/panels.js'
+import {Button} from './toolkit/buttons.js'
 let app = new App(process.argv)//,1024/4,10,'menubar')
 
 let menu_tree = MENUS.MAKE_root({
@@ -104,8 +105,23 @@ class MenuItem extends Component {
         let bg = this.lookup_theme_part('background-color',state)
         let txt = this.lookup_theme_part('color',state)
         gfx.rect(this.x, this.y, this.width, this.height, bg)
-        gfx.text(this.padding.left + this.x, this.y, this.text, txt)
+        gfx.text(this.padding.left + this.x, this.y+this.padding.top, this.text, txt)
     }
+}
+
+function open_menu(mi,item) {
+    let win = mi.window()
+    let pos = mi.position_in_window()
+    let x = win.x + pos.x
+    let y = win.y + pos.y + mi.bounds().height
+    win.a_open_child_window(x,y,40,80,'menu').then(popup => {
+        mi.popup = popup
+        mi.popup.root = new CustomMenu(
+            {width:popup.width, height:popup.height},
+            item,app,popup)
+        mi.popup.root.parent = mi.popup
+        mi.popup.shrink_to_fit()
+    })
 }
 
 class CustomMenuBar extends Container {
@@ -116,32 +132,26 @@ class CustomMenuBar extends Container {
         this.app = app
         this.win = win
         this.padding = 1
-        app.on(MENUS.TYPE_SetMenubar,(msg)=>{
-            app.log("got new menubar",msg.payload)
-            this.tree = msg.payload.menu
-            this.children = this.tree.children.map((item,i) => {
-                return new MenuItem({text:item.label, item:item, win:win, action:function() {
-                    let win = this.window()
-                    let pos = this.position_in_window()
-                    let x = win.x + pos.x
-                    let y = win.y + pos.y + this.bounds().height
-                    win.a_open_child_window(x,y,40,80,'menu').then(popup => {
-                        this.popup = popup
-                        this.popup.root = new CustomMenu(
-                            {width:popup.width, height:popup.height},
-                            item,app,popup)
-                        this.popup.root.parent = this.popup
-                        this.popup.shrink_to_fit()
-                    })
-                }})
+        this.system_menu = new MenuItem({text:'~',win:this.win, action:() => {
+            open_menu(this.system_menu, {
+                label:'system',
+                children:[
+                    {
+                        type:'item',
+                        label:"About",
+                        action:function() {
+                            console.log("launching the about app")
+                        }
+                    },
+                ]
             })
-            this.children.forEach(ch => ch.parent = this)
-            this.repaint()
-        })
+        }})
+        this.set_tree({type:'menubar', children:[]})
+        app.on(MENUS.TYPE_SetMenubar,(msg)=> this.set_tree(msg.payload.menu))
     }
     layout(gfx) {
         this.children.forEach(ch => ch.layout(gfx))
-        let x = 20
+        let x = 0
         this.children.forEach(ch => {
             ch.x = x
             x += ch.width
@@ -151,14 +161,25 @@ class CustomMenuBar extends Container {
     redraw(gfx) {
         let bd = this.lookup_theme_part('border-color',null)
         let bg = this.lookup_theme_part('background-color',null)
-        gfx.rect(this.x,this.y,this.width,this.height,bd)
-        gfx.rect(this.x+1,this.y,this.width-2,this.height-1,bg)
-
+        gfx.rect(this.x,this.y,this.width,this.height,bd) // border
+        gfx.rect(this.x,this.y,this.width,this.height-1,bg) //background
         let co = this.lookup_theme_part('color',null)
-        gfx.text(2,2,"~",co)
         super.redraw(gfx)
         gfx.text(this.width-35,2,String.fromCodePoint(28),co)
         gfx.text(this.width-20,2,String.fromCodePoint(29),co)
+    }
+
+    set_tree(menu) {
+        this.tree = menu
+        this.children = this.tree.children.map((item,i) => {
+            let mi = new MenuItem({text:item.label, item:item, win:this.win, action:() => {
+                    open_menu(mi, item)
+                }})
+            return mi
+        })
+        this.children.unshift(this.system_menu)
+        this.children.forEach(ch => ch.parent = this)
+        this.repaint()
     }
 }
 
@@ -174,7 +195,15 @@ class CustomMenu extends VBox {
         this.children = this.item.children.map((item,i) => {
             return new MenuItem({text:item.label, item:item, win:win, action:()=>{
                 win.close()
-                app.send(INPUT.MAKE_Action({command:item.command, app:this.app._appid, window:this.win._winid}))
+                if(typeof item.action === 'function') {
+                    item.action()
+                } else {
+                    app.send(INPUT.MAKE_Action({
+                        command: item.command,
+                        app: this.app._appid,
+                        window: this.win._winid
+                    }))
+                }
             }})
         })
         this.children.forEach(ch => ch.parent = this)
