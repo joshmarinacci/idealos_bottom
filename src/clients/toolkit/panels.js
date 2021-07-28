@@ -195,101 +195,199 @@ export class TabPanel extends Container {
     }
 }
 
+const LEFT_TRIANGLE = String.fromCodePoint(23);
+const RIGHT_TRIANGLE = String.fromCodePoint(22);
+const UP_TRIANGLE = String.fromCodePoint(24);
+const DOWN_TRIANGLE = String.fromCodePoint(16);
+class HScrollBar extends Container {
+    constructor(model) {
+        super()
+        this.model = model
+        this.left_arrow  = new Button({
+            text:LEFT_TRIANGLE,
+            action:()=>this.scroll_left()})
+        this.right_arrow = new Button({
+            text:RIGHT_TRIANGLE,
+            action:()=>this.scroll_right()})
+        this.children = [this.left_arrow,this.right_arrow]
+        this.children.forEach(ch => ch.parent = this)
+    }
+    layout(gfx) {
+        super.layout(gfx)
+
+        let s = this.height
+        this.left_arrow.x = 0
+        this.left_arrow.width = s
+        this.left_arrow.height = s
+        this.left_arrow.y = 0
+
+        this.right_arrow.width = s
+        this.right_arrow.height = s
+        this.right_arrow.x = this.width-s
+        this.right_arrow.y = 0
+    }
+    redraw(gfx) {
+        gfx.rect(this.x,this.y,this.width,this.height,'black')
+        gfx.rect(this.x+1,this.y+1,this.width-2,this.height-2,'white')
+        let w = this.width-this.left_arrow.width - this.right_arrow.width
+        let x = this.x + this.left_arrow.width
+        let wx = w - this.model.offsetx
+        gfx.rect(x + wx-10,this.y+2, 1, this.height-4,'black')
+        super.redraw(gfx)
+    }
+
+    scroll_left() {
+        this.model.scroll_left()
+    }
+    scroll_right() {
+        this.model.scroll_right()
+    }
+}
+
+class VScrollBar extends Container {
+    constructor(model) {
+        super()
+        this.model = model
+        this.start_arrow  = new Button({
+            text:UP_TRIANGLE,
+            action:()=>this.scroll_up()})
+        this.end_arrow = new Button({
+            text:DOWN_TRIANGLE,
+            action:()=>this.scroll_down()})
+        this.children = [this.start_arrow,this.end_arrow]
+        this.children.forEach(ch => ch.parent = this)
+    }
+    layout(gfx) {
+        super.layout(gfx)
+
+        let s = this.width
+        this.start_arrow.x = 0
+        this.start_arrow.y = 0
+        this.start_arrow.width = s
+        this.start_arrow.height = s
+
+        this.end_arrow.x = 0
+        this.end_arrow.y = this.height-s
+        this.end_arrow.width = s
+        this.end_arrow.height = s
+    }
+    redraw(gfx) {
+        gfx.rect(this.x,this.y,this.width,this.height,'black')
+        gfx.rect(this.x+1,this.y+1,this.width-2,this.height-2,'white')
+        let gutter_length = this.height -
+            this.start_arrow.height -
+            this.end_arrow.height
+        let start = this.y + this.start_arrow.height
+        let scale = this.model.view_height()/this.model.content_height()
+        let fract = this.model.offsety / this.model.content_height()
+        let pos = - gutter_length*fract
+        // let bar = scale * this.model.view_height()
+        let bar = 1
+        gfx.rect(this.x+2,
+            Math.floor(start + pos),
+            this.width-4,
+            Math.round(bar),
+            'black')
+        super.redraw(gfx)
+    }
+
+    scroll_down() {
+        this.model.scroll_down()
+    }
+    scroll_up() {
+        this.model.scroll_up()
+    }
+}
 
 export class ScrollPanel extends Container {
     constructor(opts) {
         super(opts);
-        this.up_arrow     = new Button({
-            text:String.fromCodePoint(24),
-            action:()=>this.scroll_up()})
-        this.down_arrow   = new Button({
-            text:String.fromCodePoint(16),
-            action:()=>this.scroll_down()})
-        this.left_arrow   = new Button({
-            text:String.fromCodePoint(23),
-            action:()=>this.scroll_left()})
-        this.right_arrow  = new Button({
-            text:String.fromCodePoint(22),
-            action:()=>this.scroll_right()})
-        this.hslider       = new Button({text:" "})
-        this.vslider       = new Button({text:" "})
-        this.controls = [this.up_arrow,this.down_arrow,this.left_arrow,this.right_arrow,this.hslider,this.vslider]
+        this.sw = 15
+        this.step = 10
+        this.vslider = new VScrollBar(this)
+        this.vslider.width = this.sw
+        this.hslider = new HScrollBar(this)
+        this.hslider.height = this.sw
+        this.controls = [this.hslider,this.vslider]
         this.content = opts.children
         this.children = [
             ...this.controls,
             ...this.content,
         ]
         this.children.forEach(ch => ch.parent = this)
-        this.offsetx = 2
-        this.offsety = 2
+        this.offsetx = 0
+        this.offsety = 0
         this.hstretch = opts.hstretch || false
     }
     scroll_up() {
-        this.offsety += 10
+        this.offsety += this.step
         if(this.offsety > 0) this.offsety = 0
         this.repaint()
     }
     scroll_down() {
-        this.offsety -= 10
-        let content_height = this.content[0].height
-        let view_height = this.height - 15*3
-        let m = view_height -this.offsety
-        if(m > content_height) {
-            this.offsety = -(content_height-view_height)
+        this.offsety -= this.step
+        let m = this.view_height() -this.offsety
+        if(m > this.content_height()) {
+            this.offsety = -(this.content_height()-this.view_height())
         }
         this.repaint()
     }
+    content_height() {
+        return this.content[0].height
+    }
+    content_width() {
+        return this.content[0].width
+    }
+    view_height() {
+        return this.height - this.sw
+    }
+    view_width() {
+        return this.width - this.sw
+    }
     scroll_right() {
-        this.offsetx += 10
+        this.offsetx -= this.step
+        let m = this.view_width() - this.offsetx
+        if(m > this.content_width()) {
+            this.offsetx = (this.content_width() - this.view_width())
+        }
         this.repaint()
     }
     scroll_left() {
-        this.offsetx -= 10
+        this.offsetx += this.step
+        if(this.offsetx > 0) this.offsetx = 0
         this.repaint()
     }
     layout(gfx) {
         if(this.hstretch) {
-            this.content.forEach(ch => ch.width = this.width)
+            this.content.forEach(ch => ch.width = this.width - this.sw)
         }
         super.layout(gfx)
-        let s = 15
-        this.controls.forEach(b => {
-            b.width = s
-            b.height = s
-        })
-        this.up_arrow.x = this.width-s
-        this.up_arrow.y = 0
-        this.down_arrow.x = this.width-s
-        this.down_arrow.y = this.height-s-s
-        this.left_arrow.x = 0
-        this.left_arrow.y = this.height-s
-        this.right_arrow.x = this.width-s-s
-        this.right_arrow.y = this.height-s
+        this.hslider.x = 0
+        this.hslider.y = this.height - this.sw
+        this.hslider.width = this.width - this.sw
+        this.hslider.height = this.sw
 
-        this.hslider.x = s
-        this.hslider.y = this.height-s
-        this.hslider.width = this.width-s-s-s
-        this.hslider.height = s
+        this.vslider.x = this.width - this.sw
+        this.vslider.y = 0
+        this.vslider.width = this.sw
+        this.vslider.height = this.height-this.sw
 
-        this.vslider.x = this.width -s
-        this.vslider.y = s
-        this.vslider.width = s
-        this.vslider.height = this.height-s-s-s
-
-        let b = 2
         this.content.forEach(ch => {
             ch.x = this.offsetx
-            ch.y = this.offsety + b
+            ch.y = this.offsety
         })
     }
     redraw(gfx) {
         let b = 2
-        let s = 15
-        gfx.rect(this.x, this.y, this.width-s, this.height-s, 'black')
-        gfx.rect(this.x + b, this.y + b, this.width - b * 2 -s, this.height - b * 2 -s, 'white')
+        // border
+        gfx.rect(this.x, this.y, this.width-this.sw, this.height-this.sw, 'black')
+        // background
+        let ww = this.width -b * 2 - this.sw
+        let hh = this.height -b *2 - this.sw
+        gfx.rect(this.x + b, this.y + b, ww, hh, 'white')
         //draw content
         gfx.translate(this.x, this.y)
-        gfx.set_clip_rect(b,b,this.width-s-b*2,this.height-s-b*2)
+        gfx.set_clip_rect(b,b,ww, hh)
         this.content.forEach(ch => ch.redraw(gfx))
         gfx.clear_clip_rect()
         gfx.translate(-this.x, -this.y)
