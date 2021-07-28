@@ -3,6 +3,7 @@ import {INPUT} from 'idealos_schemas/js/input.js'
 import {App, Component, Container, Insets} from './toolkit/guitoolkit.js'
 import {CONSTRAINTS, HBox, VBox} from './toolkit/panels.js'
 import {Button} from './toolkit/buttons.js'
+import {SYSTEM} from './apis.js'
 let app = new App(process.argv)//,1024/4,10,'menubar')
 
 let menu_tree = MENUS.MAKE_root({
@@ -140,7 +141,7 @@ class CustomMenuBar extends Container {
                         type:'item',
                         label:"About",
                         action:function() {
-                            console.log("launching the about app")
+                            app.send(SYSTEM.start_app_by_name("about"))
                         }
                     },
                 ]

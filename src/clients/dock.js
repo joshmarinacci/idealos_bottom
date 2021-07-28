@@ -3,6 +3,7 @@ import {DEBUG} from 'idealos_schemas/js/debug.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {VBox} from './toolkit/panels.js'
 import {Button} from './toolkit/buttons.js'
+import {SYSTEM} from './apis.js'
 
 export class IconButton extends Component {
     constructor(opts) {
@@ -20,7 +21,7 @@ export class IconButton extends Component {
 
     input(evt) {
         if(evt.type === INPUT.TYPE_MouseDown) {
-            app.send(DEBUG.MAKE_StartAppByName({ name:this.appname }))
+            app.send(SYSTEM.start_app_by_name(this.appname))
             this.pressed = true
             this.repaint()
         }
@@ -49,6 +50,7 @@ async function init() {
         height: 16 * 5,
         padding:1,
         id:'vbox',
+        fill_color:'white',
         children: [
         ]
     })
@@ -72,7 +74,9 @@ function icon_for_app(name) {
 
 app.on('LIST_ALL_APPS_RESPONSE',(msg)=>{
     // console.log("============ got the list of apps",msg.payload.apps.user, wind)
-    win.root.children = msg.payload.apps.user.map(app => {
+    let apps = msg.payload.apps.user
+    apps = apps.filter(app => app.hide !== true)
+    win.root.children = apps.map(app => {
         let icon = icon_for_app(app.name)
         return new IconButton({
             text:icon,

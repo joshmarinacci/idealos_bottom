@@ -1,4 +1,4 @@
-import {make_response} from './connections.js'
+import {make_response} from "./common.js";
 
 export const TRANSLATION_GROUP = {
     "translation_get_value": "translation_get_value",

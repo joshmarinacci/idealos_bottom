@@ -85,6 +85,13 @@
       "icon": "texteditor",
       "entrypoint":"src/clients/notes.js",
       "autostart": false
+    },
+    {
+      "name": "about",
+      "title": "About Ideal OS",
+      "entrypoint": "src/clients/about.js",
+      "autostart": false,
+      "hide": true
     }
   ],
   "services": [

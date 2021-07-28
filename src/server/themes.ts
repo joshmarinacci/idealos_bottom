@@ -1,4 +1,4 @@
-import {make_response} from "./connections.js";
+import {make_response} from "./common.js";
 
 export const THEME_GROUP = {
     "get_control_theme":"get_control_theme",
