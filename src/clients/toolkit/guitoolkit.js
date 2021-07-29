@@ -3,6 +3,7 @@ import {RESOURCES} from 'idealos_schemas/js/resources.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {default as WebSocket} from 'ws'
+import {SYSTEM} from '../apis.js'
 
 export class Point {
     constructor(x,y) {
@@ -152,16 +153,9 @@ export class App {
                 app_type:"CLIENT",
                 app:this._appid
             })
-            this.send_and_wait_for_response({
-                type: "request-font",
-                name: 'base',
-            }).then(r  => {
-                if (r.succeeded) {
-                    this.base_font = new JoshFont(r.font)
-                } else {
-                    this.log("warning. no font loaded")
-                }
-            })
+            SYSTEM.request_font(this,'base')
+                .then(font_info => this.base_font = new JoshFont(font_info))
+                .catch(e => this.log("warning. no font loaded"))
             this.fireLater('start', {})
         })
         this.ws.on("message", (data) => {
@@ -539,10 +533,8 @@ export class Window {
     font_changed() {
         this.redraw()
     }
-    async send_and_wait(msg) {
-        msg.id = "msg_"+Math.floor((Math.random()*10000))
-        this.app.send(msg)
-        return await this.app.wait_for_response(msg.id)
+    async send_and_wait_for_response(msg) {
+        return this.app.send_and_wait_for_response(msg)
     }
 }
 
@@ -702,7 +694,7 @@ export class Component {
         if(!this.name)throw new Error("component has no name")
         if (!this.theme && !this.theme_loading) {
             this.theme_loading = true
-            this.window().send_and_wait({
+            this.window().send_and_wait_for_response({
                 type: "get_control_theme",
                 name: this.name,
                 style: "plain",
@@ -740,7 +732,7 @@ export class Component {
         if(this.translation_loading) return "-----"
         // console.log('starting to load')
         this.translation_loading = true
-        this.window().send_and_wait({
+        this.window().send_and_wait_for_response({
             type: "translation_get_value",
             key: key,
         }).then((msg)=>{
@@ -818,7 +810,3 @@ export class Container extends Component {
         return null
     }
 }
-
-export const MAGENTA = 'magenta'
-
-

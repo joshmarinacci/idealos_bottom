@@ -1,6 +1,6 @@
 import {INPUT} from 'idealos_schemas/js/input.js'
 import {INFO} from 'idealos_schemas/js/keyboard_map.js'
-import {Component, Insets, MAGENTA} from './guitoolkit.js'
+import {Component, Insets} from './guitoolkit.js'
 
 
 export class Label extends Component {

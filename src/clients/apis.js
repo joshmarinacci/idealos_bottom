@@ -9,7 +9,16 @@ export const SYSTEM = {
             type:"START_SUB_APP",
             entrypoint:entrypoint
         }).then(r=>r.appid)
-    }
+    },
+    async request_font(conn, name) {
+        return conn.send_and_wait_for_response({
+            type: "request-font",
+            name: name,
+        }).then(r => {
+            if (r.succeeded) return r.font
+            throw new Error("request font failed")
+        })
+    },
 }
 
 export const AUDIO = {

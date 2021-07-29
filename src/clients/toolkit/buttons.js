@@ -1,5 +1,5 @@
 import {INPUT} from 'idealos_schemas/js/input.js'
-import {Component, Insets, MAGENTA} from './guitoolkit.js'
+import {Component, Insets} from './guitoolkit.js'
 import {VBox} from './panels.js'
 
 export class Button extends Component {
