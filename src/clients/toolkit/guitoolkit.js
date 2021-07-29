@@ -707,18 +707,11 @@ export class Component {
 
     lookup_translated_text(key) {
         if(!this._translations) this._translations = {}
-        if(this._translations[key]) {
-            return this._translations[key]
-        }
+        if(this._translations[key]) return this._translations[key]
         if(this.translation_loading) return "-----"
-        // console.log('starting to load')
         this.translation_loading = true
-        this.window().send_and_wait_for_response({
-            type: "translation_get_value",
-            key: key,
-        }).then((msg)=>{
-            // console.log("got the response back")
-            this._translations[key] = msg.value
+        SYSTEM.get_translation(this.window(),key).then(value => {
+            this._translations[key] = value
             this.translation_loading = false
             this.repaint()
         })

@@ -30,9 +30,13 @@ export const SYSTEM = {
             name: name,
             style: style,
             state: state,
-        }).then((msg)=>{
-            return msg.theme
-        })
+        }).then(msg => msg.theme)
+    },
+    async get_translation(conn, key) {
+        return conn.send_and_wait_for_response({
+            type: "translation_get_value",
+            key: key,
+        }).then(msg => msg.value)
     }
 }
 
