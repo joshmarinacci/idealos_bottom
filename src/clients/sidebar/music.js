@@ -1,4 +1,5 @@
 import {App, Component, Container} from '../toolkit/guitoolkit.js'
+import {AUDIO} from '../apis.js'
 
 const MUSIC_NOTE_ICON = String.fromCodePoint(13)
 const PLAY_ICON = String.fromCodePoint(25)
@@ -10,21 +11,27 @@ class MusicPlayerPanel extends Component {
     constructor(opts) {
         super(opts);
         this.playing = false
+        this.resource = null
     }
     input(e) {
+        if(!this.resource) {
+            AUDIO.load(this.app(),"examples_music.mp3").then(resource => this.resource = resource)
+        }
         this.playing = !this.playing
         if(this.playing) {
-            app.send({
-                type: "audio-server-play",
+            AUDIO.pause(app,this.resource)
+            // app.send({
+            //     type: "audio-server-play",
                 //url: "https://joshondesign.com/p/music/And_-_Dans/And_-_02_-_Hilton_Orbital_Hotel.mp3"
-                url:"resources/hilton.mp3",
-            })
+                // url:"resources/hilton.mp3",
+            // })
         } else {
-            app.send({
-                type: "audio-server-pause",
+            AUDIO.play(app,this.resource)
+            // app.send({
+            //     type: "audio-server-pause",
                 // url: "https://joshondesign.com/p/music/And_-_Dans/And_-_02_-_Hilton_Orbital_Hotel.mp3"
-                url:"resources/hilton.mp3"
-            })
+                // url:"resources/hilton.mp3"
+            // })
         }
         this.repaint(e)
     }

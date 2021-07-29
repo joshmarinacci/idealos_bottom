@@ -12,6 +12,7 @@ import {Container} from '../toolkit/guitoolkit.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
+import {SYSTEM} from '../apis.js'
 
 let app = new App(process.argv)
 
@@ -98,15 +99,8 @@ async function init() {
     })
 
     async function start_widget(opts) {
-        let resp = await app.send_and_wait_for_response({
-            type:"START_SUB_APP",
-            entrypoint:opts.entrypoint
-        })
-        widgets[resp.appid] = {
-            appid:resp.appid,
-            windows:[],
-            x:opts.x,y:opts.y,h:opts.h,w:opts.w,
-        }
+        let appid = await SYSTEM.start_sub_app(app,opts.entrypoint)
+        widgets[appid] = { appid, windows:[], x:opts.x,y:opts.y,h:opts.h,w:opts.w }
     }
 
     await start_widget({entrypoint:"src/clients/sidebar/clock.js", x:1, y:0,w:80,h:22})

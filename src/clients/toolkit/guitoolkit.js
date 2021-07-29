@@ -694,6 +694,9 @@ export class Component {
     window() {
         return this.parent.window()
     }
+    app() {
+        return this.window().app
+    }
 
     lookup_theme_part(name, state) {
         if(!this.name)throw new Error("component has no name")
