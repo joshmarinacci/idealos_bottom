@@ -6,6 +6,7 @@ import {WINDOWS} from "idealos_schemas/js/windows.js"
 import {DEBUG} from "idealos_schemas/js/debug.js";
 // @ts-ignore
 import {GENERAL} from "idealos_schemas/js/general.js";
+import {make_response} from "./common.js";
 
 
 type AppType = "SCREEN" | "DEBUG" | "TEST" | "MENUBAR" | "DOCK" | "APP" | "SIDEBAR" | "CHILD" | "SUB"
@@ -172,14 +173,14 @@ export class AppManager {
         })
         this.send_to_type("SCREEN",msg2)
         //send response back to client
-        this.send_to_app(msg.sender,WINDOWS.MAKE_WindowOpenResponse({
+        this.send_to_app(msg.sender,make_response(msg,WINDOWS.MAKE_WindowOpenResponse({
             target:msg.sender,
             window:win.id,
             x:win.x,
             y:win.y,
             width:win.width,
             height:win.height,
-        }))
+        })))
     }
 
     open_child_window(msg: any) {

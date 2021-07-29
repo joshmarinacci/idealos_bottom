@@ -17,10 +17,10 @@ let app = new App(process.argv)
 
 async function init() {
     await app.a_init()
-    let main_window = await app.open_window(0,0,150,150,'plain')
-    main_window.root = new VBox({
-        width:main_window.width,
-        height:main_window.height,
+    let win = await app.open_window(0,0,150,150,'plain')
+    win.root = new VBox({
+        width:win.width,
+        height:win.height,
         fill_color:'magenta',
         constraint:CONSTRAINTS.FILL,
         children:[
@@ -77,27 +77,27 @@ async function init() {
         ]})
 
     //attach actions
-    main_window.root.find({id:'button'}).on('action',()=>{
-        main_window.root.find({id:'button-target'}).text = 'clicked!'
-        main_window.redraw()
+    win.root.find({id:'button'}).on('action',()=>{
+        win.root.find({id:'button-target'}).text = 'clicked!'
+        win.redraw()
     })
-    main_window.root.find({id:'textbox'}).on('action',()=>{
-        main_window.root.find({id:'button-target'}).text = 'committed'
-        main_window.redraw()
+    win.root.find({id:'textbox'}).on('action',()=>{
+        win.root.find({id:'button-target'}).text = 'committed'
+        win.redraw()
     })
-    main_window.redraw()
+    win.redraw()
     app.on(INPUT.TYPE_Action,(e) => {
         if(e.payload.command === 'do_a') {
-            main_window.root.find({id:'button-target'}).text = "A'd"
-            main_window.redraw()
+            win.root.find({id:'button-target'}).text = "A'd"
+            win.redraw()
         }
         if(e.payload.command === 'do_b') {
-            main_window.root.find({id:'button-target'}).text = "B'd"
-            main_window.redraw()
+            win.root.find({id:'button-target'}).text = "B'd"
+            win.redraw()
         }
         if(e.payload.command === 'do_foo') {
-            main_window.root.find({id:'button-target'}).text = "food"
-            main_window.redraw()
+            win.root.find({id:'button-target'}).text = "food"
+            win.redraw()
         }
     })
 }

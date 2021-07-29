@@ -1,4 +1,5 @@
 import {DEBUG} from 'idealos_schemas/js/debug.js'
+import {WINDOWS} from 'idealos_schemas/js/windows.js'
 
 export const SYSTEM = {
     async start_app_by_name(conn,name) {
@@ -19,6 +20,10 @@ export const SYSTEM = {
             throw new Error("request font failed")
         })
     },
+    async open_window(app, sender, x, y, width, height, window_type) {
+        return app.send_and_wait_for_response(WINDOWS.MAKE_WindowOpen({
+            x, y, width, height, window_type, sender }))
+    }
 }
 
 export const AUDIO = {

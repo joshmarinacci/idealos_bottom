@@ -199,27 +199,13 @@ export class App {
             this.on('start',res)
         })
     }
-    open_window(x,y,width,height,window_type) {
-        return new Promise((res,rej)=>{
-            this.send(WINDOWS.MAKE_WindowOpen({
-                x:50,
-                y:50,
-                width: width,
-                height: height,
-                sender: this._appid,
-                window_type: window_type
-            }))
-            let handler = (e) => {
-                let msg = e.payload
-                this.off(WINDOWS.TYPE_WindowOpenResponse,handler)
-                let win = new Window(this,msg.width,msg.height,e.payload.window,null,false)
-                win.x = msg.x
-                win.y = msg.y
-                this.windows.push(win)
-                res(win)
-            }
-            this.on(WINDOWS.TYPE_WindowOpenResponse,handler)
-        })
+    async open_window(x,y,width,height,window_type) {
+        let msg = await SYSTEM.open_window(this, this._appid,x,y,width,height,window_type)
+        let win = new Window(this,msg.width,msg.height,msg.window,null,false)
+        win.x = msg.x
+        win.y = msg.y
+        this.windows.push(win)
+        return win
     }
     on(type,cb) {
         if(!this.listeners[type]) this.listeners[type] = []
