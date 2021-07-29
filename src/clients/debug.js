@@ -10,7 +10,7 @@ let theme = 'light'
 let language = 'base'
 async function init() {
     await app.a_init()
-    let win = await app.open_window(0,0,100,50, 'debug')
+    let win = await app.open_window(30,50,100,50, 'debug')
     win.root = new VBox({
         id:'vbox',
         constraint:CONSTRAINTS.FILL,
