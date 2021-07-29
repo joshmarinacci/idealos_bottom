@@ -17,7 +17,7 @@ let app = new App(process.argv)
 
 async function init() {
     await app.a_init()
-    let win = await app.open_window(0,0,150,150,'plain')
+    let win = await app.open_window(30,50,250,150,'plain')
     win.root = new VBox({
         width:win.width,
         height:win.height,
