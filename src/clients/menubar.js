@@ -141,7 +141,7 @@ class CustomMenuBar extends Container {
                         type:'item',
                         label:"About",
                         action:function() {
-                            app.send(SYSTEM.start_app_by_name("about"))
+                            SYSTEM.start_app_by_name(app,"about")
                         }
                     },
                 ]
