@@ -677,19 +677,14 @@ export class Component {
     }
 
     lookup_theme_part(name, state) {
-        if(!this.name)throw new Error("component has no name")
+        if(!this.name) throw new Error("component has no name")
         if (!this.theme && !this.theme_loading) {
             this.theme_loading = true
-            this.window().send_and_wait_for_response({
-                type: "get_control_theme",
-                name: this.name,
-                style: "plain",
-                state: "normal"
-            }).then((msg)=>{
-                this.theme = msg.theme
-                this.theme_loading = false
-                this.repaint()
-            })
+            SYSTEM.get_control_theme(this.window(),this.name,'plain','normal').then(theme => {
+                    this.theme = theme
+                    this.theme_loading = false
+                    this.repaint()
+                })
             return 'black'
         }
         if (!this.theme && this.theme_loading) {

@@ -23,6 +23,16 @@ export const SYSTEM = {
     async open_window(app, sender, x, y, width, height, window_type) {
         return app.send_and_wait_for_response(WINDOWS.MAKE_WindowOpen({
             x, y, width, height, window_type, sender }))
+    },
+    async get_control_theme(conn, name, style, state) {
+        return conn.send_and_wait_for_response({
+            type: "get_control_theme",
+            name: name,
+            style: style,
+            state: state,
+        }).then((msg)=>{
+            return msg.theme
+        })
     }
 }
 
