@@ -21,7 +21,7 @@ export class IconButton extends Component {
 
     input(evt) {
         if(evt.type === INPUT.TYPE_MouseDown) {
-            app.send(SYSTEM.start_app_by_name(this.appname))
+            SYSTEM.start_app_by_name(app,this.appname)
             this.pressed = true
             this.repaint()
         }

@@ -192,7 +192,6 @@ export class CentralServer {
             if(msg.type === INPUT.TYPE_Action) return this.app_manager.send_to_focused_app(msg)
 
             console.log("===\nunhandled message\n===",msg.type)
-            // this.router.route(ws, msg)
         } catch (e) {
             this.log(e)
         }
