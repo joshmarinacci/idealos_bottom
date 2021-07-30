@@ -20,6 +20,7 @@
     "idealos_schemas": "^0.2.6",
     "mingo": "^4.1.2",
     "pureimage": "^0.3.2",
+    "systeminformation": "^5.7.13",
     "ws": "^7.4.4"
   },
   "devDependencies": {
