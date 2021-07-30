@@ -7,6 +7,7 @@
   "scripts": {
     "start-server": "npm run build && node built/src/server/start.js",
     "docs": "node tools/docs.js",
+    "count": "npx cloc src",
     "build": "tsc"
   },
   "keywords": [],
@@ -25,6 +26,7 @@
     "@types/mocha": "latest",
     "@types/node": "latest",
     "@types/ws": "^7.4.5",
+    "cloc": "^2.8.0",
     "mocha": "latest",
     "ohm-js": "^15.5.0",
     "static-build-tools": "^0.1.1",
