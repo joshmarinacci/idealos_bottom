@@ -42,7 +42,7 @@ export class VBox extends Container {
             if (this.hstretch) {
                 this.children.forEach(ch => ch.width = maxx)
             }
-            this.width = maxx
+            this.width = maxx+this.padding+1
             this.height = y
         }
         if(this.constraint === CONSTRAINTS.FILL) {

@@ -437,8 +437,8 @@ export class Window {
             category:"graphics",
             messages: gfx.messages,
         })
-        this.app.send_with_trigger(GRAPHICS.MAKE_DrawRect({
-            x:0, y:0, width:1, height:1, color:'red', window:this._winid}),trigger)
+        // this.app.send_with_trigger(GRAPHICS.MAKE_DrawRect({
+        //     x:0, y:0, width:1, height:1, color:'red', window:this._winid}),trigger)
     }
     shrink_to_fit() {
         this.redraw()

@@ -43,6 +43,7 @@ export class ThemeManager {
             this.uitheme = this.themes[msg.name]
             let resp = make_response(msg, {type: "theme-changed", name: msg.name})
             this.server.app_manager.send_to_type("APP", resp)
+            this.server.app_manager.send_to_type("MENUBAR", resp)
         }
     }
     get_control_theme(msg:any) {

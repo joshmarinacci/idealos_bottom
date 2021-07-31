@@ -192,7 +192,7 @@ class CustomMenu extends VBox {
         this.win = win
         this.constraint = CONSTRAINTS.WRAP
         this.hstretch = true
-        this.fill_color = 'red'
+        this.fill_color = 'black'
         this.children = this.item.children.map((item,i) => {
             return new MenuItem({text:item.label, item:item, win:win, action:()=>{
                 win.close()
@@ -214,7 +214,7 @@ class CustomMenu extends VBox {
 
 async function init() {
     await app.a_init()
-    let win = await app.open_window(0,0,512,18,'menubar')
+    let win = await app.open_window(0,0,512,17,'menubar')
     win.root = new CustomMenuBar({width:win.width, height:win.height},menu_tree,app,win)
     win.redraw()
 }
