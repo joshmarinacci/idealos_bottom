@@ -8,3 +8,6 @@ export function make_response(orig, settings) {
     })
     return msg
 }
+
+
+export const sleep = (dur:number) => new Promise((res, rej) => setTimeout(res, dur))

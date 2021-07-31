@@ -30,11 +30,12 @@ interface App {
     type:AppType,
     id:string,
     name:string,
-    entrypoint:string,
+    entrypoint?:string,
     args:string[],
     windows:Window[],
     subprocess:ChildProcessWithoutNullStreams|undefined,
-    connection:WebSocket|undefined
+    connection:WebSocket|undefined,
+    local:boolean
 }
 
 export class AppManager {
@@ -60,7 +61,23 @@ export class AppManager {
             entrypoint: opts.entrypoint,
             type:opts.type || "APP",
             args:opts.args || [],
-            owner:"NO_OWNER"
+            owner:"NO_OWNER",
+            local:false
+        }
+        this.apps.push(app)
+        return app
+    }
+    create_app_local(opts: any) {
+        let app:App = {
+            subprocess: undefined,
+            connection:undefined,
+            windows: [],
+            id: "app_"+(Math.floor(Math.random()*100000)),
+            name: opts.name || "unnamed",
+            type:opts.type || "APP",
+            args:opts.args || [],
+            owner:"NO_OWNER",
+            local:true
         }
         this.apps.push(app)
         return app
@@ -80,7 +97,7 @@ export class AppManager {
     }
     screen_connected(msg:any, ws:WebSocket) {
         this.log("screen connected",msg)
-        let app = this.create_app({})
+        let app = this.create_app({name:'screen'})
         app.type = "SCREEN"
         app.connection = ws
         let win_list = this.get_window_list()

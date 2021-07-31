@@ -156,7 +156,9 @@ export class App {
             SYSTEM.request_font(this,'base')
                 .then(font_info => this.base_font = new JoshFont(font_info))
                 .catch(e => this.log("warning. no font loaded"))
-            this.fireLater('start', {})
+                .finally(() => {
+                    this.fireLater('start', {})
+                })
         })
         this.ws.on("message", (data) => {
             let msg = JSON.parse(data)

@@ -8,8 +8,12 @@ import {App} from '../src/clients/toolkit/guitoolkit.js'
 import assert from 'assert'
 
 class BaseAppWrapper {
+    private listeners: {};
+    protected name: string;
+    protected ws:WebSocket
     constructor() {
         this.listeners = {}
+        this.name = "BaseAppWrapper"
     }
 
     log(...args) {
@@ -35,7 +39,7 @@ class BaseAppWrapper {
     }
 
     async send(msg) {
-        return new Promise((res, rej) => {
+        return new Promise<void>((res, rej) => {
             this.ws.send(JSON.stringify(msg), () => {
                 res()
             })
@@ -44,6 +48,9 @@ class BaseAppWrapper {
 }
 
 class TestApp extends BaseAppWrapper {
+    private id: any;
+    private hostname: any;
+    private port: any;
     constructor(app, cb) {
         super()
         this.name = "APP:" + app.name
@@ -54,12 +61,12 @@ class TestApp extends BaseAppWrapper {
         this.ws.on("open", () => {
             console.log('client connected')
             try {
-                cb(this).catch(e => console.error(e))
+                cb(this)
             } catch (e) {
                 console.log("error inside test app function", e)
             }
         })
-        this.ws.on('message', txt => {
+        this.ws.on('message', (txt:string) => {
             let msg = JSON.parse(txt)
             // this.log("incoming message",msg)
             setTimeout(() => {
@@ -68,7 +75,7 @@ class TestApp extends BaseAppWrapper {
 
         })
     }
-    async send(msg) {
+    async send(msg): Promise<void> {
         msg.app = this.id
         return new Promise((res, rej) => {
             this.ws.send(JSON.stringify(msg), () => {
@@ -79,21 +86,18 @@ class TestApp extends BaseAppWrapper {
 }
 
 export async function start_testapp(server, cb) {
-    return server.start_app({
+    let app = await server.start_app_local({
         name: "testapp"
-    }).then((app) => {
-        app.info = {
-            hostname:server.hostname,
-            websocket_port:server.websocket_port,
-        }
-        return new TestApp(app, cb)
-    }).catch(e => {
-        console.log("ERROR HAPPENED")
-        console.error(e)
     })
+    app.info = {
+        hostname:server.hostname,
+        websocket_port:server.websocket_port,
+    }
+    return new TestApp(app, cb)
 }
 
 class TestGUIApp extends BaseAppWrapper {
+    app: App;
     constructor(app, cb) {
         super()
         // console.log('starting a gui app with',data)
@@ -101,18 +105,14 @@ class TestGUIApp extends BaseAppWrapper {
         this.name = "guiapp"
         this.app = new App([0, 1, ws_url, app.id])
         this.app.a_init().then(() => {
-            try {
-                cb(this).catch(e => console.error(e))
-            } catch (e) {
-                console.log("error inside test app function", e)
-            }
+            cb(this)
         })
         this.app.on_all((m) => {
             this.fire(m.type, m.payload)
         })
     }
     async send(msg) {
-        return new Promise((res, rej) => {
+        return new Promise<void>((res, rej) => {
             msg.app = this.app._appid
             this.app.ws.send(JSON.stringify(msg), () => {
                 res()
@@ -122,22 +122,21 @@ class TestGUIApp extends BaseAppWrapper {
 }
 
 export async function start_testguiapp(server, cb) {
-    return server.start_app({
-        name: 'testapp'
-    }).then(app => {
-        app.info = {
-            hostname:server.hostname,
-            websocket_port:server.websocket_port,
-        }
-        return new TestGUIApp(app, cb)
-    }).catch(e => console.error(e))
+    let app = await server.start_app_local({
+        name: 'testguiapp',
+    })
+    app.info = {
+        hostname:server.hostname,
+        websocket_port:server.websocket_port,
+    }
+    return new TestGUIApp(app, cb)
 }
 
 export class HeadlessDisplay extends BaseAppWrapper {
+    private windows: any[];
     constructor(hostname, port) {
         super()
         this.name = 'DISPLAY'
-        this.listeners = {}
         this.windows = []
         this.ws = new WebSocket(`ws://${hostname}:${port}`)
         this.ws.on("open", () => {
@@ -146,7 +145,7 @@ export class HeadlessDisplay extends BaseAppWrapper {
             })
             this.log('connected')
         })
-        this.ws.on('message', txt => {
+        this.ws.on('message', (txt:string) => {
             let msg = JSON.parse(txt)
             // this.log("incoming message",msg)
             setTimeout(() => {
@@ -243,12 +242,13 @@ export class HeadlessDisplay extends BaseAppWrapper {
             app: win.owner,
             window: win.id
         })
+        msg.target = win.owner
         await this.send(msg)
     }
 }
 
 export async function start_headless_display() {
-    return new HeadlessDisplay(hostname, websocket_port)
+    return Promise.resolve(new HeadlessDisplay(hostname, websocket_port))
 }
 
 export function log(...args) {

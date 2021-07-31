@@ -1,10 +1,9 @@
-import {CentralServer} from '../src/server/server.ts'
+import {CentralServer} from '../src/server/server.js'
 import {GENERAL} from 'idealos_schemas/js/general.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 import {INFO} from 'idealos_schemas/js/keyboard_map.js'
 import {INPUT} from 'idealos_schemas/js/input.js'
-import {HeadlessDisplay, message_compare, start_testapp, start_testguiapp} from './common.js'
-import {sleep} from '../src/common.js'
+import {HeadlessDisplay, message_compare, start_testguiapp} from './common.js'
 import {TextBox} from '../src/clients/toolkit/text.js'
 
 describe("keybindings",function() {
@@ -20,7 +19,6 @@ describe("keybindings",function() {
             apps:applist,
         })
 
-        try {
             await server.start()
             let display = new HeadlessDisplay(server.hostname, server.websocket_port)
             await display.wait_for_message(GENERAL.TYPE_Connected)
@@ -32,7 +30,7 @@ describe("keybindings",function() {
                 win.redraw()
             })
 
-            let open_msg = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
+            let open_msg:any = await app.wait_for_message(WINDOWS.TYPE_WindowOpenResponse)
             await display.dispatch_mousedown({x:65,y:65})
             await display.dispatch_keydown_to_window(open_msg.window,
                 INFO.KEY_NAMES.ArrowRight,
@@ -56,12 +54,7 @@ describe("keybindings",function() {
                     app:app.app._appid,
                 }
             )
-            await sleep(250)
             await server.shutdown()
-        } catch (e) {
-            console.log(e)
-            throw e
-        }
 
     })
 

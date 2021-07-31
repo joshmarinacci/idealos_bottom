@@ -26,8 +26,8 @@ export const hostname = '127.0.0.1'
 export const websocket_port = 8081
 
 export class CentralServer {
-    private websocket_port: number;
-    private hostname: string;
+    readonly websocket_port: number;
+    readonly hostname: string;
     private app_manager: AppManager;
     private apps: any;
     private db_json: string[];
@@ -118,7 +118,12 @@ export class CentralServer {
     async start_app(opts: any) {
         let app = this.app_manager.create_app(opts)
         this.app_manager.start_app_by_id(app.id)
-        return app
+        return Promise.resolve(app)
+    }
+
+    async start_app_local(opts:any) {
+        let app = this.app_manager.create_app_local(opts)
+        return Promise.resolve(app)
     }
 
 
