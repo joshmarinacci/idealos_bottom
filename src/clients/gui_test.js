@@ -17,7 +17,7 @@ let app = new App(process.argv)
 
 async function init() {
     await app.a_init()
-    let win = await app.open_window(30,50,250,150,'plain')
+    let win = await app.open_window(30,50,200,150,'plain')
     win.root = new VBox({
         width:win.width,
         height:win.height,
@@ -29,7 +29,11 @@ async function init() {
                 tab_children:[
                     new VBox({ children: [
                             new TranslatedLabel({text_key:"button.okay"}),
-                            new MultilineLabel({text:"Some cool long text\nThat is super cool and\nLong and stuff"}),
+                            new MultilineLabel({
+                                text:"Some cool long text That is super cool and Long and stuff",
+                                width:100,
+                                height:50,
+                            }),
                         ]
                     }),
                     new VBox({children: [

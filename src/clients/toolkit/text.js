@@ -42,32 +42,22 @@ export class TranslatedLabel extends Label {
 export class MultilineLabel extends Component {
     constructor(opts) {
         super(opts);
-        this.text = opts.text || "-------"
+        this.tl = new TextLayout()
+        this.tl.text = opts.text || "-------"
         this.name = 'multiline-label'
-        this.padding = 2
+        this.padding = new Insets(2)
+        this.width = opts.width || 100
     }
     layout(gfx) {
-        let lines = this.text.split("\n")
-        let maxw = 0
-        let h = this.padding
-        lines.forEach(line => {
-            let met = gfx.text_size(this.text,this.font)
-            h += met.height
-            maxw = Math.max(maxw,met.width+this.padding*2)
-        })
-        this.width = maxw
-        this.height = h + this.padding
+        this.tl.layout_as_blocks_with_breaks_and_font(this.width,gfx.font())
+        this.height = this.tl.lines.length*10
     }
     redraw(gfx) {
-        let bg = this.lookup_theme_part("background-color",null)
         let co = this.lookup_theme_part('color',null)
-        gfx.rect(this.x, this.y, this.width, this.height,bg)
-        let lines = this.text.split("\n")
-        let h = this.padding
-        lines.forEach(line => {
-            let met = gfx.text_size(this.text,this.font)
-            gfx.text(this.x+this.padding, this.y+h, line,co,this.font)
-            h += met.height
+        let x = this.padding.left
+        let y = this.padding.top
+        this.tl.lines.forEach((line,i) => {
+            gfx.text(this.x+x,this.y+y+i*10,line, co)
         })
     }
 }
@@ -409,7 +399,6 @@ export class TextLayout {
             }
         }
         this.lines.push(line)
-
     }
 
 
@@ -572,8 +561,6 @@ export class MultilineTextBox extends TextBox {
         this.repaint(e)
         return true
     }
-
-
     redraw(gfx) {
         let name = "textbox"
         if (gfx.win.is_focused(this)) name = "textbox:focused"

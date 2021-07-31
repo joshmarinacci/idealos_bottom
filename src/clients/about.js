@@ -52,15 +52,13 @@ async function init() {
         constraint:CONSTRAINTS.WRAP,
         children:[
             new Label({text:"About Ideal OS"}),
-            new MultilineLabel({text:s_system + "\n" + s_cpu}),
-            new MultilineLabel({text:`CPU speed ${speed.avg} - temp ${temp.main?temp.main:"??"}`}),
-            new MultilineLabel({text:
-                    `RAM ${toGB(mem.free)} / ${toGB(mem.total)}`
-            }),
+            new MultilineLabel({width:300, text:s_system + "\n" + s_cpu}),
+            new MultilineLabel({width:300, text:`CPU speed ${speed.avg} - temp ${temp.main?temp.main:"??"}`}),
+            new MultilineLabel({width:300, text: `RAM ${toGB(mem.free)} / ${toGB(mem.total)}`}),
             new MultilineLabel({text:bt}),
-            new MultilineLabel({text:`host os: ${os.distro}-${os.release}-${os.codename}`}),
-            new MultilineLabel({text:`network ${os.hostname}`}),
-            new MultilineLabel({text:`CPU Load ${Math.floor(currentLoad.currentLoad)}% `}),
+            new MultilineLabel({width:300, text:`host os: ${os.distro}-${os.release}-${os.codename}`}),
+            new MultilineLabel({width:300, text:`network ${os.hostname}`}),
+            new MultilineLabel({width:300, text:`CPU Load ${Math.floor(currentLoad.currentLoad)}% `}),
         ]
     })
     win.redraw()
