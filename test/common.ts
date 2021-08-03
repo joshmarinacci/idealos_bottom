@@ -6,11 +6,13 @@ import {GRAPHICS} from 'idealos_schemas/js/graphics.js'
 import {hostname, websocket_port} from '../src/server/server.js'
 import {App} from '../src/clients/toolkit/guitoolkit.js'
 import assert from 'assert'
+import {Message} from "../src/server/messages";
 
-class BaseAppWrapper {
+abstract class BaseAppWrapper {
     private listeners: {};
     protected name: string;
     protected ws:WebSocket
+    id: string
     constructor() {
         this.listeners = {}
         this.name = "BaseAppWrapper"
@@ -40,15 +42,12 @@ class BaseAppWrapper {
 
     async send(msg) {
         return new Promise<void>((res, rej) => {
-            this.ws.send(JSON.stringify(msg), () => {
-                res()
-            })
+            this.ws.send(JSON.stringify(msg), () => res())
         })
     }
 }
 
 class TestApp extends BaseAppWrapper {
-    private id: any;
     private hostname: any;
     private port: any;
     constructor(app, cb) {
@@ -232,18 +231,43 @@ export class HeadlessDisplay extends BaseAppWrapper {
     async dispatch_keydown(keyname) {
     }
 
-    async dispatch_keydown_to_window(id, code, key, shift=false, control=false) {
-        console.log('dispatching keydown to window', id, code, key,shift,control)
-        let win = this.windows.find(win => win.id === id)
-        let msg = INPUT.MAKE_KeyboardDown({
-            code, key,
-            shift: shift?shift:false,
-            control:control?control:false,
-            app: win.owner,
-            window: win.id
-        })
-        msg.target = win.owner
-        await this.send(msg)
+    async dispatch_keydown_to_window(window_id:string, code:string, key:string, shift:boolean=false, control:boolean=false) {
+        let win = this.windows.find(win => win.id === window_id)
+        await APIS.INPUT.send_keyboard_down(this, code,key, shift, control,win, win.owner)
+        // let msg = INPUT.MAKE_KeyboardDown({
+        //     code, key,
+        //     shift: shift?shift:false,
+        //     control:control?control:false,
+        //     app: win.owner,
+        //     window: win.id
+        // })
+        // msg.target = win.owner
+        // await this.send(msg)
+    }
+}
+
+interface KeyboardDownMessage extends Message {
+    code:string,
+    key:string,
+    shift:boolean,
+    control:boolean,
+    window:string,
+    target:string,
+}
+const APIS = {
+    INPUT:{
+        async send_keyboard_down(sender,code,key,shift,control,win, target:string) {
+            let msg:KeyboardDownMessage = {
+                type:"MAKE_KeyboardDown_name",
+                code:code,
+                key:key,
+                shift:shift,
+                control:control,
+                window:win,
+                target:target
+            }
+            await sender.send(msg)
+        }
     }
 }
 
