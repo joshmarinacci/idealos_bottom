@@ -415,6 +415,7 @@ export class Window {
         })
         app.on('window-set-size', (e)=>{
             if(e.payload.window !== this._winid) return
+            console.log("window got rezsize to",e.payload)
             this.width = e.payload.width
             this.height = e.payload.height
             this.redraw(e)

@@ -144,6 +144,7 @@ export class CentralServer {
 
             if(msg.type === 'APP_OPEN') return this.app_manager.app_connected(msg,ws)
             if(msg.type === 'MAKE_ScreenStart_name') return this.app_manager.screen_connected(msg,ws)
+            if(msg.type === 'set_screen_size') return this.app_manager.set_screen_size(msg)
 
             if(msg.type === DEBUG.TYPE_ListAppsRequest)  return this.app_manager.handle_list_all_apps(msg)
             if(msg.type === "LIST_ALL_APPS") return this.app_manager.handle_list_all_apps2(msg)
@@ -165,6 +166,7 @@ export class CentralServer {
 
             if(msg.type === 'window-set-size') return this.app_manager.set_window_size(msg)
             if(msg.type === "window-set-size-request") return this.app_manager.send_to_type("SCREEN", msg)
+            if(msg.type === 'window-set-position-request') return this.app_manager.send_to_type("SCREEN", msg)
             if(is_translation(msg)) return this.translation_manager.handle(msg)
             if(is_theme(msg)) return this.theme_manager.handle(msg)
             if(is_database(msg)) return this.db.handle(msg)

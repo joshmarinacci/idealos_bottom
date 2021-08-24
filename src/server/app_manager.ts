@@ -14,6 +14,8 @@ type WindowType = "MENUBAR" | "DOCK" | "SIDEBAR" | "DEBUG" | "CHILD" | "PLAIN"
 
 type NO_OWNER = "NO_OWNER"
 
+const MENUBAR_HEIGHT = 17
+
 interface Window {
     type:WindowType,
     id:string,
@@ -38,17 +40,26 @@ interface App {
     local:boolean
 }
 
+interface Screen {
+    width:number,
+    height:number,
+}
 export class AppManager {
     private apps: App[];
     private readonly hostname: String;
     private readonly websocket_port: Number;
     private readonly server: any;
     private active_window: Window | undefined;
+    private screen:Screen
     constructor(server:any,hostname:String,websocket_port:Number) {
         this.hostname = hostname
         this.websocket_port = websocket_port
         this.apps = []
         this.server = server
+        this.screen = {
+            width:100,
+            height:100,
+        }
     }
     create_app(opts:any):App {
         console.log("creating app with opts",opts)
@@ -119,6 +130,37 @@ export class AppManager {
         let resp = WINDOWS.MAKE_window_list({windows:win_map})
         // console.log("response is",resp)
         this.send_to_app(app.id,resp)
+    }
+    set_screen_size(msg: any) {
+        console.log("resizing the main screen to",msg)
+        this.screen.width = msg.width
+        this.screen.height = msg.height
+        this.get_window_list().forEach(win => {
+            if(win.type === 'MENUBAR') {
+                this.send_to_type("SCREEN",{
+                    type:"window-set-size-request",
+                    window:win.id,
+                    width:this.screen.width,
+                    height:MENUBAR_HEIGHT,
+                })
+            }
+            if(win.type === "SIDEBAR") {
+                //move to upper right
+                this.send_to_type("SCREEN",{
+                    type:'window-set-position-request',
+                    window:win.id,
+                    x:this.screen.width-win.width,
+                    y:MENUBAR_HEIGHT,
+                })
+                //stretch to lower right
+                this.send_to_type("SCREEN",{
+                    type:"window-set-size-request",
+                    window:win.id,
+                    width:win.width,
+                    height:this.screen.height-MENUBAR_HEIGHT,
+                })
+            }
+        })
     }
 
     is_sub_app(id:string) {

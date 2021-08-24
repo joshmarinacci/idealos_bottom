@@ -151,6 +151,10 @@ class CustomMenuBar extends Container {
         app.on(MENUS.TYPE_SetMenubar,(msg)=> this.set_tree(msg.payload.menu))
     }
     layout(gfx) {
+        console.log("menubar layout",this.window().width)
+        this.width = this.window().width
+        this.height = this.window().height
+
         this.children.forEach(ch => ch.layout(gfx))
         let x = 0
         this.children.forEach(ch => {
