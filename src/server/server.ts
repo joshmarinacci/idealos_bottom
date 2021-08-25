@@ -29,7 +29,7 @@ export class CentralServer {
     readonly websocket_port: number;
     readonly hostname: string;
     private app_manager: AppManager;
-    private apps: any;
+    apps: any;
     private db_json: string[];
     // @ts-ignore
     private _server: WebSocket.Server;

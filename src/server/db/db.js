@@ -99,6 +99,16 @@ export class DataBase {
     async stop() {
         this.file_watchers.forEach(fw => fw.close())
     }
+
+    remove_app_listeners(app) {
+        Object.values(this.listeners).forEach(lists => {
+            let n = lists.findIndex(cb => cb.app === app.id)
+            if(n >= 0) {
+                lists.splice(n,1)
+            }
+        })
+    }
+
     addEventListener(cat,listener) {
         if(!cat) throw new Error("Missing category")
         if(!this.listeners[cat]) this.listeners[cat] = []
@@ -167,14 +177,16 @@ export class DataBase {
     }
 
     perform_database_watch(msg) {
-        this.addEventListener(msg.category,(obj)=>{
+        let cb = (obj)=>{
             // console.log("db changed with object",msg.category,obj)
             this.server.app_manager.send_to_app(msg.app,{
                 type:"database-watch-update",
                 app:msg.app,
                 object:obj,
             })
-        })
+        }
+        cb.app = msg.app
+        this.addEventListener(msg.category,cb)
     }
     perform_database_add(msg) {
         if(!msg.object.type) return console.error("cannot add object. missing type")

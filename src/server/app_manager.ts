@@ -7,6 +7,7 @@ import {DEBUG} from "idealos_schemas/js/debug.js";
 // @ts-ignore
 import {GENERAL} from "idealos_schemas/js/general.js";
 import {make_response} from "./common.js";
+import {CentralServer} from "./server";
 
 
 type AppType = "SCREEN" | "DEBUG" | "TEST" | "MENUBAR" | "DOCK" | "APP" | "SIDEBAR" | "CHILD" | "SUB"
@@ -48,10 +49,10 @@ export class AppManager {
     private apps: App[];
     private readonly hostname: String;
     private readonly websocket_port: Number;
-    private readonly server: any;
+    private readonly server: CentralServer;
     private active_window: Window | undefined;
     private screen:Screen
-    constructor(server:any,hostname:String,websocket_port:Number) {
+    constructor(server:CentralServer,hostname:String,websocket_port:Number) {
         this.hostname = hostname
         this.websocket_port = websocket_port
         this.apps = []
@@ -517,6 +518,7 @@ export class AppManager {
         if(app !== undefined) {
             // @ts-ignore
             // this.apps = this.apps.filter(a => a.id !==app.id)
+            this.server.db.remove_app_listeners(app)
         }
         console.log("app count",this.apps.length)
     }
