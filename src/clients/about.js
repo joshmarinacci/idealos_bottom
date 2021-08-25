@@ -1,9 +1,10 @@
 import {App} from './toolkit/guitoolkit.js'
-import {CONSTRAINTS, VBox} from './toolkit/panels.js'
+import {CONSTRAINTS, TabPanel, VBox} from './toolkit/panels.js'
 import {Label, MultilineLabel} from './toolkit/text.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 
 import SI from 'systeminformation'
+import {Button} from './toolkit/buttons.js'
 
 SI.cpuCurrentSpeed().then(data => console.log(data))
 SI.cpuTemperature().then(data => console.log(data))
@@ -45,7 +46,7 @@ async function init() {
     // let wifi = await SI.wifiNetworks()
     // console.log(wifi)
 
-    win.root = new VBox({
+    let info_panel = new VBox({
         width: 300,
         height: 200,
         constraint:CONSTRAINTS.WRAP,
@@ -58,6 +59,24 @@ async function init() {
             new MultilineLabel({width:300, text:`host os: ${os.distro}-${os.release}-${os.codename}`}),
             new MultilineLabel({width:300, text:`network ${os.hostname}`}),
             new MultilineLabel({width:300, text:`CPU Load ${Math.floor(currentLoad.currentLoad)}% `}),
+        ]
+    })
+    let background_panel = new Button({
+        text:"hello"
+    })
+    win.root = new VBox({
+        width:win.width,
+        height:win.height,
+        fill_color:'magenta',
+        constraint:CONSTRAINTS.FILL,
+        children:[
+            new TabPanel({
+                tab_labels: ["system info", "background"],
+                tab_children:[
+                    info_panel,
+                    background_panel,
+                ]
+            })
         ]
     })
     win.redraw()
