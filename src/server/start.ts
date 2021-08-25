@@ -15,8 +15,8 @@ async function doit() {
         ],
     }
     let db_json = [
-        "resources/database/tasks.json",
-        "resources/database/notes.json",
+        "resources/database/default/tasks.json",
+        "resources/database/default/notes.json",
     ]
 
     let server = new CentralServer({

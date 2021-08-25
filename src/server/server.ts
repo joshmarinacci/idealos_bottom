@@ -2,8 +2,6 @@
 import Ajv from 'ajv'
 import fs from 'fs'
 import path from 'path'
-import {MessageBroker} from "./messages.js"
-import {DataBase, is_database} from './db/db.js'
 import {KeybindingsManager} from './keybindings.js'
 import {is_theme, ThemeManager} from './themes.js'
 import {AppManager} from './app_manager.js'
@@ -21,6 +19,7 @@ import {DEBUG} from "idealos_schemas/js/debug.js";
 import {GENERAL} from "idealos_scemas/js/general.js";
 // @ts-ignore
 import {INPUT} from "idealos_schemas/js/input.js";
+import {DBService} from "./db/service.js";
 
 export const hostname = '127.0.0.1'
 export const websocket_port = 8081
@@ -28,7 +27,7 @@ export const websocket_port = 8081
 export class CentralServer {
     readonly websocket_port: number;
     readonly hostname: string;
-    private app_manager: AppManager;
+    app_manager: AppManager;
     apps: any;
     private db_json: string[];
     // @ts-ignore
@@ -38,7 +37,7 @@ export class CentralServer {
     private translation_manager: TranslationManager;
     private theme_manager: ThemeManager;
     private kb: KeybindingsManager|undefined;
-    db: DataBase
+    db: DBService
     private services: ServicesManager;
     constructor(opts:any) {
         this.log('starting with opts', opts)
@@ -59,7 +58,7 @@ export class CentralServer {
             this.font_manager.watch_font_from_paths(name,paths)
         })
         this.db_json = opts.db_json || []
-        this.db = new DataBase(this)
+        this.db = new DBService(this)
         this.services = new ServicesManager(this,opts.services)
     }
 
@@ -68,7 +67,9 @@ export class CentralServer {
             keybindings:await load_keybindings("resources/keybindings.json")
         })
         await this.db.start()
-        this.db_json.forEach(path => this.db.watch_json(path))
+        for(let path of this.db_json) {
+            await this.db.load_json(path)
+        }
 
         this._server = new WebSocket.Server({
             port: this.websocket_port
@@ -169,7 +170,7 @@ export class CentralServer {
             if(msg.type === 'window-set-position-request') return this.app_manager.send_to_type("SCREEN", msg)
             if(is_translation(msg)) return this.translation_manager.handle(msg)
             if(is_theme(msg)) return this.theme_manager.handle(msg)
-            if(is_database(msg)) return this.db.handle(msg)
+            if(this.db.is_database(msg)) return this.db.handle(msg)
             if(this.services.is_service(msg)) this.services.handle(msg)
 
             if(msg.type === GRAPHICS.TYPE_DrawRect
