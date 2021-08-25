@@ -9,6 +9,11 @@
     "background-color": "white",
     "color": "black"
   },
+  "multiline-label": {
+    "name": "label",
+    "background-color": "white",
+    "color": "black"
+  },
   "textbox": {
     "name": "textbox",
     "background-color": "white",
@@ -37,6 +42,11 @@
         "color": "white"
       }
     }
+  },
+  "checkbutton": {
+    "name": "checkbutton",
+    "background-color": "white",
+    "color": "black"
   },
   "list-item": {
     "name": "list-item",

@@ -48,7 +48,6 @@ async function init() {
     win.root = new VBox({
         width: 300,
         height: 200,
-        fill_color:'white',
         constraint:CONSTRAINTS.WRAP,
         children:[
             new Label({text:"About Ideal OS"}),

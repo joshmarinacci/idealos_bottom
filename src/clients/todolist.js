@@ -1,4 +1,4 @@
-import {HBox, VBox} from './toolkit/panels.js'
+import {CONSTRAINTS, HBox, VBox} from './toolkit/panels.js'
 import {App, Container} from './toolkit/guitoolkit.js'
 import {Label, TextBox} from './toolkit/text.js'
 import {Button, CheckButton} from './toolkit/buttons.js'
@@ -9,13 +9,12 @@ let app = new App(process.argv)
 
 async function init() {
     await app.a_init()
-    let win = await app.open_window(0, 0, 100,100, 'plain')
+    let win = await app.open_window(50, 50, 200,100, 'plain')
 
     let add = new HBox({children:[
-        new TextBox({text:"new item", width:60, height:12, id:'input'}),
+        new TextBox({text:"new item", width:60, height:16, id:'input'}),
         new Button({text:"add", height:12, action:()=>{
             let txt = win.root.find({id:"input"}).text
-            console.log("adding text",txt)
             win.send({
                 type:"database-add",
                 object:{
@@ -29,7 +28,6 @@ async function init() {
                     }
                 }
             })
-
         }})
     ]})
     let list = new ListPanel({
@@ -45,7 +43,6 @@ async function init() {
             ]
         },
         template_function:(task)=>{
-            // console.log("making template for task",task)
             return new HBox({
                 children:[
                     new CheckButton({
@@ -66,10 +63,12 @@ async function init() {
         }
     })
     win.root = new VBox({
+        constraint:CONSTRAINTS.FILL,
         children:[
             add,
             list
-        ]
+        ],
+        hstretch:true,
     })
     win.redraw()
 }
@@ -91,12 +90,13 @@ class ListPanel extends Container {
         this.children = []
         this.query = opts.query
         this.category = opts.category
+        this.lineheight = 15
     }
     layout(gfx) {
         if(!this.list) {
             this.list = []
             this.window().app.on("database-query-response",(t) => {
-                // console.log("got the database response",t.payload.docs.length)
+                console.log("got the database response",t.payload.docs.length)
                 this.list = t.payload.docs
                 if(!this.template_function) throw new Error("ListPanel missing template_function")
                 this.children = this.list.map(this.template_function)
@@ -124,17 +124,17 @@ class ListPanel extends Container {
             })
         } else {
             this.width = this.parent.width
-            this.height = this.list.length*12
+            this.height = this.list.length*this.lineheight
             this.children.forEach(ch => ch.layout(gfx))
             this.children.forEach((ch,i) => {
                 ch.x = 0
-                ch.y = i*12
-                ch.height = 12
+                ch.y = i*this.lineheight
+                ch.height = this.lineheight
             })
         }
     }
     redraw(gfx) {
-        gfx.rect(this.x,this.y,this.width,this.height,'white')
+        // gfx.rect(this.x,this.y,this.width,this.height,'white')
         super.redraw(gfx)
     }
 }

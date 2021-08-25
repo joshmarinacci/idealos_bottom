@@ -74,6 +74,7 @@ export class ToggleButton extends Button {
 export class CheckButton extends ToggleButton {
     constructor(opts) {
         super(opts);
+        this.name = 'checkbutton'
     }
     layout(gfx) {
         this.width = 10 + this.padding.left + this.padding.right
@@ -83,7 +84,8 @@ export class CheckButton extends ToggleButton {
         let state = this.pressed?"pressed":null
         if(this.selected) state = 'selected'
         let color = this.lookup_theme_part('color',state)
-        gfx.text(this.padding.left + this.x, this.y,
+        gfx.text(this.padding.left + this.x,
+            this.padding.top+this.y,
             this.selected?String.fromCharCode(21):String.fromCharCode(20),
             color)
     }

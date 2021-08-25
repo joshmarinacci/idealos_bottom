@@ -9,6 +9,11 @@
     "background-color": "black",
     "color": "white"
   },
+  "multiline-label": {
+    "name": "label",
+    "background-color": "black",
+    "color": "white"
+  },
   "textbox": {
     "name": "textbox",
     "background-color": "black",
