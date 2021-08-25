@@ -107,12 +107,14 @@ export class DataBase {
                 lists.splice(n,1)
             }
         })
+        console.log("total db listeners",this.calc_total_listeners())
     }
 
     addEventListener(cat,listener) {
         if(!cat) throw new Error("Missing category")
         if(!this.listeners[cat]) this.listeners[cat] = []
         this.listeners[cat].push(listener)
+        console.log("total db listeners",this.calc_total_listeners())
     }
     removeEventListener(cat,listener) {
         if(!cat) throw new Error("Missing category")
@@ -208,5 +210,11 @@ export class DataBase {
         if(msg.type === "database-watch") return this.perform_database_watch(msg)
         if(msg.type === "database-add")   return this.perform_database_add(msg)
         if(msg.type === "database-update")return this.perform_database_update(msg)
+    }
+
+    calc_total_listeners() {
+        let total = 0
+        Object.values(this.listeners).forEach(ls => total+=ls.length)
+        return total
     }
 }

@@ -11,8 +11,10 @@ async function init() {
     await app.a_init()
     let win = await app.open_window(50, 50, 200,100, 'plain')
 
-    let add = new HBox({children:[
-        new TextBox({text:"new item", width:60, height:16, id:'input'}),
+    let add = new HBox({
+        constraint: CONSTRAINTS.FILL,
+        children:[
+        new TextBox({text:"new item", width:120, height:16, id:'input'}),
         new Button({text:"add", height:12, action:()=>{
             let txt = win.root.find({id:"input"}).text
             win.send({

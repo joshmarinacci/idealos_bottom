@@ -89,6 +89,7 @@ export class HBox extends Container {
         this.name = 'panel'
         this.vstretch = opts.vstretch || false
         this.fill_color = opts.fill_color
+        this.constraint = opts.constraint || CONSTRAINTS.WRAP
     }
     layout(gfx) {
         this.children.forEach(ch => ch.layout(gfx))
@@ -116,6 +117,9 @@ export class HBox extends Container {
         }
         this.width = x
         this.height = maxy
+        if(this.constraint === CONSTRAINTS.FILL) {
+            this.width = this.parent.width
+        }
     }
     redraw(gfx) {
         if(this.fill_color) {
