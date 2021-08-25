@@ -92,6 +92,14 @@
       "entrypoint": "src/clients/about.js",
       "autostart": false,
       "hide": true
+    },
+    {
+      "name": "chat",
+      "title": "Chat",
+      "icon": "chat",
+      "entrypoint": "src/clients/chat.js",
+      "autostart": false,
+      "hide": true
     }
   ],
   "services": [
