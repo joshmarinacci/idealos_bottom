@@ -62,9 +62,16 @@ export class DataBase {
 
     async start() {
         this.log("starting")
+        try {
+            let stat = await fs.promises.stat(this.changes_dir)
+            console.log('stat is', stat)
+        } catch (e) {
+            console.log("dir fails. make it")
+            await fs.promises.mkdir(this.changes_dir)
+        }
         let files = await fs.promises.readdir(this.changes_dir)
-        for(let f of files) {
-            let pth = path.join(this.changes_dir,f)
+        for (let f of files) {
+            let pth = path.join(this.changes_dir, f)
             let objs = await this.load_json(pth)
             objs.forEach(obj => this.changed_data.push(obj))
         }
