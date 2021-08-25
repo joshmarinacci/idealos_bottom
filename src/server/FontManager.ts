@@ -133,7 +133,6 @@ export class FontManager {
     }
 
     async handle(msg: any) {
-        console.log("hanlding mesg",msg)
         try {
             if (msg.type === 'request-font') {
                 let font = await this.get_font(msg.name)

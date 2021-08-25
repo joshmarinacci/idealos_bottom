@@ -62,7 +62,7 @@ export class AppManager {
         }
     }
     create_app(opts:any):App {
-        console.log("creating app with opts",opts)
+        console.log("creating app with opts",opts.entrypoint)
         let app:App = {
             subprocess: undefined,
             connection:undefined,
@@ -95,14 +95,14 @@ export class AppManager {
     }
 
     app_connected(msg: any, ws: WebSocket) {
-        this.log("app connected",msg)
+        // this.log("app connected",msg.app_type, msg.app)
         let app = this.get_app_by_id(msg.app)
         if(app === undefined) {
             return console.error(`app missing ${msg.app}`)
         } else {
             // @ts-ignore
             app.connection = ws
-            console.log("attached app")
+            // console.log("attached app")
             this.send_to_app(app.id, GENERAL.MAKE_Connected({app:app.id}))
         }
     }
@@ -200,6 +200,9 @@ export class AppManager {
             parent:"NO_OWNER",
             id:"win_"+Math.floor(Math.random()*10000)
         }
+        //constrain
+        if(win.x < 0) win.x = 0
+        if(win.y < MENUBAR_HEIGHT) win.y = MENUBAR_HEIGHT
         if(msg.window_type === 'menubar') {
             win.type = "MENUBAR"
             win.x = 0
@@ -337,7 +340,6 @@ export class AppManager {
         // @ts-ignore
         app.subprocess.stderr.on('data',(data:any)=>this.log(`STDERR ${app.name} ${data}`))
         // this.server.cons.forward_to_screen(DEBUG.MAKE_AppStarted({target:id}))
-        console.log("app started")
     }
 
     start_app_by_name(msg: any) {
