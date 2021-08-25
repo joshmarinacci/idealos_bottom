@@ -10,7 +10,7 @@ let theme = 'light'
 let language = 'base'
 async function init() {
     await app.a_init()
-    let win = await app.open_window(30,50,100,50, 'debug')
+    let win = await app.open_window(30,50,100,100, 'debug')
     win.root = new VBox({
         id:'vbox',
         constraint:CONSTRAINTS.FILL,
@@ -24,7 +24,10 @@ async function init() {
                     if(language === 'base') win.send({type:'translation_set_language',language:"lolcat"})
                     if(language === 'lolcat') win.send({type:'translation_set_language',language:"base"})
             }}),
-            new TranslatedLabel({text_key:"button.okay"})
+            new TranslatedLabel({text_key:"button.okay"}),
+            new Button( {text:'reset db', action:() => {
+                    win.send({type:'database-reset'})
+                }}),
         ]
     })
     win.redraw()

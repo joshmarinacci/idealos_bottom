@@ -75,6 +75,10 @@ export class DataBase {
         return Array.from(this.object_cache.values())
     }
 
+
+    get_changes_dir() {
+        return this.changes_dir
+    }
     set_changes_dir(dir:string) {
         this.changes_dir = dir
     }
@@ -115,6 +119,11 @@ export class DataBase {
         this.changed_data = []
         this.object_cache = new Map<string, any>()
         this.data_file_contents = new Map<string, any[]>()
+    }
+
+    async reset() {
+        this.log("resetting")
+        this.changed_data = []
     }
 
 

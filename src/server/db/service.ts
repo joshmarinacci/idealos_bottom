@@ -1,19 +1,23 @@
 import {CentralServer} from "../server.js";
 import {DataBase} from "./db.js";
+import fs from "fs";
 
 export const DATABASE_GROUP = {
     "database-query":"database-query",
     "database-watch":"database-watch",
     "database-add":"database-add",
-    "database-update":"database-update"
+    "database-update":"database-update",
+    "database-reset":"database-reset",
 }
 
 export class DBService {
     private server: CentralServer;
     private db: DataBase;
+    private loaded_files: string[];
     constructor(server:CentralServer) {
         this.server = server
         this.db = new DataBase()
+        this.loaded_files = []
     }
     log(...args) {
         console.log("DBService:",...args)
@@ -27,6 +31,7 @@ export class DBService {
         if(msg.type === "database-watch") return this.perform_database_watch(msg)
         if(msg.type === "database-add")   return this.perform_database_add(msg)
         if(msg.type === "database-update")return this.perform_database_update(msg)
+        if(msg.type === "database-reset")return this.perform_database_reset(msg)
     }
 
     perform_database_query(msg) {
@@ -67,6 +72,16 @@ export class DBService {
             this.db.setProp(obj,key,value)
         })
     }
+    private async perform_database_reset(msg) {
+        await this.db.stop()
+        await fs.promises.rm(this.db.get_changes_dir(), {recursive:true})
+        await fs.promises.mkdir(this.db.get_changes_dir())
+        await this.db.start()
+        for (let file of this.loaded_files) {
+            await this.db.load_json(file)
+        }
+        this.log("reset database")
+    }
 
     remove_app_listeners(app) {
         Object.values(this.db.listeners).forEach(lists => {
@@ -82,9 +97,11 @@ export class DBService {
         await this.db.start()
     }
     async load_json(path: string) {
+        this.loaded_files.push(path)
         await this.db.load_json(path)
     }
     async stop() {
         await this.db.stop()
     }
+
 }
