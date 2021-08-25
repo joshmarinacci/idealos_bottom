@@ -12,7 +12,7 @@ let app = new App(process.argv)
 async function init() {
     await app.a_init()
 
-    let win = await app.open_window(0, 0, 150,100, 'plain')
+    let win = await app.open_window(100, 50, 150,100, 'plain')
     let save = new Button({text:'save'})
     let add_note = new Button({text:'add'})
     let query_box = new TextBox({width:50, text:"search"})
