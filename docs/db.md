@@ -20,25 +20,25 @@ a type and a category.
 
 DB api:
 
-* listen for changes to a particular category
-* listen for changes to everything
-* start db: async
-* init db from on disk json and shadow files (shadow files are hidden from git)
-* client can listen for changes
-* client can add object, persist to shadow files
+* // listen for changes to a particular category
+* // listen for changes to everything
+* // start db: async
+* // init db from on disk json and shadow files (shadow files are hidden from git)
+* // client can listen for changes
+* //client can add object, persist to shadow files
 * client can delete object, persist record of deletion to shadow files
-* client can modify object, persist record of change to shadow files
+* //client can modify object, persist record of change to shadow files
 * when client dies, listener must be cleaned up
   * autonomous process to always clean up listeners every 10 sec?
-* client can query for objects based on query object
-* find object by id
-* modify single property in db
+* // client can query for objects based on query object
+* // find object by id
+* // modify single property in db
 * respond to general metrics request
   * print total object count
   * print total listener count
   * print total db size in in-memory bytes
   * print total db size in on disk bytes
   * print list of files used for db (static and shadow)
-* shutdown db: async
-  * kills any listeners
-  * persists and flushes everything to disk before quitting 
+* // shutdown db: async
+  * // kills any listeners
+  * // persists and flushes everything to disk before quitting 
