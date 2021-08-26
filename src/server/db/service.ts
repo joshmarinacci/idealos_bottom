@@ -1,6 +1,7 @@
 import {CentralServer} from "../server.js";
 import {DataBase} from "./db.js";
 import fs from "fs";
+import {make_response} from "../common.js";
 
 export const DATABASE_GROUP = {
     "database-query":"database-query",
@@ -38,11 +39,11 @@ export class DBService {
         console.log("searching database for", msg.query)
         let res = this.db.QUERY(msg.query)
         console.log("result is", res.length)
-        this.server.app_manager.send_to_app(msg.app, {
+        this.server.app_manager.send_to_app(msg.app, make_response(msg,{
             type: "database-query-response",
             app: msg.app,
             docs: res,
-        })
+        }))
     }
     perform_database_watch(msg) {
         let cb = (obj)=>{

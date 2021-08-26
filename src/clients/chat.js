@@ -1,4 +1,4 @@
-import {CONSTRAINTS, HBox, VBox} from './toolkit/panels.js'
+import {CONSTRAINTS, HBox, ListView, VBox} from './toolkit/panels.js'
 import {App} from './toolkit/guitoolkit.js'
 import {Label, MultilineLabel, MultilineTextBox, TextBox} from './toolkit/text.js'
 import {Button, CheckButton, ToggleButton} from './toolkit/buttons.js'
@@ -10,33 +10,25 @@ let app = new App(process.argv)
 async function init() {
     await app.a_init()
     //sidebar of users we are chatting with
-    let users = new VBox({
-        width: 60,
-        children: [
-            new Button({text: "Alice"}),
-            new Button({text: "Bob"}),
-            new Button({text: "Claire"}),
-        ],
+    let users = new ListView({
+        width:60,
+        data:[],
+        template_function:(item)=>new Label({text:item.props.title}),
         height: 100,
     })
 
-    //main chat view
-
-    let chatlog = new VBox({
-        width: 140,
-        height: 100,
-        children: [
-            new Button({text: "Hi Bob"}),
-            new Button({text: "Hi Alice"}),
-            new Button({text: "What's for dinner?"}),
-            new Button({text: "Mac and Cheese"}),
-        ]
+    let chatlog = new ListView({
+        width:140,
+        height:100,
+        data:[],
+        template_function:(item)=>new Label({text:item.props.contents}),
     })
     let input = new TextBox({text: "this is my text", width: 140, height: 20})
 
 
-    let win = await app.open_window(0, 0, 200, 100, 'plain')
+    let win = await app.open_window(50, 50, 200, 100, 'plain')
     win.root = new HBox({
+        constraint:CONSTRAINTS.FILL,
         children: [
             users,
             new VBox({
@@ -51,7 +43,7 @@ async function init() {
     })
     win.redraw()
 
-    let query = {
+    let user_query = {
         and: [
             {
                 TYPE: CATEGORIES.CHAT.TYPES.CONVERSATION
@@ -61,10 +53,27 @@ async function init() {
             }
         ]
     }
-    win.send({
-        type: "database-query",
-        query: query
+    let resp1 = await win.send_and_wait_for_response({ type: "database-query", query: user_query })
+    console.log("resopnse 1",resp1)
+    users.set_data(resp1.docs)
+    win.app.on("database-query-response",(t) => {
+        console.log("response is",t)
+        console.log(t.payload)
     })
+    let conv_query = {
+        and:[
+            {
+                TYPE:CATEGORIES.CHAT.TYPES.MESSAGE,
+            },
+            {
+                CATEGORY:CATEGORIES.CHAT.ID,
+            }
+        ]
+    }
+    let resp = await win.send_and_wait_for_response({type:"database-query", query:conv_query})
+    console.log("got the response",resp)
+    chatlog.set_data(resp.docs)
+
 }
 
 
