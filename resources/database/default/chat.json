@@ -1,0 +1,56 @@
+[
+  {
+    "id": "chat_c_1",
+    "category": "CATEGORIES.CHAT.ID",
+    "type": "CATEGORIES.CHAT.TYPES.CONVERSATION",
+    "props": {
+      "title": "Alice"
+    }
+  },
+  {
+    "id": "chat_c_2",
+    "category": "CATEGORIES.CHAT.ID",
+    "type": "CATEGORIES.CHAT.TYPES.CONVERSATION",
+    "props": {
+      "title": "Bob"
+    }
+  },
+  {
+    "id": "chat_c_3",
+    "category": "CATEGORIES.CHAT.ID",
+    "type": "CATEGORIES.CHAT.TYPES.CONVERSATION",
+    "props": {
+      "title": "Claire"
+    }
+  },
+
+
+  {
+    "id": "chat_m_1",
+    "category": "CATEGORIES.CHAT.ID",
+    "type": "CATEGORIES.CHAT.TYPES.MESSAGE",
+    "props": {
+      "sender": "alice",
+      "receivers": ["bob"],
+      "contents": "Hi Bob",
+      "timestamp": 1
+    }
+  },
+
+  {
+    "id": "chat_m_2",
+    "category": "CATEGORIES.CHAT.ID",
+    "type": "CATEGORIES.CHAT.TYPES.MESSAGE",
+    "props": {
+      "sender": "bob",
+      "receivers": ["alice"],
+      "contents": "Hi Alice",
+      "timestamp": 2
+    }
+  }
+
+
+
+
+
+]
