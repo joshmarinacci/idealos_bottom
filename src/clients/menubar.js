@@ -111,6 +111,14 @@ class MenuItem extends Component {
     }
 }
 
+class ClockMenuItem extends MenuItem {
+    layout(gfx) {
+        let date = new Date()
+        this.text = date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()
+        super.layout(gfx)
+    }
+}
+
 function open_menu(mi,item) {
     let win = mi.window()
     let pos = mi.position_in_window()
@@ -205,7 +213,7 @@ class CustomMenuBar extends Container {
         const open_clock = () => {
             console.log("opening the clock")
         }
-        this.clock_menu = new MenuItem({text:'12:48 PM', win:this.win, action:open_clock,align:'right'})
+        this.clock_menu = new ClockMenuItem({text:'12:48 PM', win:this.win, action:open_clock,align:'right'})
 
         this.set_tree({type:'menubar', children:[]})
         app.on(MENUS.TYPE_SetMenubar,(msg)=> this.set_tree(msg.payload.menu))
@@ -290,6 +298,9 @@ async function init() {
     let win = await app.open_window(0,0,512,17,'menubar')
     win.root = new CustomMenuBar({width:win.width, height:win.height},menu_tree,app,win)
     win.redraw()
+    setInterval(()=>{
+        win.repaint()
+    },1*1000)
 }
 
 app.on('start',()=>init())
