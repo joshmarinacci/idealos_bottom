@@ -206,10 +206,38 @@ class CustomMenuBar extends Container {
             })
         }
         this.wifi_menu = new MenuItem({text: String.fromCodePoint(29), win:this.win, action:open_wifi,align:'right'})
-        // const open_battery = () => {
-        //     console.log("opening the battery")
-        // }
-        // this.battery_menu = new MenuItem({text:'B', win:this.win, action:open_battery,align:'right'})
+        const open_awake = () => {
+            open_menu(this.wifi_menu, {
+                label:'awake',
+                children:[
+                    {
+                        type:'item',
+                        label:"5 minutes",
+                        action:function() {
+                        }
+                    },
+                    {
+                        type:'item',
+                        label:"10 minutes",
+                        action:function() {
+                        }
+                    },
+                    {
+                        type:'item',
+                        label:"30 minutes",
+                        action:function() {
+                        }
+                    },
+                    {
+                        type:'item',
+                        label:"infinite minutes",
+                        action:function() {
+                        }
+                    },
+                ]
+            })
+        }
+        this.awake_menu = new MenuItem({text:String.fromCodePoint(201), win:this.win, action:open_awake,align:'right'})
         const open_clock = () => {
             console.log("opening the clock")
         }
@@ -258,6 +286,7 @@ class CustomMenuBar extends Container {
         })
         this.children.unshift(this.system_menu)
         this.children.push(this.sound_menu)
+        this.children.push(this.awake_menu)
         this.children.push(this.wifi_menu)
         this.children.push(this.clock_menu)
         this.children.forEach(ch => ch.parent = this)
