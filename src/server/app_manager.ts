@@ -266,6 +266,10 @@ export class AppManager {
             app_owner:app.id,
             parent: msg.parent,
         }
+        // console.log('the screen is',this.screen)
+        if(win.x + win.width > this.screen.width) {
+            win.x = this.screen.width - win.width
+        }
 
         app.windows.push(win)
 

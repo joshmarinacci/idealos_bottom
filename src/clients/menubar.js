@@ -79,6 +79,7 @@ class MenuItem extends Component {
         this.action = opts.action
         this.padding = new Insets(3)
         this.win = opts.win
+        this.align = opts.align || "left"
     }
     layout(gfx) {
         let met = gfx.text_size(this.text)
@@ -147,19 +148,84 @@ class CustomMenuBar extends Container {
                 ]
             })
         }})
+        const open_sound = () => {
+            open_menu(this.sound_menu, {
+                label:'sound',
+                children:[
+                    {
+                        type:'item',
+                        label:"Mute",
+                        action:function() { }
+                    },
+                    {
+                        type:'item',
+                        label:"50%",
+                        action:function() { }
+                    },
+                    {
+                        type:'item',
+                        label:"100%",
+                        action:function() { }
+                    },
+                ]
+            })
+        }
+
+        this.sound_menu = new MenuItem({text: String.fromCodePoint(28), win:this.win, action:open_sound, align:'right'})
+        const open_wifi = () => {
+            open_menu(this.wifi_menu, {
+                label:'wifi',
+                children:[
+                    {
+                        type:'item',
+                        label:"Da Awesome Car Wifi",
+                        action:function() {
+                        }
+                    },
+                    {
+                        type:'item',
+                        label:"jhome",
+                        action:function() {
+                        }
+                    },
+                    {
+                        type:'item',
+                        label:"Network Settings",
+                        action:function() {
+                        }
+                    },
+                ]
+            })
+        }
+        this.wifi_menu = new MenuItem({text: String.fromCodePoint(29), win:this.win, action:open_wifi,align:'right'})
+        // const open_battery = () => {
+        //     console.log("opening the battery")
+        // }
+        // this.battery_menu = new MenuItem({text:'B', win:this.win, action:open_battery,align:'right'})
+        const open_clock = () => {
+            console.log("opening the clock")
+        }
+        this.clock_menu = new MenuItem({text:'12:48 PM', win:this.win, action:open_clock,align:'right'})
+
         this.set_tree({type:'menubar', children:[]})
         app.on(MENUS.TYPE_SetMenubar,(msg)=> this.set_tree(msg.payload.menu))
     }
     layout(gfx) {
-        console.log("menubar layout",this.window().width)
         this.width = this.window().width
         this.height = this.window().height
 
         this.children.forEach(ch => ch.layout(gfx))
         let x = 0
+        let x2 = this.width
         this.children.forEach(ch => {
-            ch.x = x
-            x += ch.width
+            if(ch.align === 'left') {
+                ch.x = x
+                x += ch.width
+            }
+            if(ch.align === 'right') {
+                x2 -= ch.width
+                ch.x = x2
+            }
         })
     }
 
@@ -168,10 +234,10 @@ class CustomMenuBar extends Container {
         let bg = this.lookup_theme_part('background-color',null)
         gfx.rect(this.x,this.y,this.width,this.height,bd) // border
         gfx.rect(this.x,this.y,this.width,this.height-1,bg) //background
-        let co = this.lookup_theme_part('color',null)
+        // let co = this.lookup_theme_part('color',null)
         super.redraw(gfx)
-        gfx.text(this.width-35,2,String.fromCodePoint(28),co)
-        gfx.text(this.width-20,2,String.fromCodePoint(29),co)
+        // gfx.text(this.width-35,2,String.fromCodePoint(28),co)
+        // gfx.text(this.width-20,2,String.fromCodePoint(29),co)
     }
 
     set_tree(menu) {
@@ -183,6 +249,9 @@ class CustomMenuBar extends Container {
             return mi
         })
         this.children.unshift(this.system_menu)
+        this.children.push(this.sound_menu)
+        this.children.push(this.wifi_menu)
+        this.children.push(this.clock_menu)
         this.children.forEach(ch => ch.parent = this)
         this.repaint()
     }
@@ -222,8 +291,5 @@ async function init() {
     win.root = new CustomMenuBar({width:win.width, height:win.height},menu_tree,app,win)
     win.redraw()
 }
-
-
-
 
 app.on('start',()=>init())
