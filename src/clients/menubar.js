@@ -78,7 +78,6 @@ class MenuItem extends Component {
         this.pressed = false
         this.action = opts.action
         this.padding = new Insets(3)
-        this.win = opts.win
         this.align = opts.align || "left"
     }
     layout(gfx) {
@@ -126,23 +125,19 @@ function open_menu(mi,item) {
     let y = win.y + pos.y + mi.bounds().height
     win.a_open_child_window(x,y,40,80,'menu').then(popup => {
         mi.popup = popup
-        mi.popup.root = new CustomMenu(
-            {width:popup.width, height:popup.height},
-            item,app,popup)
+        mi.popup.root = new CustomMenu({width:popup.width, height:popup.height},item,popup)
         mi.popup.root.parent = mi.popup
         mi.popup.shrink_to_fit()
     })
 }
 
 class CustomMenuBar extends Container {
-    constructor(opts,tree,app,win) {
+    constructor(opts,tree) {
         super(opts)
         this.name = "menu-bar"
         this.tree = tree
-        this.app = app
-        this.win = win
         this.padding = 1
-        this.system_menu = new MenuItem({text:'~',win:this.win, action:() => {
+        this.system_menu = new MenuItem({text:'~', action:() => {
             open_menu(this.system_menu, {
                 label:'system',
                 children:[
@@ -150,7 +145,7 @@ class CustomMenuBar extends Container {
                         type:'item',
                         label:"About",
                         action:function() {
-                            SYSTEM.start_app_by_name(app,"about")
+                            SYSTEM.start_app_by_name(this.app(),"about")
                         }
                     },
                 ]
@@ -179,7 +174,7 @@ class CustomMenuBar extends Container {
             })
         }
 
-        this.sound_menu = new MenuItem({text: String.fromCodePoint(28), win:this.win, action:open_sound, align:'right'})
+        this.sound_menu = new MenuItem({text: String.fromCodePoint(28), action:open_sound, align:'right'})
         const open_wifi = () => {
             open_menu(this.wifi_menu, {
                 label:'wifi',
@@ -205,7 +200,7 @@ class CustomMenuBar extends Container {
                 ]
             })
         }
-        this.wifi_menu = new MenuItem({text: String.fromCodePoint(29), win:this.win, action:open_wifi,align:'right'})
+        this.wifi_menu = new MenuItem({text: String.fromCodePoint(29),  action:open_wifi,align:'right'})
         const open_awake = () => {
             open_menu(this.wifi_menu, {
                 label:'awake',
@@ -237,11 +232,11 @@ class CustomMenuBar extends Container {
                 ]
             })
         }
-        this.awake_menu = new MenuItem({text:String.fromCodePoint(201), win:this.win, action:open_awake,align:'right'})
+        this.awake_menu = new MenuItem({text:String.fromCodePoint(201),  action:open_awake,align:'right'})
         const open_clock = () => {
             console.log("opening the clock")
         }
-        this.clock_menu = new ClockMenuItem({text:'12:48 PM', win:this.win, action:open_clock,align:'right'})
+        this.clock_menu = new ClockMenuItem({text:'12:48 PM',  action:open_clock,align:'right'})
 
         this.set_tree({type:'menubar', children:[]})
         app.on(MENUS.TYPE_SetMenubar,(msg)=> this.set_tree(msg.payload.menu))
@@ -279,7 +274,7 @@ class CustomMenuBar extends Container {
     set_tree(menu) {
         this.tree = menu
         this.children = this.tree.children.map((item,i) => {
-            let mi = new MenuItem({text:item.label, item:item, win:this.win, action:() => {
+            let mi = new MenuItem({text:item.label, item:item,  action:() => {
                     open_menu(mi, item)
                 }})
             return mi
@@ -295,24 +290,22 @@ class CustomMenuBar extends Container {
 }
 
 class CustomMenu extends VBox {
-    constructor(opts,item,app,win) {
+    constructor(opts,item) {
         super(opts);
         this.item = item
-        this.app = app
-        this.win = win
         this.constraint = CONSTRAINTS.WRAP
         this.hstretch = true
         this.fill_color = 'black'
         this.children = this.item.children.map((item,i) => {
-            return new MenuItem({text:item.label, item:item, win:win, action:()=>{
-                win.close()
+            return new MenuItem({text:item.label, item:item, action:()=>{
+                this.window().close()
                 if(typeof item.action === 'function') {
                     item.action()
                 } else {
                     app.send(INPUT.MAKE_Action({
                         command: item.command,
-                        app: this.app._appid,
-                        window: this.win._winid
+                        app: this.app()._appid,
+                        window: this.window()._winid
                     }))
                 }
             }})
@@ -325,7 +318,8 @@ class CustomMenu extends VBox {
 async function init() {
     await app.a_init()
     let win = await app.open_window(0,0,512,17,'menubar')
-    win.root = new CustomMenuBar({width:win.width, height:win.height},menu_tree,app,win)
+    win.root = new CustomMenuBar({width:win.width, height:win.height},menu_tree)
+    win.root.parent = win
     win.redraw()
     setInterval(()=>{
         win.repaint()

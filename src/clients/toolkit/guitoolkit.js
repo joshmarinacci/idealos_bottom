@@ -136,11 +136,56 @@ export class JoshFont {
         return a_glyph.image
     }
 }
+class ThemeCache {
+    constructor(win) {
+        this.win = win
+        this.cache = {}
+    }
+    clear() {
+        this.cache = {}
+    }
+    lookup_theme_part(comp,part,state) {
+        let key = `${comp}_${part}`
+        // this.win.log("theme key",key)
+        if(!this.cache[key]) {
+            this.cache[key] = {
+                comp:comp,
+                part:part,
+                state:state,
+                loading:true
+            }
+            let entry = this.cache[key]
+            // this.win.log("loading",key)
+            SYSTEM.get_control_theme(this.win, comp, 'plain', 'normal').then(theme => {
+                entry.theme = theme
+                entry.loading = false
+                this.win.windows.forEach(win => win.repaint())
+            })
+        }
+        let entry = this.cache[key]
+        if(entry.loading) {
+            return 'black'
+        } else {
+            if(entry.theme[part]) {
+                if(state
+                    && entry.theme.states
+                    && entry.theme.states[state]
+                    && entry.theme.states[state][part]
+                ) {
+                    return entry.theme.states[state][part]
+                }
+                return entry.theme[part]
+            }
+        }
+        return 'black'
+    }
+}
 
 export class App {
     constructor(argv) {
         this._appid = argv[3]
         this.ws = new WebSocket(argv[2]);
+        this.theme_cache = new ThemeCache(this)
         this.listeners = {}
         this.listeners['ALL'] = []
         this.listeners['PENDING_RESPONSE'] = []
@@ -172,7 +217,8 @@ export class App {
         this._theme = null
 
         this.on("theme-changed",()=>{
-            this.windows.forEach(win => win.theme_changed())
+            this.theme_cache.clear()
+            this.windows.forEach(win => win.repaint())
         })
         this.on('translation_language_changed',() => {
             this.windows.forEach(win => win.translation_changed())
@@ -263,6 +309,9 @@ export class App {
         if(!msg.id) msg.id = "msg_"+Math.floor((Math.random()*10000))
         this.send(msg)
         return this.wait_for_response(msg.id)
+    }
+    lookup_theme_part(comp, name, state) {
+        return this.theme_cache.lookup_theme_part(comp,name,state)
     }
 }
 
@@ -510,10 +559,6 @@ export class Window {
     send(msg) {
         this.app.send(msg)
     }
-    theme_changed() {
-        this.root.theme_changed()
-        this.repaint()
-    }
     translation_changed() {
         this.root.translation_changed()
         this.repaint()
@@ -680,31 +725,7 @@ export class Component {
 
     lookup_theme_part(name, state) {
         if(!this.name) throw new Error("component has no name")
-        if (!this.theme && !this.theme_loading) {
-            this.theme_loading = true
-            SYSTEM.get_control_theme(this.window(),this.name,'plain','normal').then(theme => {
-                    this.theme = theme
-                    this.theme_loading = false
-                    this.repaint()
-                })
-            return 'black'
-        }
-        if (!this.theme && this.theme_loading) {
-            return 'black'
-        }
-        // console.log("using theme",this.theme,name,state,this.theme.states)
-        if (state && this.theme.states) {
-            // console.log("checking out state",this.name,state,name,this.theme)
-            if (this.theme.states[state]) {
-                if(this.theme.states[state][name]) {
-                    return this.theme.states[state][name]
-                }
-            }
-        }
-        return this.theme[name]
-    }
-    theme_changed() {
-        this.theme = null
+        return this.app().lookup_theme_part(this.name,name,state)
     }
 
     lookup_translated_text(key) {
@@ -764,10 +785,6 @@ export class Container extends Component {
             if(ch.visible) ch.redraw(gfx)
         })
         gfx.translate(-this.x,-this.y)
-    }
-    theme_changed() {
-        super.theme_changed()
-        this.children.forEach(ch => ch.theme_changed())
     }
     translation_changed() {
         super.translation_changed()
