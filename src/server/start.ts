@@ -18,6 +18,7 @@ async function doit() {
         "resources/database/default/tasks.json",
         "resources/database/default/notes.json",
         "resources/database/default/chat.json",
+        "resources/database/default/music.json",
     ]
 
     let server = new CentralServer({

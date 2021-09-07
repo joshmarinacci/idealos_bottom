@@ -1,0 +1,46 @@
+[
+  {
+    "id": "music01",
+    "category": "CATEGORIES.MUSIC.ID",
+    "type": "CATEGORIES.MUSIC.TYPES.SONG",
+    "props": {
+      "title": "Gigababoki",
+      "artist": "And.",
+      "album": "Dans",
+      "url": "https://joshondesign.com/p/music/And_-_Dans/And_-_01_-_Gigababoki.mp3"
+    }
+  },
+  {
+    "id": "music02",
+    "category": "CATEGORIES.MUSIC.ID",
+    "type": "CATEGORIES.MUSIC.TYPES.SONG",
+    "props": {
+      "artist": "And.",
+      "album": "Dans",
+      "title": "Hilton Orbital Hotel",
+      "url": "https://joshondesign.com/p/music/And_-_Dans/And_-_02_-_Hilton_Orbital_Hotel.mp3"
+    }
+  },
+  {
+    "id": "music03",
+    "category": "CATEGORIES.MUSIC.ID",
+    "type": "CATEGORIES.MUSIC.TYPES.SONG",
+    "props": {
+      "artist": "And.",
+      "album": "Dans",
+      "title": "Start Havok",
+      "url": "https://joshondesign.com/p/music/And_-_Dans/And_-_03_-_Start_Havok.mp3"
+    }
+  },
+  {
+    "id": "music04",
+    "category": "CATEGORIES.MUSIC.ID",
+    "type": "CATEGORIES.MUSIC.TYPES.SONG",
+    "props": {
+      "artist": "And.",
+      "album": "Dans",
+      "title": "Chicken Soup",
+      "url": "https://joshondesign.com/p/music/And_-_Dans/And_-_04_-_Chicken_Soup.mp3"
+    }
+  }
+]

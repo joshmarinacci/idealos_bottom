@@ -17,6 +17,16 @@ export const CONSTRAINTS = {
     FILL:'fill',
     WRAP:'wrap'
 }
+/*
+
+a vbox can set constraint to fill to fill up the window parent
+or add a property on the window to stretch the child to fill it?
+
+nested boxes use align: start, center, end, stretch, to align across the major axis
+nested boxes use justify: start, center, end, stretch, to align along the major axis
+nested boxes use flex:1.0 and flex:0.0 to allocate the extra space
+
+ */
 export class VBox extends Container {
     constructor(opts) {
         super(opts);

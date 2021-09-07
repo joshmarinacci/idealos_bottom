@@ -94,6 +94,14 @@
       "hide": true
     },
     {
+      "name": "musicplayer",
+      "title": "Music",
+      "icon": "music",
+      "entrypoint": "src/clients/musicplayer.js",
+      "autostart": false,
+      "hide": false
+    },
+    {
       "name": "chat",
       "title": "Chat",
       "icon": "chat",
