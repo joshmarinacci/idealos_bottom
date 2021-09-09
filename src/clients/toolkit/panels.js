@@ -22,114 +22,113 @@ export const CONSTRAINTS = {
 a vbox can set constraint to fill to fill up the window parent
 or add a property on the window to stretch the child to fill it?
 
-nested boxes use align: start, center, end, stretch, to align across the major axis
-nested boxes use justify: start, center, end, stretch, to align along the major axis
-nested boxes use flex:1.0 and flex:0.0 to allocate the extra space
+window.grow-to-fit: makes the window size it's child to fill itself.
+window.shrink-to-fit: makes the window adopt the size of it's child.
+an enum for child_sizing?
+
+boxes use direction for h vs v
+boxes have no wrapping for now
+boxes use justify: start, center, end, to align along the major axis
+boxes use align: start, center, end, stretch, to align across the minor axis
+boxes: gap for the space between items
+
+children (including boxes, but also all other components)
+    flex: 0 to 1.0 to allocate any extra space beyond the minimum
+        default value is 0.
+        what is the default size of a component?
+
+
+
+three phases:
+measure:
+    ask each child what it's preferred size is
+    calculate a self minimum preferred size based on the child preferred sizes and flex settings
+layout:
+    set self size
+    calculate excess space
+    set size and positions of children
+draw:
+    draw the static tree
+
+algorithm:
+box.layout
+    ask each child to layout itself. they should be at their preferred size then
+    calculate excess space
+    position children based on gap and desired alignment settings
+    resize children that are given excess space based on alignment settings
+    resize children that are given excess space based on stretch settings
+
+    done. now drawing can begin.
+this is recursive but still does layout on each child only once.
+
 
  */
 export class VBox extends Container {
     constructor(opts) {
         super(opts);
-        this.border_width = opts.border_width || 0
-        this.padding = opts.padding || 0
-        this.hstretch = opts.hstretch || false
+        this.gap = opts.gap || 2
         this.name = 'panel'
+        this.preferred_width = opts.width || 10
+        this.preferred_height = opts.height || 10
+        this.direction = "column"
+        this.align = opts.align || 'start'
+        this.justify = opts.justify || "start"
         this.fill_color = opts.fill_color
-        this.constraint = opts.constraint || CONSTRAINTS.WRAP
-    }
-    layout(gfx) {
-        if(this.constraint === CONSTRAINTS.WRAP) {
-            this.children.forEach(ch => ch.layout(gfx))
-            let y = this.padding
-            let maxx = this.padding
-            this.children.forEach(ch => {
-                ch.x = this.padding
-                ch.y = y
-                y += ch.height
-                y += this.padding
-                maxx = Math.max(maxx, this.padding + ch.width + this.padding)
-            })
-            if (this.hstretch) {
-                this.children.forEach(ch => ch.width = maxx)
-            }
-            this.width = maxx+this.padding+1
-            this.height = y
-        }
-        if(this.constraint === CONSTRAINTS.FILL) {
-            this.width = this.parent.width
-            this.height = this.parent.height
-            this.children.forEach(ch => ch.layout(gfx))
-            let y = this.padding
-            let min_space = 0
-            this.children.forEach(ch => min_space += ch.height)
-            let extra_space = this.height - min_space
-            this.children.forEach(ch => {
-                ch.x = this.padding
-                ch.y = y
-                if(ch.flex === 1.0) {
-                    ch.height = ch.height+extra_space
-                }
-                y += ch.height
-                y += this.padding
-            })
-            let maxx = this.width - this.padding
-            if(this.hstretch) {
-                this.children.forEach(ch => {
-                    ch.width = maxx
-                    ch.layout(gfx)
-                })
-            }
-        }
-    }
-    redraw(gfx) {
-        if(this.fill_color) {
-            gfx.rect(this.x,this.y,this.width,this.height,this.fill_color)
-        } else {
-            let bg = this.lookup_theme_part("background-color")
-            gfx.rect(this.x, this.y, this.width, this.height, bg)
-        }
-        super.redraw(gfx)
-    }
-}
-
-export class HBox extends Container {
-    constructor(opts) {
-        super(opts);
-        this.padding = opts.padding || 0
-        this.name = 'panel'
-        this.vstretch = opts.vstretch || false
-        this.fill_color = opts.fill_color
-        this.constraint = opts.constraint || CONSTRAINTS.WRAP
     }
     layout(gfx) {
         this.children.forEach(ch => ch.layout(gfx))
-        let x = this.padding
-        let maxy = this.padding
-        let min_space = 0
-        this.children.forEach(ch => min_space += ch.width)
-        let extra_space = this.width - min_space
+        this.width = this.preferred_width
+        this.height = this.preferred_height
+        console.log("vbox layout ",this.id,this.direction,
+            `${this.width} x ${this.height}`,
+            `pos: maj: ${this.justify} min: ${this.align}`
+        )
+        let v1 = this.gap
+        let max_girth = 0
         this.children.forEach(ch => {
-            if(!ch.visible) return
-            ch.x = x
-            ch.y = this.padding
-            if(ch.flex === 1.0) {
-                ch.width = ch.width +extra_space
-            }
-            x += ch.width
-            x += this.padding
-            maxy = Math.max(maxy,this.padding+ch.height+this.padding)
+            v1 += this.getChildSize(ch)
+            v1 += this.gap
+            let girth = this.getChildGirth(ch)
+            if(girth > max_girth) max_girth = girth
         })
-        if(this.vstretch) {
-            this.children.forEach(ch => {
-                ch.height = this.height
-                ch.layout(gfx)
-            })
+        let leftover = this.getChildSize(this) - v1
+        // console.log("leftover is",this.id,this.getChildSize(this),leftover)
+        if(v1 > this.getPreferredSize()) {
+            console.log(this.id,"expanding major length to fit children",v1)
+            this.setChildSize(this,v1)
+        } else {
+            this.setChildSize(this,this.getPreferredSize())
         }
-        this.width = x
-        this.height = maxy
-        if(this.constraint === CONSTRAINTS.FILL) {
-            this.width = this.parent.width
+
+        // console.log(this.id,"greatest minor axis:",max_girth)
+        if(max_girth > this.getChildGirth(this)) {
+            console.log(this.id,"expanding minor length to fit children",max_girth)
+            this.setChildGirth(this, max_girth)
         }
+        //position children using excess space
+        let v2 = this.gap
+        this.children.forEach(ch => {
+            this.setChildStart(ch,v2)
+            let ch_v = this.getChildSize(ch)
+            if(ch.flex === 1) {
+                console.log(this.id,'giving leftover to flex child',ch.id)
+                this.setChildSize(ch,ch_v + leftover*1.0)
+            }
+            v2 += this.getChildSize(ch)
+            v2 += this.gap
+
+            if(this.align === 'stretch') {
+                this.setChildGirth(ch,this.getChildGirth(this)-this.gap-this.gap)
+                console.log(this.id,'doing stretch align',this.getChildGirth(ch),'to child',ch.id)
+            }
+            if(this.align === 'end') {
+                // console.log(this.id,'doing end align')
+                let z = this.getChildGirth(this) - this.getChildGirth(ch)
+                // console.log(this.getChildGirth(this),this.getChildGirth(ch),z)
+                this.setChildStart(ch,z)
+            }
+        })
+        console.log(this.id,`pref size ${this.preferred_width} x ${this.preferred_height} actual ${this.width} x ${this.height}`)
     }
     redraw(gfx) {
         if(this.fill_color) {
@@ -141,6 +140,71 @@ export class HBox extends Container {
         super.redraw(gfx)
     }
 
+    setChildStart(ch, v) {
+        if(this.direction === 'row') {
+            ch.x = v
+        }
+        if(this.direction === 'column') {
+            ch.y = v
+        }
+    }
+
+    getChildStart(ch) {
+        if(this.direction === 'row') {
+            return ch.x
+        }
+        if(this.direction === 'column') {
+            return ch.y
+        }
+    }
+
+    getChildSize(ch) {
+        if(this.direction === 'row') {
+            return ch.width
+        }
+        if(this.direction === 'column') {
+            return ch.height
+        }
+    }
+
+    setChildSize(ch, v) {
+        if(this.direction === 'row') {
+            ch.width = v
+        }
+        if(this.direction === 'column') {
+            ch.height = v
+        }
+    }
+
+    setChildGirth(ch, v) {
+        if(this.direction === 'row') {
+            ch.height = v
+        }
+        if(this.direction === 'column') {
+            ch.width = v
+        }
+    }
+
+    getChildGirth(ch) {
+        if(this.direction === 'row') {
+            return ch.height
+        }
+        if(this.direction === 'column') {
+            return ch.width
+        }
+    }
+
+    getPreferredSize() {
+        if(this.direction ===  'row') return this.preferred_width
+        if(this.direction === 'column') return this.preferred_height
+    }
+}
+
+export class HBox extends VBox {
+    constructor(opts) {
+        super(opts);
+        this.direction = 'row'
+    }
 }
 
 export class StackPanel extends Container {
@@ -165,6 +229,7 @@ export class StackPanel extends Container {
 export class TabPanel extends Container {
     constructor(opts) {
         super(opts);
+        this.flex = 1.0
         this.selected_index = 0
         this.tab_buttons = opts.tab_labels.map((t,i) => new ToggleButton({
             text:t,

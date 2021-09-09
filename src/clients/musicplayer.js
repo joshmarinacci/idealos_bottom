@@ -14,14 +14,20 @@ async function init() {
     //sidebar of users we are chatting with
     //sidebar
     let sidebar = new VBox({
+        id:'sidebar',
         fill_color:'green',
-        flex:1.0,
-        width: 100,
+        width: 80,
         children:[
-            new Button({text:"songs"})
+            new Button({text:"songs"}),
+            new Button({text:"songs"}),
+            new Button({text:"songs"}),
+            new Button({text:"songs"}),
+            new Button({text:"songs"}),
         ]
     })
     let toolbar = new HBox({
+        fill_color:'blue',
+        id:'toolbar',
         children:[
             new Button({text:"play"}),
             new Label({text:"song"}),
@@ -29,30 +35,28 @@ async function init() {
         ]
     })
     let songlist = new HBox({
-        flex:1.0,
-        fill_color:'green',
+        id:'songlist',
+        // flex:1.0,
+        fill_color:'white',
         vstretch:true,
         children:[
             new Button({text:"list of songs here"})
         ]
     })
     win.root = new VBox({
-        constraint:CONSTRAINTS.FILL,
-        hstretch:true,
         fill_color:'yellow',
-        children:[toolbar,
+        id:'outer',
+        align:'stretch',
+        children:[
+            toolbar,
             new HBox({
                 flex:1.0,
-                height:60,
-                width:150,
-                vstretch:true,
+                id:'inner',
                 fill_color:'magenta',
-                children:[sidebar, new VBox({
-                        constraint:CONSTRAINTS.FILL,
-                        hstretch:true,
-                        flex:1,
-                        children:[new Label({text:"foo"}),songlist],
-                    })
+                align:'stretch',
+                children:[
+                    sidebar,
+                    songlist,
                 ]
             })
         ]

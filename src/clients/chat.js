@@ -18,8 +18,7 @@ async function init() {
     })
 
     let chatlog = new ListView({
-        width:140,
-        height:100,
+        flex:1.0,
         data:[],
         template_function:(item)=>new Label({text:item.props.contents}),
     })
@@ -28,12 +27,12 @@ async function init() {
 
     let win = await app.open_window(50, 50, 200, 100, 'plain')
     win.root = new HBox({
-        constraint:CONSTRAINTS.FILL,
+        align:'stretch',
         children: [
             users,
             new VBox({
-                width: 140,
-                height: 100,
+                flex:1.0,
+                align:'stretch',
                 children: [
                     chatlog,
                     input

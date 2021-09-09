@@ -417,6 +417,7 @@ export class Window {
         this.focused = null
         this.is_child = is_child
         this.parent = parent
+        this.autoSizeRoot = true
         if(this.parent) {
             this.parent.child_windows.push(this)
         }
@@ -481,6 +482,12 @@ export class Window {
         }
         this.root.parent = this
         let gfx = new Gfx(this.app,this,trigger)
+        if(this.autoSizeRoot) {
+            this.root.width = this.width
+            this.root.preferred_width = this.width
+            this.root.height = this.height
+            this.root.preferred_height = this.height
+        }
         this.root.layout(gfx)
         this.root.redraw(gfx)
         this.app.send({

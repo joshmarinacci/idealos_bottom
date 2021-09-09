@@ -110,6 +110,10 @@ export class TextBox extends Component {
         }
         return false
     }
+    layout(gfx) {
+        let size = gfx.text_size(this.text)
+        this.height = this.padding.top + size.height + this.padding.bottom
+    }
 
     redraw(gfx) {
         let name = "textbox"

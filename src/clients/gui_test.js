@@ -19,10 +19,6 @@ async function init() {
     await app.a_init()
     let win = await app.open_window(30,50,200,150,'plain')
     win.root = new VBox({
-        width:win.width,
-        height:win.height,
-        fill_color:'magenta',
-        constraint:CONSTRAINTS.FILL,
         children:[
             new TabPanel({
                 tab_labels:["labels","buttons","textboxes",'scroll'],
@@ -61,8 +57,6 @@ async function init() {
                             })
                         ]}),
                     new VBox({
-                        constraint:CONSTRAINTS.FILL,
-                        hstretch:true,
                         children:[
                         new Label({text:"scroll panel"}),
                         new ScrollPanel({

@@ -16,10 +16,7 @@ async function init() {
     let save = new Button({text:'save'})
     let add_note = new Button({text:'add'})
     let query_box = new TextBox({width:50, text:"search"})
-    let toolbar = new HBox({
-        vstretch:true,
-        fill_color:'red',
-        children:[ query_box, add_note, save, ]})
+    let toolbar = new HBox({children:[ query_box, add_note, save ]})
     let list = new ListView({
         width:50,
         data:[],
@@ -44,19 +41,14 @@ async function init() {
 
 
     win.root = new VBox({
-        constraint:CONSTRAINTS.FILL,
-        hstretch:true,
+        align:'stretch',
         children:[
             toolbar,
             new HBox({
                 flex:1.0,
-                height:60,
-                width: 150,
-                vstretch:true,
+                align:'stretch',
                 children:[list, new VBox({
-                    constraint:CONSTRAINTS.FILL,
-                    hstretch:true,
-                    flex:1,
+                    flex:1.0,
                     children:[title,editor]
                 })],
             })

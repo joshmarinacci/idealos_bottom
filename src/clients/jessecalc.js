@@ -12,8 +12,8 @@ async function init() {
 
     let output = new MultilineLabel({
         width:100,
-        height:50,
-        text:'58*20= 1160'
+        text:'58*20= 1160',
+        flex:1.0,
     })
     let input = new TextBox({
         width:100,
@@ -24,7 +24,7 @@ async function init() {
         output.repaint()
     })
     win.root = new VBox({
-        constraint:CONSTRAINTS.FILL,
+        align:'stretch',
         children:[output,input]
     })
     win.redraw()

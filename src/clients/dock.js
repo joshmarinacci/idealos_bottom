@@ -48,11 +48,10 @@ async function init() {
     win.root = new VBox({
         width: 16,
         height: 16 * 5,
-        padding:1,
+        gap:0,
         id:'vbox',
         fill_color:'white',
-        children: [
-        ]
+        children: [ ]
     })
     app.send({ type:"LIST_ALL_APPS" })
     win.redraw()
