@@ -46,11 +46,19 @@ export class MultilineLabel extends Component {
         this.tl.text = opts.text || "-------"
         this.name = 'multiline-label'
         this.padding = new Insets(2)
-        this.width = opts.width || 100
+        this.width = opts.width || 300
+        this.preferred_width = this.width
+        this.preferred_height = 'auto'
+    }
+    measure(gfx) {
+        this.tl.layout_as_blocks_with_breaks_and_font(this.preferred_width, gfx.font())
+        this.preferred_height = this.tl.lines.length*15
+        this.calculated_width = this.preferred_width
+        this.calculated_height = this.preferred_height
     }
     layout(gfx) {
+        //layout again now that we have a final width
         this.tl.layout_as_blocks_with_breaks_and_font(this.width,gfx.font())
-        this.height = this.tl.lines.length*10
     }
     redraw(gfx) {
         let co = this.lookup_theme_part('color',null)
@@ -362,7 +370,7 @@ export class TextLayout {
         for(let i=0; i<this.text.length; i++) {
             _count++
             if(_count > 1000) {
-                throw new Error(`infinite loop: width = ${w}`)
+                throw new Error(`infinite loop: width = ${w} ${this.text}`)
             }
             let ch = this.text[i]
             if(ch === ' ') {
@@ -524,6 +532,8 @@ export class MultilineTextBox extends TextBox {
         this.padding = new Insets(2)
         this.selected = false
         this.name = 'textbox'
+        this.preferred_width = opts.width || 'auto'
+        this.preferred_height = opts.height || 'auto'
     }
     set_text(txt) {
         this.tl.set_text(txt)
@@ -551,6 +561,10 @@ export class MultilineTextBox extends TextBox {
             return true
         }
         return false
+    }
+    measure(gfx) {
+        this.calculated_width = this.preferred_width
+        this.calculated_height = this.preferred_height
     }
     layout(gfx) {
         //wrap and draw the text

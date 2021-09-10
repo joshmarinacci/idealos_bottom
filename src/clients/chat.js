@@ -11,10 +11,10 @@ async function init() {
     await app.a_init()
     //sidebar of users we are chatting with
     let users = new ListView({
-        width:60,
+        width:100,
+        height:200,
         data:[],
         template_function:(item)=>new Label({text:item.props.title}),
-        height: 100,
     })
 
     let chatlog = new ListView({

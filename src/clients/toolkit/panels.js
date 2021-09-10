@@ -399,17 +399,36 @@ export class TabPanel extends Container {
         ]
         this.children.forEach(ch => ch.parent = this)
     }
+    measure(gfx) {
+        this.children.forEach(ch => {
+            ch.calculated_height = 10
+            ch.calculated_width = 10
+            ch.width = 10
+            ch.height = 10
+        })
+        this.children.forEach(ch => ch.measure(gfx))
+        if(this.preferred_width === 'auto') {
+            this.calculated_width = 50
+        } else {
+            this.calculated_width = this.preferred_width
+        }
+        if(this.preferred_height === 'auto') {
+            this.calculated_height = 50
+        } else {
+            this.calculated_height = this.preferred_height
+        }
+    }
     layout(gfx) {
-        this.width = this.parent.width
-        this.height = this.parent.height
-        this.children.forEach(ch => ch.layout(gfx))
         let mx = 0
         let mh = 0
         this.tab_buttons.forEach(bt => {
             bt.x = mx
-            mx = Math.max(bt.x+bt.width,mx)
+            mx = Math.max(bt.x+bt.preferred_width,mx)
             bt.y = 0
-            mh = Math.max(bt.height,mh)
+            mh = Math.max(bt.preferred_height,mh)
+            bt.width = bt.preferred_width
+            bt.height = bt.preferred_height
+            bt.layout(gfx)
         })
         this.tab_children.forEach((comp,i) => {
             comp.visible = (i===this.selected_index)
@@ -417,6 +436,7 @@ export class TabPanel extends Container {
             comp.y = mh
             comp.width = this.width
             comp.height = this.height - mh
+            comp.layout(gfx)
         })
     }
     redraw(gfx) {
@@ -553,6 +573,8 @@ export class ScrollPanel extends Container {
         this.offsetx = 0
         this.offsety = 0
         this.hstretch = opts.hstretch || false
+        this.preferred_width = opts.width || 'auto'
+        this.preferred_height = opts.width || 'auto'
     }
     scroll_up() {
         this.offsety += this.step
@@ -592,10 +614,14 @@ export class ScrollPanel extends Container {
         if(this.offsetx > 0) this.offsetx = 0
         this.repaint()
     }
+    measure(gfx) {
+        super.measure(gfx)
+        //set calculated
+        this.calculated_width = this.preferred_width
+        this.calculated_height = this.preferred_height
+    }
     layout(gfx) {
-        if(this.hstretch) {
-            this.content.forEach(ch => ch.width = this.width - this.sw)
-        }
+        this.content.forEach(ch => ch.width = this.width - this.sw)
         super.layout(gfx)
         this.hslider.x = 0
         this.hslider.y = this.height - this.sw
@@ -647,6 +673,7 @@ export class GridDebugPanel extends Component {
 export class ListView extends Container {
     constructor(opts) {
         super(opts);
+        this.fill_color = opts.fill_color
         this.name = 'list-view'
         this.data = opts.data
         this.template_function = opts.template_function
@@ -700,6 +727,7 @@ export class ListView extends Container {
     }
     redraw(gfx) {
         let bg = this.lookup_theme_part("background-color",null)
+        if(this.fill_color) bg = this.fill_color
         gfx.rect(this.x,this.y,this.width,this.height,bg)
         gfx.translate(this.x,this.y)
         this.children.forEach((ch,i) => {

@@ -19,16 +19,16 @@ async function init() {
     await app.a_init()
     let win = await app.open_window(30,50,200,150,'plain')
     win.root = new VBox({
+        align:'stretch',
         children:[
             new TabPanel({
+                flex:1.0,
                 tab_labels:["labels","buttons","textboxes",'scroll','layouts'],
                 tab_children:[
                     new VBox({children: [
                             new TranslatedLabel({text_key:"button.okay"}),
                             new MultilineLabel({
                                 text:"Some cool long text That is super cool and Long and stuff",
-                                width:100,
-                                height:50,
                             }),
                         ]}),
                     new VBox({children:[
@@ -60,7 +60,6 @@ async function init() {
                         new ScrollPanel({
                             width:100,
                             height:100,
-                            hstretch:true,
                             children:[
                             new ListView({
                                 data:["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O"],

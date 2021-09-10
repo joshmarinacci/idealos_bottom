@@ -47,30 +47,27 @@ async function init() {
     // console.log(wifi)
 
     let info_panel = new VBox({
-        width: 300,
-        height: 200,
-        constraint:CONSTRAINTS.WRAP,
+        align:'stretch',
         children:[
             new Label({text:"About Ideal OS"}),
-            new MultilineLabel({width:300, text:s_system + "\n" + s_cpu}),
-            new MultilineLabel({width:300, text:`CPU speed ${speed.avg} - temp ${temp.main?temp.main:"??"}`}),
-            new MultilineLabel({width:300, text: `RAM ${toGB(mem.free)} / ${toGB(mem.total)}`}),
+            new MultilineLabel({text:s_system + "\n" + s_cpu}),
+            new MultilineLabel({text:`CPU speed ${speed.avg} - temp ${temp.main?temp.main:"??"}`}),
+            new MultilineLabel({text: `RAM ${toGB(mem.free)} / ${toGB(mem.total)}`}),
             new MultilineLabel({text:bt}),
-            new MultilineLabel({width:300, text:`host os: ${os.distro}-${os.release}-${os.codename}`}),
-            new MultilineLabel({width:300, text:`network ${os.hostname}`}),
-            new MultilineLabel({width:300, text:`CPU Load ${Math.floor(currentLoad.currentLoad)}% `}),
+            new MultilineLabel({text:`host os: ${os.distro}-${os.release}-${os.codename}`}),
+            new MultilineLabel({text:`network ${os.hostname}`}),
+            new MultilineLabel({text:`CPU Load ${Math.floor(currentLoad.currentLoad)}% `}),
         ]
     })
     let background_panel = new Button({
         text:"hello"
     })
     win.root = new VBox({
-        width:win.width,
-        height:win.height,
         fill_color:'magenta',
-        constraint:CONSTRAINTS.FILL,
+        align:'stretch',
         children:[
             new TabPanel({
+                flex:1,
                 tab_labels: ["system info", "background"],
                 tab_children:[
                     info_panel,
