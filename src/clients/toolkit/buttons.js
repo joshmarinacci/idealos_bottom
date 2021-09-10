@@ -27,11 +27,13 @@ export class Button extends Component {
         }
     }
 
-    layout(gfx) {
+    measure(gfx) {
         if(this.text_key) this.text = this.lookup_translated_text(this.text_key)
         let met = gfx.text_size(this.text,this.font)
-        this.width = this.padding.left + met.width + this.padding.right
-        this.height = this.padding.top + met.height + this.padding.bottom
+        this.preferred_width = this.padding.left + met.width + this.padding.right
+        this.preferred_height = this.padding.top + met.height + this.padding.bottom
+        this.calculated_width = this.preferred_width
+        this.calculated_height = this.preferred_height
     }
 
     redraw(gfx) {

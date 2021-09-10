@@ -23,6 +23,9 @@ async function init() {
             new Button({text:"songs"}),
             new Button({text:"songs"}),
             new Button({text:"songs"}),
+            new Button({text:"songs"}),
+            new Button({text:"songs"}),
+            new Button({text:"songs"}),
         ]
     })
     let toolbar = new HBox({
@@ -30,8 +33,10 @@ async function init() {
         id:'toolbar',
         children:[
             new Button({text:"play"}),
-            new Label({text:"song"}),
-            new Label({text:"time"}),
+            new Button({text:"play"}),
+            new Button({text:"play"}),
+            // new Label({text:"song"}),
+            // new Label({text:"time"}),
         ]
     })
     let songlist = new HBox({
@@ -46,9 +51,12 @@ async function init() {
     win.root = new VBox({
         fill_color:'yellow',
         id:'outer',
+        // justify:'start',
         align:'stretch',
         children:[
+            // new Button({id:'no-stretch',text:"before", flex:0}),
             toolbar,
+            // new Button({id:"stretching",text:"after", flex:1}),
             new HBox({
                 flex:1.0,
                 id:'inner',

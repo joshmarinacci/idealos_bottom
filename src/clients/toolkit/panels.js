@@ -46,14 +46,18 @@ the flexbox, by default, has auto preferred sizes
 the developer can assign a concrete value to the preferred size to force it to stay at that size
 
 measure:
-    ask each child what it's preferred size. this is stored in the child's preferred width and height properties
-    calculate a self minimum preferred size based on the child preferred sizes and flex settings
-    BOTTOM UP phase. child leafs calculate sizes, then their parents do
+    ask each child what it's preferred size.
+        this is stored in the child's preferred width and height properties
+    calculate a self minimum preferred size
+        based on the child preferred sizes and flex settings
+    BOTTOM UP phase. child leaves calculate sizes, then their parents do
+
 layout:
     set self size based on the calculated preferred size
     calculate excess space
     set size and positions of children
     TOP DOWN phase. parents do layout first then position their children
+
 draw:
     draw the static tree
     TOP DOWN: recursively draw the tree. no positions or sizes are changed
@@ -95,73 +99,147 @@ CSS algorithm
 determine the available main and cross space for the container
 determine main size for each child item
 
+
+nested boxes
+outer preferred size is from window
+middle preferred size is from children
+    calculates from children in measure using pref or calc
+    sets preferred size to children min
+inner preferred size is from children
+    calculates from children in measure.
+    sets calculated size to children min
+tiny (button) preferred size is intrinsic.
+    stored as this.pref
+
  */
 export class VBox extends Container {
     constructor(opts) {
         super(opts);
         this.gap = opts.gap || 2
         this.name = 'panel'
-        this.preferred_width = opts.width || 10
-        this.preferred_height = opts.height || 10
+        this.preferred_width = opts.width || 'auto'
+        this.preferred_height = opts.height || 'auto'
         this.direction = "column"
         this.align = opts.align || 'start'
         this.justify = opts.justify || "start"
         this.fill_color = opts.fill_color
     }
+    measure(gfx) {
+        this.children.forEach(ch => ch.measure(gfx))
+        console.log(this.id,`MEASURE pref ${this.preferred_width} x ${this.preferred_height}`)
+
+        // measure the minimum space needed for the main axis
+        let min_main = this.gap
+        let total_flex = 0
+        this.children.forEach(ch => {
+            min_main += this.getCalculatedMainSize(ch)
+            min_main += this.gap
+            total_flex += ch.flex
+        })
+        console.log(this.id,'min size for main axis',min_main)
+        let leftover_main = 0
+        if(this.getPreferredMainSize(this) !== 'auto') {
+            let m = this.getPreferredMainSize(this) - this.gap*2
+            leftover_main = m-min_main
+            console.log("leftover is going to be",m,min_main,leftover_main)
+        }
+        this.leftover_main = leftover_main
+        this.total_flex = total_flex
+        this.min_main = min_main
+        this.setCalculatedMainSize(this,min_main)
+
+
+        //calc max cross size
+        let max_cross = 0
+        this.children.forEach(ch => {
+            let size = this.getCalculatedCrossSize(ch)
+            if(size > max_cross) max_cross = size
+        })
+        this.max_cross = max_cross
+        if(this.getPreferredCrossSize() === 'auto') {
+            this.setCalculatedCrossSize(this, this.max_cross)
+        } else {
+            this.setCalculatedCrossSize(this,this.getPreferredCrossSize())
+        }
+
+        console.log(this.id,`calculated main ${this.getCalculatedMainSize(this)} calculated cross ${this.getCalculatedCrossSize(this)} total flex = ${total_flex}`)
+    }
     layout(gfx) {
         this.children.forEach(ch => ch.layout(gfx))
-        this.width = this.preferred_width
-        this.height = this.preferred_height
-        console.log("vbox layout ",this.id,this.direction,
-            `${this.width} x ${this.height}`,
-            `pos: maj: ${this.justify} min: ${this.align}`
-        )
-        let v1 = this.gap
-        let max_girth = 0
-        this.children.forEach(ch => {
-            v1 += this.getMainSize(ch)
-            v1 += this.gap
-            let girth = this.getCrossSize(ch)
-            if(girth > max_girth) max_girth = girth
-        })
-        let leftover = this.getMainSize(this) - v1
-        // console.log("leftover is",this.id,this.getChildSize(this),leftover)
-        if(v1 > this.getPreferredMainSize()) {
-            console.log(this.id,"expanding major length to fit children",v1)
-            this.setMainSize(this,v1)
+        // this.width = this.preferred_width
+        // this.height = this.preferred_height
+        // console.log(this.id,'layout',this.direction,
+        //     `${this.width} x ${this.height}`,
+        //     `pos: maj: ${this.justify} min: ${this.align}`)
+        // console.log(this.id,`pref ${this.preferred_width} x ${this.preferred_height}`)
+
+
+        console.log(this.id,'total flex',this.total_flex, 'min_main',this.min_main, 'leftover',this.leftover_main)
+        if(this.total_flex > 0) {
+            //layout main axis if doing flex sizing
+            let v = this.gap
+            this.children.forEach(ch => {
+                this.setMainStart(ch,v)
+                let vv = this.getCalculatedMainSize(ch)
+                let fract = this.leftover_main/this.total_flex * ch.flex
+                console.log("extra is",fract, 'for',ch.id)
+                this.setMainSize(ch,vv+fract)
+                v += this.getMainSize(ch)
+                v += this.gap
+            })
+            if(this.getPreferredMainSize(this) === 'auto') {
+                this.setMainSize(this,v)
+            }
         } else {
-            this.setMainSize(this,this.getPreferredMainSize())
+            // layout main axis with positioning
+            let v = this.gap
+            //justify = start
+            if(this.justify === 'start') {
+                v += 0
+            }
+            if(this.justify === 'center') {
+                v += this.leftover_main/2
+            }
+            if(this.justify === 'end') {
+                v += this.leftover_main
+            }
+            this.children.forEach(ch => {
+                this.setMainStart(ch,v)
+                // console.log("child pref size",ch.id,this.getPreferredMainSize(ch))
+                this.setMainSize(ch, this.getCalculatedMainSize(ch))
+                v += this.getMainSize(ch)
+                v += this.gap
+            })
+            if(this.getPreferredMainSize(this) === 'auto') {
+                this.setMainSize(this,v)
+            }
         }
 
-        // console.log(this.id,"greatest minor axis:",max_girth)
-        if(max_girth > this.getCrossSize(this)) {
-            console.log(this.id,"expanding minor length to fit children",max_girth)
-            this.setCrossSize(this, max_girth)
+        if(this.getPreferredCrossSize() === 'auto') {
+            this.setCrossSize(this,this.max_cross + this.gap*2)
+        } else {
+            this.setCrossSize(this, this.getPreferredCrossSize())
         }
-        //position children using excess space
-        let v2 = this.gap
+
+        //layout the cross axis
+        console.log(this.id,'available cross space',this.getCrossSize(this))
         this.children.forEach(ch => {
-            this.setMainStart(ch,v2)
-            let ch_v = this.getMainSize(ch)
-            if(ch.flex === 1) {
-                console.log(this.id,'giving leftover to flex child',ch.id)
-                this.setMainSize(ch,ch_v + leftover*1.0)
+            if(this.align === 'start')   {
+                this.setCrossStart(ch,this.gap)
+                this.setCrossSize(ch,this.getCalculatedCrossSize(ch))
             }
-            v2 += this.getMainSize(ch)
-            v2 += this.gap
-
             if(this.align === 'stretch') {
-                this.setCrossSize(ch,this.getCrossSize(this)-this.gap-this.gap)
-                console.log(this.id,'doing stretch align',this.getCrossSize(ch),'to child',ch.id)
+                this.setCrossStart(ch,this.gap)
+                this.setCrossSize(ch,this.getCalculatedCrossSize(this)-this.gap*2)
             }
-            if(this.align === 'end') {
-                // console.log(this.id,'doing end align')
-                let z = this.getCrossSize(this) - this.getCrossSize(ch)
-                // console.log(this.getChildGirth(this),this.getChildGirth(ch),z)
-                this.setMainStart(ch,z)
-            }
+            console.log(this.id,'child final',ch.id,
+                'main',this.getMainSize(ch),
+                'cross', this.getCrossSize(ch))
+            // if(this.align === 'end')     this.setCrossStart(ch,100)
+            // if(this.align === 'center')  this.setCrossStart(ch,50)
         })
-        console.log(this.id,`pref size ${this.preferred_width} x ${this.preferred_height} actual ${this.width} x ${this.height}`)
+
+        // console.log(this.id,`pref size ${this.preferred_width} x ${this.preferred_height} actual ${this.width} x ${this.height}`)
     }
     redraw(gfx) {
         if(this.fill_color) {
@@ -181,7 +259,6 @@ export class VBox extends Container {
             ch.y = v
         }
     }
-
     getMainStart(ch) {
         if(this.direction === 'row') {
             return ch.x
@@ -199,7 +276,6 @@ export class VBox extends Container {
             return ch.height
         }
     }
-
     setMainSize(ch, v) {
         if(this.direction === 'row') {
             ch.width = v
@@ -217,7 +293,10 @@ export class VBox extends Container {
             ch.width = v
         }
     }
-
+    setCrossStart(ch, v) {
+        if(this.direction === 'row') this.y = v
+        if(this.direction === 'column') this.x = v
+    }
     getCrossSize(ch) {
         if(this.direction === 'row') {
             return ch.height
@@ -227,9 +306,33 @@ export class VBox extends Container {
         }
     }
 
-    getPreferredMainSize() {
-        if(this.direction ===  'row') return this.preferred_width
-        if(this.direction === 'column') return this.preferred_height
+    getPreferredMainSize(ch) {
+        if(this.direction ===  'row') return ch.preferred_width
+        if(this.direction === 'column') return ch.preferred_height
+    }
+    getPreferredCrossSize() {
+        if(this.direction ===  'row') return this.preferred_height
+        if(this.direction === 'column') return this.preferred_width
+    }
+
+    getCalculatedMainSize(ch) {
+        if(this.direction ===  'row') return ch.calculated_width
+        if(this.direction === 'column') return ch.calculated_height
+    }
+
+    setCalculatedMainSize(ch, v) {
+        if(this.direction ===  'row') ch.calculated_width = v
+        if(this.direction === 'column') ch.calculated_height = v
+    }
+
+    getCalculatedCrossSize(ch) {
+        if(this.direction ===  'row') return ch.calculated_height
+        if(this.direction === 'column') return ch.calculated_width
+    }
+
+    setCalculatedCrossSize(ch, v) {
+        if(this.direction ===  'row')   ch.calculated_height = v
+        if(this.direction === 'column') ch.calculated_width  = v
     }
 }
 

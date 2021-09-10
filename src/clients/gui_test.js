@@ -21,18 +21,17 @@ async function init() {
     win.root = new VBox({
         children:[
             new TabPanel({
-                tab_labels:["labels","buttons","textboxes",'scroll'],
+                tab_labels:["labels","buttons","textboxes",'scroll','layouts'],
                 tab_children:[
-                    new VBox({ children: [
+                    new VBox({children: [
                             new TranslatedLabel({text_key:"button.okay"}),
                             new MultilineLabel({
                                 text:"Some cool long text That is super cool and Long and stuff",
                                 width:100,
                                 height:50,
                             }),
-                        ]
-                    }),
-                    new VBox({children: [
+                        ]}),
+                    new VBox({children:[
                             new Button({text_key:"button.okay"}),
                             new HBox({children:[
                                     new Button({text:'cool button',id:'button'}),
@@ -44,7 +43,7 @@ async function init() {
                                 ]}),
                             new PopupButton({text:"Alabama", items:["Alabama","Alaska","Arizona","Arkansas"]}),
                     ]}),
-                    new VBox({ children:[
+                    new VBox({children:[
                             new HBox({
                                 children:[
                                     new Label({text:"hidden", visible:false}),
@@ -56,8 +55,7 @@ async function init() {
                                 height:50,
                             })
                         ]}),
-                    new VBox({
-                        children:[
+                    new VBox({children:[
                         new Label({text:"scroll panel"}),
                         new ScrollPanel({
                             width:100,
@@ -69,6 +67,9 @@ async function init() {
                                 template_function:item=> new Label({text:item})
                             })
                         ]})
+                    ]}),
+                    new VBox({children:[
+                        new Button({text:"layouts"})
                     ]})
                 ]
             }),

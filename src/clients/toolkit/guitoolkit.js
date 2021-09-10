@@ -471,7 +471,7 @@ export class Window {
         })
     }
     repaint(trigger) {
-        // console.log("repainting window", this.x,this.y,this.width,this.height)
+        console.log("repainting window", this.x,this.y,this.width,this.height)
         this.redraw(trigger)
     }
     redraw(trigger) {
@@ -488,6 +488,7 @@ export class Window {
             this.root.height = this.height
             this.root.preferred_height = this.height
         }
+        this.root.measure(gfx)
         this.root.layout(gfx)
         this.root.redraw(gfx)
         this.app.send({
@@ -686,7 +687,9 @@ export class Component {
         this.width = opts.width || 10
         this.height = opts.height || 10
         this.preferred_width = 'auto'
+        this.calculated_width = 0
         this.preferred_height = 'auto'
+        this.calculated_height = 0
         this.listeners = {}
         this.children = []
         this.font = opts.font || null
