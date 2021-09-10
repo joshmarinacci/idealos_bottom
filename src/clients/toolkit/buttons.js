@@ -78,9 +78,11 @@ export class CheckButton extends ToggleButton {
         super(opts);
         this.name = 'checkbutton'
     }
-    layout(gfx) {
-        this.width = 10 + this.padding.left + this.padding.right
-        this.height = 10 + this.padding.top + this.padding.bottom
+    measure(gfx) {
+        this.preferred_width = 10 + this.padding.left + this.padding.right
+        this.preferred_height = 10 + this.padding.top + this.padding.bottom
+        this.calculated_width = this.preferred_width
+        this.calculated_height = this.preferred_height
     }
     redraw(gfx) {
         let state = this.pressed?"pressed":null
@@ -127,11 +129,13 @@ export class PopupButton extends Button {
         })
         this.arrow = String.fromCharCode(16)
     }
-    layout(gfx) {
+    measure(gfx) {
         let met = gfx.text_size(this.text)
         let met2 = gfx.text_size('Z')
-        this.width = this.padding.left + met.width + 2 + met2.width + this.padding.right
-        this.height = this.padding.top + met.height + this.padding.bottom
+        this.preferred_width = this.padding.left + met.width + 2 + met2.width + this.padding.right
+        this.preferred_height = this.padding.top + met.height + this.padding.bottom
+        this.calculated_width = this.preferred_width
+        this.calculated_height = this.preferred_height
     }
     redraw(gfx) {
         let state = this.pressed?"pressed":null

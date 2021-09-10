@@ -789,6 +789,10 @@ export class Container extends Component {
     input(e) {
     }
 
+    measure(gfx) {
+        this.children.forEach(ch => ch.measure(gfx))
+    }
+
     layout(gfx) {
         this.children.forEach(ch => ch.layout(gfx))
     }

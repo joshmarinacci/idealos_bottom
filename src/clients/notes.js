@@ -47,10 +47,12 @@ async function init() {
             new HBox({
                 flex:1.0,
                 align:'stretch',
-                children:[list, new VBox({
-                    flex:1.0,
-                    children:[title,editor]
-                })],
+                children:[
+                    list,
+                    new VBox({
+                        children: [title, editor]
+                    }),
+                ],
             })
         ]
     })

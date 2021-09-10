@@ -11,10 +11,12 @@ export class Label extends Component {
         this.padding = 3
     }
 
-    layout(gfx) {
+    measure(gfx) {
         let met = gfx.text_size(this.text,this.font)
-        this.width = this.padding + met.width + this.padding
-        this.height = this.padding + met.height + this.padding
+        this.preferred_width = this.padding + met.width + this.padding
+        this.preferred_height = this.padding + met.height + this.padding
+        this.calculated_width = this.preferred_width
+        this.calculated_height = this.preferred_height
     }
 
     redraw(gfx) {
@@ -77,6 +79,8 @@ export class TextBox extends Component {
         this.cursor = 2
         this.selected = false
         this.name = 'textbox'
+        if(opts.width) this.preferred_width = opts.width
+        if(opts.height) this.preferred_height = opts.height
     }
     set_text(text) {
         this.text = text
@@ -110,9 +114,11 @@ export class TextBox extends Component {
         }
         return false
     }
-    layout(gfx) {
+    measure(gfx) {
         let size = gfx.text_size(this.text)
-        this.height = this.padding.top + size.height + this.padding.bottom
+        this.preferred_height = this.padding.top + size.height + this.padding.bottom
+        this.calculated_width = this.preferred_width
+        this.calculated_height = this.preferred_height
     }
 
     redraw(gfx) {

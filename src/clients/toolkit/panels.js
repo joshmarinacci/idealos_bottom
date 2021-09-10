@@ -206,21 +206,21 @@ export class VBox extends Container {
         // main axis
 
         if(this.total_flex > 0) {
-            console.log(this.id,'doing flex')
+            // console.log(this.id,'doing flex')
             //layout main axis if doing flex sizing
             let v = this.gap
             this.children.forEach(ch => {
-                console.log(this.id,'putting child',ch.id,'at main start = ',v)
+                // console.log(this.id,'putting child',ch.id,'at main start = ',v)
                 this.setMainStart(ch,v)
                 let vv = this.getCalculatedMainSize(ch)
                 let fract = this.leftover_main/this.total_flex * ch.flex
-                console.log("extra is",fract, 'for',ch.id)
+                // console.log("extra is",fract, 'for',ch.id)
                 this.setActualMainSize(ch,vv+fract)
                 v += (vv+fract)
                 v += this.gap
             })
         } else {
-            console.log(this.id,'doing regular')
+            // console.log(this.id,'doing regular')
             // layout main axis with positioning
             let v = this.gap
             //justify = start
@@ -273,18 +273,10 @@ export class VBox extends Container {
 
     setMainStart(ch, v) {
         if(this.direction === 'row') {
-            ch.x = v
+            ch.x = Math.floor(v)
         }
         if(this.direction === 'column') {
-            ch.y = v
-        }
-    }
-    getMainStart(ch) {
-        if(this.direction === 'row') {
-            return ch.x
-        }
-        if(this.direction === 'column') {
-            return ch.y
+            ch.y = Math.floor(v)
         }
     }
     getMainStart(ch) {
@@ -322,8 +314,8 @@ export class VBox extends Container {
         }
     }
     setCrossStart(ch, v) {
-        if(this.direction === 'row') ch.y = v
-        if(this.direction === 'column') ch.x = v
+        if(this.direction === 'row') ch.y = Math.floor(v)
+        if(this.direction === 'column') ch.x = Math.floor(v)
     }
     getCrossStart(ch, v) {
         if(this.direction === 'row') return ch.y
@@ -661,8 +653,10 @@ export class ListView extends Container {
         this.children = []
         this.generated = false
         this.selected_index = 0
+        this.preferred_width = opts.width || 'auto'
+        this.preferred_height = opts.height || 'auto'
     }
-    layout(gfx) {
+    measure(gfx) {
         if(!this.generated) {
             this.children = this.data.map((item,i) => {
                 let ch = this.template_function(item)
@@ -675,9 +669,28 @@ export class ListView extends Container {
             })
             this.generated = true
         }
+
+        //reset and measure children
+        this.children.forEach(ch => {
+            ch.calculated_height = 10
+            ch.calculated_width = 10
+            ch.width = 10
+            ch.height = 10
+        })
+        this.children.forEach(ch => ch.measure(gfx))
+
         let lh = 21
-        this.height = this.children.length*lh
+        if(this.preferred_width === 'auto') {
+            this.calculated_width = 50
+        } else {
+            this.calculated_width = this.preferred_width
+        }
+        this.preferred_height = this.children.length*lh
+        this.calculated_height = this.preferred_height
+    }
+    layout(gfx) {
         super.layout(gfx)
+        let lh = 21
         this.children.forEach((ch,i) => {
             ch.x = 0
             ch.y = i*lh

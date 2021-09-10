@@ -13,7 +13,7 @@ async function init() {
     let win = await app.open_window(30,50,100,100, 'debug')
     win.root = new VBox({
         id:'vbox',
-        constraint:CONSTRAINTS.FILL,
+        align:'center',
         children: [
             new Button({text:'toggle theme',action:()=>{
                 console.log("clicked")

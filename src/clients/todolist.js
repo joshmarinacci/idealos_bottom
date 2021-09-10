@@ -12,7 +12,6 @@ async function init() {
     let win = await app.open_window(50, 50, 200,100, 'plain')
 
     let add = new HBox({
-        constraint: CONSTRAINTS.FILL,
         children:[
         new TextBox({text:"new item", width:120, height:16, id:'input'}),
         new Button({text:"add", height:12, action:()=>{
@@ -65,12 +64,10 @@ async function init() {
         }
     })
     win.root = new VBox({
-        constraint:CONSTRAINTS.FILL,
         children:[
             add,
             list
         ],
-        hstretch:true,
     })
     win.redraw()
 }
@@ -94,7 +91,15 @@ class ListPanel extends Container {
         this.category = opts.category
         this.lineheight = 15
     }
-    layout(gfx) {
+    measure(gfx) {
+        this.children.forEach(ch => {
+            ch.calculated_height = 10
+            ch.calculated_width = 10
+            ch.width = 10
+            ch.height = 10
+        })
+        this.children.forEach(ch => ch.measure(gfx))
+
         if(!this.list) {
             this.list = []
             this.window().app.on("database-query-response",(t) => {
@@ -125,18 +130,22 @@ class ListPanel extends Container {
                 category:this.category
             })
         } else {
-            this.width = this.parent.width
-            this.height = this.list.length*this.lineheight
+            // this.preferred_width = this.parent.width
+            // this.width = this.parent.width
+            this.preferred_width = 100
+            this.preferred_height = this.list.length*this.lineheight
+            this.calculated_width = this.preferred_width
+            this.calculated_height = this.preferred_height
             this.children.forEach(ch => ch.layout(gfx))
             this.children.forEach((ch,i) => {
-                ch.x = 0
+                // ch.x = 0
                 ch.y = i*this.lineheight
                 ch.height = this.lineheight
             })
         }
     }
-    redraw(gfx) {
-        // gfx.rect(this.x,this.y,this.width,this.height,'white')
-        super.redraw(gfx)
-    }
+    // redraw(gfx) {
+    //     gfx.rect(0,0,this.width,this.height,'cyan')
+    //     super.redraw(gfx)
+    // }
 }
