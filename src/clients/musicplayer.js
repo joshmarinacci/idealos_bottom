@@ -15,39 +15,32 @@ async function init() {
     //sidebar
     let sidebar = new VBox({
         id:'sidebar',
-        fill_color:'green',
         width: 80,
-        align:'center',
+        align:'left',
         children:[
             new Button({text:"songs"}),
-            new Button({text:"songs"}),
-            new Button({text:"songs"}),
-            new Button({text:"songs"}),
-            new Button({text:"songs"}),
+            new Button({text:"artists"}),
+            new Button({text:"albums"}),
         ]
     })
     let toolbar = new HBox({
-        fill_color:'blue',
         id:'toolbar',
+        fill_color:'gray',
+        gap:3,
         children:[
             new Button({text:"play"}),
-            new Button({text:"play"}),
-            new Button({text:"play"}),
-            // new Label({text:"song"}),
-            // new Label({text:"time"}),
+            new Label({text:"song"}),
+            new Label({text:"time"}),
         ]
     })
     let songlist = new HBox({
         id:'songlist',
-        // flex:1.0,
-        fill_color:'white',
-        vstretch:true,
+        flex:1.0,
         children:[
             new Button({text:"list of songs here"})
         ]
     })
     win.root = new VBox({
-        fill_color:'yellow',
         id:'outer',
         align:'stretch',
         children:[
@@ -55,7 +48,6 @@ async function init() {
             new HBox({
                 flex:1.0,
                 id:'inner',
-                fill_color:'magenta',
                 align:'stretch',
                 children:[
                     sidebar,

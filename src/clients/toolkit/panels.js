@@ -143,7 +143,7 @@ export class VBox extends Container {
             ch.height = 10
         })
         this.children.forEach(ch => ch.measure(gfx))
-        console.log("MEASURE START", this.metrics())
+        // console.log("MEASURE START", this.metrics())
 
         // measure the minimum space needed for the main axis
         let min_main = this.gap
@@ -153,7 +153,6 @@ export class VBox extends Container {
             min_main += this.gap
             total_flex += ch.flex
         })
-        // console.log(this.id,'min size for main axis',min_main)
         let leftover_main = 0
         if(this.getPreferredMainSize(this) !== 'auto') {
             let m = this.getPreferredMainSize(this) - this.gap*2
@@ -166,11 +165,6 @@ export class VBox extends Container {
         this.total_flex = total_flex
         this.min_main = min_main
         this.setCalculatedMainSize(this,min_main)
-        // console.log(this.id, 'calced main size',this.getCalculatedMainSize(this))
-
-        if(this.total_flex > 0) {
-            // console.log(this.id,'total flex is',this.total_flex,'leftover is',this.leftover_main)
-        }
 
         //calc max cross size
         let max_cross = 0
@@ -178,7 +172,7 @@ export class VBox extends Container {
             let size = this.getCalculatedCrossSize(ch)
             if(size > max_cross) max_cross = size
         })
-        this.max_cross = max_cross
+        this.max_cross = max_cross + this.gap*2
         if(this.getPreferredCrossSize(this) === 'auto') {
             this.setCalculatedCrossSize(this, this.max_cross)
         } else {
@@ -194,13 +188,11 @@ export class VBox extends Container {
         })
 
 
-        console.log('MEASURE END', this.metrics(),
-            ` total flex = ${this.total_flex} leftover${this.leftover_main}`)
+        // console.log('MEASURE END', this.metrics(), ` total flex = ${this.total_flex} leftover${this.leftover_main}`)
     }
     layout(gfx) {
         //set children based on self's actual size.
-        console.log("LAYOUT START", this.id, this.metrics(),
-            'total flex',this.total_flex, 'min_main',this.min_main, 'leftover',this.leftover_main)
+        // console.log("LAYOUT START", this.id, this.metrics(), 'total flex',this.total_flex, 'min_main',this.min_main, 'leftover',this.leftover_main)
 
 
         // main axis
@@ -259,7 +251,7 @@ export class VBox extends Container {
         })
 
         this.children.forEach(ch => ch.layout(gfx))
-        console.log("LAYOUT END", this.metrics())
+        // console.log("LAYOUT END", this.metrics())
     }
     redraw(gfx) {
         if(this.fill_color) {
