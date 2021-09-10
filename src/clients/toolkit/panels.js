@@ -40,15 +40,23 @@ children (including boxes, but also all other components)
 
 
 three phases:
+
+a preferred size can be a pixel value or a keyword 'auto', which means it doesn't care and should defer to the algorithms.
+the flexbox, by default, has auto preferred sizes
+the developer can assign a concrete value to the preferred size to force it to stay at that size
+
 measure:
-    ask each child what it's preferred size is
+    ask each child what it's preferred size. this is stored in the child's preferred width and height properties
     calculate a self minimum preferred size based on the child preferred sizes and flex settings
+    BOTTOM UP phase. child leafs calculate sizes, then their parents do
 layout:
-    set self size
+    set self size based on the calculated preferred size
     calculate excess space
     set size and positions of children
+    TOP DOWN phase. parents do layout first then position their children
 draw:
     draw the static tree
+    TOP DOWN: recursively draw the tree. no positions or sizes are changed
 
 algorithm:
 box.layout
@@ -61,6 +69,31 @@ box.layout
     done. now drawing can begin.
 this is recursive but still does layout on each child only once.
 
+
+examples:
+* vbox
+    hbox grow
+        vbox grow
+            hbox grow
+                button
+all should be sized to fill the window, including when resizing
+
+* box dir:column align:stretch
+    box#toolbar dir:row align:center
+    box#wrapper dir:row grow align:stretch
+        box#sidebar dir:column pwidth:100px align:end
+        box#content dir:column justify:end
+all should be sized to fill the window, including when resizing
+
+* box dir:column align:stretch justify:stretch
+    tabpanel
+
+test align: start, center, end, stretch
+test justify: start, center, end, stretch
+
+CSS algorithm
+determine the available main and cross space for the container
+determine main size for each child item
 
  */
 export class VBox extends Container {
@@ -86,46 +119,46 @@ export class VBox extends Container {
         let v1 = this.gap
         let max_girth = 0
         this.children.forEach(ch => {
-            v1 += this.getChildSize(ch)
+            v1 += this.getMainSize(ch)
             v1 += this.gap
-            let girth = this.getChildGirth(ch)
+            let girth = this.getCrossSize(ch)
             if(girth > max_girth) max_girth = girth
         })
-        let leftover = this.getChildSize(this) - v1
+        let leftover = this.getMainSize(this) - v1
         // console.log("leftover is",this.id,this.getChildSize(this),leftover)
-        if(v1 > this.getPreferredSize()) {
+        if(v1 > this.getPreferredMainSize()) {
             console.log(this.id,"expanding major length to fit children",v1)
-            this.setChildSize(this,v1)
+            this.setMainSize(this,v1)
         } else {
-            this.setChildSize(this,this.getPreferredSize())
+            this.setMainSize(this,this.getPreferredMainSize())
         }
 
         // console.log(this.id,"greatest minor axis:",max_girth)
-        if(max_girth > this.getChildGirth(this)) {
+        if(max_girth > this.getCrossSize(this)) {
             console.log(this.id,"expanding minor length to fit children",max_girth)
-            this.setChildGirth(this, max_girth)
+            this.setCrossSize(this, max_girth)
         }
         //position children using excess space
         let v2 = this.gap
         this.children.forEach(ch => {
-            this.setChildStart(ch,v2)
-            let ch_v = this.getChildSize(ch)
+            this.setMainStart(ch,v2)
+            let ch_v = this.getMainSize(ch)
             if(ch.flex === 1) {
                 console.log(this.id,'giving leftover to flex child',ch.id)
-                this.setChildSize(ch,ch_v + leftover*1.0)
+                this.setMainSize(ch,ch_v + leftover*1.0)
             }
-            v2 += this.getChildSize(ch)
+            v2 += this.getMainSize(ch)
             v2 += this.gap
 
             if(this.align === 'stretch') {
-                this.setChildGirth(ch,this.getChildGirth(this)-this.gap-this.gap)
-                console.log(this.id,'doing stretch align',this.getChildGirth(ch),'to child',ch.id)
+                this.setCrossSize(ch,this.getCrossSize(this)-this.gap-this.gap)
+                console.log(this.id,'doing stretch align',this.getCrossSize(ch),'to child',ch.id)
             }
             if(this.align === 'end') {
                 // console.log(this.id,'doing end align')
-                let z = this.getChildGirth(this) - this.getChildGirth(ch)
+                let z = this.getCrossSize(this) - this.getCrossSize(ch)
                 // console.log(this.getChildGirth(this),this.getChildGirth(ch),z)
-                this.setChildStart(ch,z)
+                this.setMainStart(ch,z)
             }
         })
         console.log(this.id,`pref size ${this.preferred_width} x ${this.preferred_height} actual ${this.width} x ${this.height}`)
@@ -140,7 +173,7 @@ export class VBox extends Container {
         super.redraw(gfx)
     }
 
-    setChildStart(ch, v) {
+    setMainStart(ch, v) {
         if(this.direction === 'row') {
             ch.x = v
         }
@@ -149,7 +182,7 @@ export class VBox extends Container {
         }
     }
 
-    getChildStart(ch) {
+    getMainStart(ch) {
         if(this.direction === 'row') {
             return ch.x
         }
@@ -158,7 +191,7 @@ export class VBox extends Container {
         }
     }
 
-    getChildSize(ch) {
+    getMainSize(ch) {
         if(this.direction === 'row') {
             return ch.width
         }
@@ -167,7 +200,7 @@ export class VBox extends Container {
         }
     }
 
-    setChildSize(ch, v) {
+    setMainSize(ch, v) {
         if(this.direction === 'row') {
             ch.width = v
         }
@@ -176,7 +209,7 @@ export class VBox extends Container {
         }
     }
 
-    setChildGirth(ch, v) {
+    setCrossSize(ch, v) {
         if(this.direction === 'row') {
             ch.height = v
         }
@@ -185,7 +218,7 @@ export class VBox extends Container {
         }
     }
 
-    getChildGirth(ch) {
+    getCrossSize(ch) {
         if(this.direction === 'row') {
             return ch.height
         }
@@ -194,7 +227,7 @@ export class VBox extends Container {
         }
     }
 
-    getPreferredSize() {
+    getPreferredMainSize() {
         if(this.direction ===  'row') return this.preferred_width
         if(this.direction === 'column') return this.preferred_height
     }

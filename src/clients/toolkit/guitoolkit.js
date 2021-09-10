@@ -685,11 +685,14 @@ export class Component {
         this.y = opts.y || 0
         this.width = opts.width || 10
         this.height = opts.height || 10
+        this.preferred_width = 'auto'
+        this.preferred_height = 'auto'
         this.listeners = {}
         this.children = []
         this.font = opts.font || null
         this.visible = true
         this.flex = opts.flex || 0
+        this.parent = null
         if(opts.hasOwnProperty('visible')) this.visible = opts.visible
     }
 
@@ -713,6 +716,8 @@ export class Component {
         return false
     }
 
+    measure(gfx) {
+    }
     layout(gfx) {
     }
 
