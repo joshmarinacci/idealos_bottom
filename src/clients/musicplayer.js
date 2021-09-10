@@ -9,7 +9,7 @@ let app = new App(process.argv)
 
 async function init() {
     await app.a_init()
-    let win = await app.open_window(30,50,200,150,'plain')
+    let win = await app.open_window(30,50,200,200,'plain')
 
     //sidebar of users we are chatting with
     //sidebar
@@ -17,10 +17,8 @@ async function init() {
         id:'sidebar',
         fill_color:'green',
         width: 80,
+        align:'center',
         children:[
-            new Button({text:"songs"}),
-            new Button({text:"songs"}),
-            new Button({text:"songs"}),
             new Button({text:"songs"}),
             new Button({text:"songs"}),
             new Button({text:"songs"}),
@@ -51,12 +49,9 @@ async function init() {
     win.root = new VBox({
         fill_color:'yellow',
         id:'outer',
-        // justify:'start',
         align:'stretch',
         children:[
-            // new Button({id:'no-stretch',text:"before", flex:0}),
             toolbar,
-            // new Button({id:"stretching",text:"after", flex:1}),
             new HBox({
                 flex:1.0,
                 id:'inner',
