@@ -26,12 +26,43 @@ and Rust bindings to those messages.
 
 ## Steps to Run
 
+### Preparation
 * you should already have [NodeJS installed](https://nodejs.org/en/)
+  * if on Raspberry Pi 3/4/400 do:
+```shell
+ sudo apt update
+ sudo apt full-upgrade -y
+ curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+ sudo apt update
+ sudo apt install -y nodejs
+ sudo apt-get install gcc g++ make
+ 
+```
+* You should already have git installed. on Pi do:
+```shell
+sudo apt-get install git
+```
+
+### Core OS
 * clone [this repo](https://github.com/joshmarinacci/idealos_bottom) (idealos_bottom) 
-* install deps with `npm install`
+* install deps with `cd idealos_bottom; npm install;`
 * run the main server and default apps with `npm run start-server`
 
-* clone the [testing display server repo](https://github.com/joshmarinacci/idealos_sidecar)
-* install deps with `npm install`
-* run the display server with `npm start`
-* it will compile then open your browser with a page. press the 'connect' button to connect to the server.
+### Sidecar
+For the Sidecar renderer that uses your webbrowser do
+in another terminal window do:
+  * clone the [testing display server repo](https://github.com/joshmarinacci/idealos_sidecar)
+  * install deps with `npm install`
+  * run the display server with `npm start`
+  * it will compile then open your browser with a page. press the 'connect' button to connect to the server.
+
+### Native (no X windows) renderer 
+
+* install [rustup](https://www.rust-lang.org/tools/install) 
+  * on a recent Rpi you can do: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` and accept the defaults. You might need to log out and back into the shell to get `cargo` in your path.
+* clone the [rust display server repo](https://github.com/joshmarinacci/idealos_rust_client)
+* build it with `cd idealos_rust_client; cargo run;`
+* If it fails with an openssl error, install libssl-dev first (I had to do this on Raspberry Pi) `sudo apt-get install libssl-dev` then run `cargo run` again.
+* You might also need to install SDL. `sudo apt-get install libsdl2-dev`  then run `cargo run` again.
+* now run the client gui with `cargo run ws://localhost:8081`
+
