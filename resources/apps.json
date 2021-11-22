@@ -4,7 +4,7 @@
       "name": "menubar",
       "entrypoint": "src/clients/menubar.js",
       "type": "MENUBAR",
-      "disabled": false,
+      "disabled": true,
       "groups": [
         "secure",
         "menubar"
@@ -14,7 +14,7 @@
       "name": "sidebar",
       "entrypoint": "src/clients/sidebar/sidebar.js",
       "type": "SIDEBAR",
-      "disabled": false,
+      "disabled": true,
       "groups": [
         "sidebar",
         "secure"
@@ -24,7 +24,7 @@
       "name": "dock",
       "entrypoint": "src/clients/dock.js",
       "type": "DOCK",
-      "disabled": false,
+      "disabled": true,
       "groups": [
         "dock,",
         "secure"

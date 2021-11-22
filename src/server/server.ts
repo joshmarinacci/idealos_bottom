@@ -20,6 +20,7 @@ import {GENERAL} from "idealos_scemas/js/general.js";
 // @ts-ignore
 import {INPUT} from "idealos_schemas/js/input.js";
 import {DBService} from "./db/service.js";
+import {CloudDBService} from "./db2/clouddb.js";
 
 export const hostname = '127.0.0.1'
 export const websocket_port = 8081
@@ -38,7 +39,9 @@ export class CentralServer {
     private theme_manager: ThemeManager;
     private kb: KeybindingsManager|undefined;
     db: DBService
+    db2: CloudDBService
     private services: ServicesManager;
+    public connection_map: Map<string, WebSocket>;
     constructor(opts:any) {
         this.log('starting with opts', opts)
         if (!opts.websocket_port) throw new Error("no webssocket port set!")
@@ -59,6 +62,7 @@ export class CentralServer {
         })
         this.db_json = opts.db_json || []
         this.db = new DBService(this)
+        this.db2 = new CloudDBService(opts.db2_config)
         this.services = new ServicesManager(this,opts.services)
     }
 
@@ -70,16 +74,21 @@ export class CentralServer {
         for(let path of this.db_json) {
             await this.db.load_json(path)
         }
+        await this.db2.start()
 
         this._server = new WebSocket.Server({
             port: this.websocket_port
         })
         this.log(`started websocket port on ws://${hostname}:${websocket_port}`)
+        this.connection_map = new Map<string,WebSocket>()
         this._server.on('connection', (ws) => {
             this.log("connection opened")
+            let UUID = "connection_"+Math.floor(Math.random()*100000000)
+            this.connection_map.set(UUID,ws)
             ws.on("message", (m) => {
                 // @ts-ignore
                 let msg = JSON.parse(m)
+                if(!msg.hasOwnProperty('connection_id')) msg.connection_id = UUID
                 try {
                     let ret = this.dispatch(msg, ws)
                     if(ret && ret.then) ret.then(()=>{})
@@ -171,6 +180,7 @@ export class CentralServer {
             if(is_translation(msg)) return this.translation_manager.handle(msg)
             if(is_theme(msg)) return this.theme_manager.handle(msg)
             if(this.db.is_database(msg)) return this.db.handle(msg)
+            if(this.db2.is_database(msg)) return this.db2.handle(msg,this)
             if(this.services.is_service(msg)) this.services.handle(msg)
 
             if(msg.type === GRAPHICS.TYPE_DrawRect

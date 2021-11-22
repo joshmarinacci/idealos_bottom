@@ -32,6 +32,7 @@
     "ohm-js": "^15.5.0",
     "static-build-tools": "^0.1.1",
     "ts-node": "latest",
+    "nano": "^9.0.5",
     "typescript": "latest"
   }
 }

@@ -38,11 +38,18 @@ async function doit() {
         ],
         translations:[base_translation,lolcat_translation],
         db_json:db_json,
-        services: [{
-            name:'audio',
-            root:'../idealos_audioservice',
-            command:'cargo run'
-        }]
+        db2_config:{
+            connect:"http://admin:mysecretpassword@127.0.0.1:5984",
+            dbname:"idealos",
+            create:true
+        },
+        services: [
+            // {
+            //     name:'audio',
+            //     root:'../idealos_audioservice',
+            //     command:'cargo run'
+            // }
+        ]
     })
 
     await server.start()
