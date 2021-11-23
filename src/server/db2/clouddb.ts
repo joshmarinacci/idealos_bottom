@@ -3,6 +3,7 @@ import {CentralServer} from "../server";
 import path from "path";
 
 export const INGEST_FILE = 'ingest-file';
+export const DB_INFO = "db-info";
 export const GET_DOCUMENT_INFO = 'get-document-info'
 export const FIND_DOCUMENT= "find-document";
 const MIMETYPES_JSON = {
@@ -62,22 +63,33 @@ export class CloudDBService {
     private config: {
         dbname: string;
         connect: string;
-        create: boolean
+        create: boolean,
+        recreate:boolean,
     };
     private conn: any;
     private db: any;
     log(...args) {
         console.log("CloudDBService:",...args)
     }
-    constructor(db2_config: { dbname: string; connect: string, create:boolean }) {
+    constructor(db2_config: { dbname: string; connect: string, create:boolean, recreate:boolean }) {
         this.config = db2_config
     }
 
     async start() {
         this.log('starting',this.config.connect)
+        this.conn = Nano(this.config.connect)
+        this.log("using the database",this.config.dbname)
+        if(this.config.recreate) {
+            //delete first then make
+            await this.conn.db.destroy(this.config.dbname)
+            this.log("deleted")
+            await this.conn.db.create(this.config.dbname)
+            this.log('created')
+            this.db = this.conn.db.use(this.config.dbname)
+            this.log("db is",this.db)
+            return
+        }
         try {
-            this.conn = Nano(this.config.connect)
-            this.log("using the database",this.config.dbname)
             this.db = this.conn.db.use(this.config.dbname)
             this.log("calling list")
             let info = await this.db.info()
@@ -98,10 +110,26 @@ export class CloudDBService {
         if(msg.type === INGEST_FILE) return true
         if(msg.type === GET_DOCUMENT_INFO) return true
         if(msg.type === FIND_DOCUMENT) return true
+        if(msg.type === DB_INFO) return true
         return false;
     }
 
     handle(msg: any, server:CentralServer) {
+        if(msg.type === DB_INFO) {
+            this.get_info().then(info => {
+                this.log("got back the info",info)
+                let msg2 = {
+                    type: msg.type + "-response",
+                    id: "msg_" + Math.floor((Math.random() * 10000)),
+                    response_to: msg.id,
+                    connection_id:msg.connection_id,
+                    info:info,
+                }
+                this.log("sending back",msg2)
+                let ws = server.connection_map.get(msg2.connection_id);
+                ws.send(JSON.stringify(msg2))
+            })
+        }
         if(msg.type === INGEST_FILE) {
             this.ingest(msg.file).then(doc => {
                 let msg2 = {
@@ -210,6 +238,10 @@ export class CloudDBService {
         let doc = await this.db.get(docid)
         this.log("got the doc", doc)
         return doc
+    }
+
+    private async get_info() {
+        return await this.db.info()
     }
 }
 

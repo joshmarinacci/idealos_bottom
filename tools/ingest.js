@@ -104,7 +104,9 @@ async function run(dir) {
     let conn = new Conn("127.0.0.1",8081)
     await conn.connect()
     log('connected')
+    log(await conn.send_and_wait_for_response({type:'db-info'}))
     await import_dir(conn,dir)
+    log(await conn.send_and_wait_for_response({type:'db-info'}))
     await conn.disconnect()
     log("disconnected")
 }

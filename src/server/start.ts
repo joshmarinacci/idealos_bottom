@@ -41,7 +41,8 @@ async function doit() {
         db2_config:{
             connect:"http://admin:mysecretpassword@127.0.0.1:5984",
             dbname:"idealos",
-            create:true
+            create:false,
+            recreate:false,
         },
         services: [
             {

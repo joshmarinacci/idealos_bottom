@@ -16,7 +16,8 @@ describe("db tests",() => {
         let db = new CloudDBService({
             connect:"some_connection_string",
             dbname:"testdb",
-            create:true
+            create:true,
+            recreate:false,
         })
         await db.start()
         let valid = await db.check_connection()
@@ -27,6 +28,7 @@ describe("db tests",() => {
             connect:"some_connection_string",
             dbname:"testdb",
             create:true,
+            recreate:false,
         })
         await db.start()
         let file = path.resolve("test/resource/mp3/test1.mp3")
