@@ -1,7 +1,6 @@
 import {App} from './toolkit/guitoolkit.js'
-import {CONSTRAINTS, ListView, VBox} from './toolkit/panels.js'
-import {Button} from './toolkit/buttons.js'
-import {Label, TextBox, TranslatedLabel} from './toolkit/text.js'
+import {ListView, VBox} from './toolkit/panels.js'
+import {Label, TextBox} from './toolkit/text.js'
 import {WINDOWS} from 'idealos_schemas/js/windows.js'
 
 let app = new App(process.argv)
