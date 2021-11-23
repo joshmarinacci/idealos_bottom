@@ -115,66 +115,27 @@ export class CloudDBService {
     }
 
     handle(msg: any, server:CentralServer) {
-        if(msg.type === DB_INFO) {
-            this.get_info().then(info => {
-                this.log("got back the info",info)
-                let msg2 = {
-                    type: msg.type + "-response",
-                    id: "msg_" + Math.floor((Math.random() * 10000)),
-                    response_to: msg.id,
-                    connection_id:msg.connection_id,
-                    info:info,
-                }
-                this.log("sending back",msg2)
-                let ws = server.connection_map.get(msg2.connection_id);
-                ws.send(JSON.stringify(msg2))
-            })
+        function send_response(original: any, fields: any) {
+            let msg2 = {
+                type: original.type + "-response",
+                id: "msg_" + Math.floor((Math.random() * 10000)),
+                response_to: original.id,
+                connection_id:original.connection_id,
+            }
+            Object.keys(fields).forEach(key => msg2[key] = fields[key])
+            console.log("sending",msg2)
+            let ws = server.connection_map.get(msg2.connection_id);
+            ws.send(JSON.stringify(msg2))
         }
-        if(msg.type === INGEST_FILE) {
-            this.ingest(msg.file).then(doc => {
-                let msg2 = {
-                    type: msg.type + "-response",
-                    id: "msg_" + Math.floor((Math.random() * 10000)),
-                    response_to: msg.id,
-                    connection_id:msg.connection_id,
-                    docid:doc.id,
-                    mimetype:doc.mimetype,
-                }
-                // this.log("sending back",msg2)
-                let ws = server.connection_map.get(msg2.connection_id);
-                ws.send(JSON.stringify(msg2))
-            })
-        }
-        if(msg.type === GET_DOCUMENT_INFO) {
-            this.get_doc(msg.docid).then(doc => {
-                this.log("succeded finding doc info",doc)
-                let msg2 = {
-                    type: msg.type + "-response",
-                    id: "msg_" + Math.floor((Math.random() * 10000)),
-                    response_to: msg.id,
-                    connection_id:msg.connection_id,
-                    docid:doc.id,
-                    info:doc,
-                }
-                this.log("sending back",msg2)
-                let ws = server.connection_map.get(msg2.connection_id);
-                ws.send(JSON.stringify(msg2))
-            })
-        }
-        if(msg.type === FIND_DOCUMENT) {
-            this.find(msg.query).then(docs => {
-                this.log("docs returned",docs)
-                let msg2 = {
-                    type: msg.type + "-response",
-                    id: "msg_" + Math.floor((Math.random() * 10000)),
-                    response_to: msg.id,
-                    connection_id:msg.connection_id,
-                    results:docs,
-                }
-                let ws = server.connection_map.get(msg2.connection_id);
-                ws.send(JSON.stringify(msg2))
-            })
-        }
+
+        if(msg.type === DB_INFO) return this.get_info()
+            .then(info => send_response(msg,{ info:info }))
+        if(msg.type === INGEST_FILE) return this.ingest(msg.file)
+            .then(doc => send_response(msg, {docid:doc.id,mimetype:doc.mimetype}))
+        if(msg.type === GET_DOCUMENT_INFO) return this.get_doc(msg.docid)
+            .then(doc => send_response(msg, {docid:doc.id,info:doc}))
+        if(msg.type === FIND_DOCUMENT) return this.find(msg.query)
+            .then(docs => send_response(msg,{results:docs}))
         return undefined;
     }
 
