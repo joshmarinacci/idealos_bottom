@@ -471,7 +471,7 @@ export class Window {
         })
     }
     repaint(trigger) {
-        console.log("repainting window", this.x,this.y,this.width,this.height)
+        // console.log("repainting window", this.x,this.y,this.width,this.height)
         this.redraw(trigger)
     }
     redraw(trigger) {

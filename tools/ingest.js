@@ -1,5 +1,6 @@
 //ingest file --server url
-
+import {promises as fs} from "fs"
+import path from 'path'
 import {default as WebSocket} from 'ws'
 
 const log = (...args) => console.log("script",...args)
@@ -51,31 +52,61 @@ class Conn {
     }
 }
 
-async function run() {
-    let file = "resources/hilton.mp3"
+class U {
+    constructor() {
+        this.depth = 0
+    }
+    p(...args) {
+        console.log(this.tab(),...args)
+    }
+
+    tab() {
+        let str = ""
+        for(let i=0; i<this.depth; i++) {
+            str += " "
+        }
+        return str
+    }
+
+    indent() {
+        this.depth++
+    }
+
+    outdent() {
+        this.depth--
+    }
+}
+const u = new U()
+async function import_dir(conn, name) {
+    if(path.basename(name).startsWith('.')) return
+    let stat = await fs.stat(name)
+    if(stat.isDirectory()) {
+        for(let file of await fs.readdir(name)) {
+            let pth = path.join(name, file)
+            u.indent()
+            await import_dir(conn,pth)
+            u.outdent()
+        }
+    }
+    if(stat.isFile()) {
+        u.p("  importing",name)
+        let resp = await conn.send_and_wait_for_response({
+            type:'ingest-file',
+            file:name,
+        })
+        log("response is",resp)
+    }
+}
+
+async function run(dir) {
+    if(!dir) throw new Error("missing import directory")
     //open web socket connection
     let conn = new Conn("127.0.0.1",8081)
     await conn.connect()
-
     log('connected')
-
-    let resp = await conn.send_and_wait_for_response({
-        type:'ingest-file',
-        file:file,
-    })
-    log("response is",resp)
-
-    {
-        let resp2 = await conn.send_and_wait_for_response({
-            type:'get-document-info',
-            docid:resp.docid
-        })
-        log("response to get info is",resp2)
-    }
-
+    await import_dir(conn,dir)
     await conn.disconnect()
     log("disconnected")
-
 }
 
-run().then(o => log(o)).catch(e => log(e))
+run(process.argv[2]).then(o => log(o)).catch(e => log(e))

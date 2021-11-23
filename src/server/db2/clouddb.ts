@@ -5,6 +5,42 @@ import path from "path";
 export const INGEST_FILE = 'ingest-file';
 export const GET_DOCUMENT_INFO = 'get-document-info'
 export const FIND_DOCUMENT= "find-document";
+const MIMETYPES_JSON = {
+    "image/png":["png"],
+    "image/svg+xml":['svg'],
+    "image/jpeg":["jpeg",'jpg'],
+    "image/bmp":['bmp'],
+    "image/gif":['gif'],
+
+    "audio/mpeg":["mp3"],
+    "audio/wav":["wav"],
+
+    "application/pdf":["pdf"],
+    "application/json":["json"],
+    "application/zip":["zip"],
+    "application/gzip":["gz"],
+    "application/rtf":["rtf"],
+    "application/xml":["xml"],
+
+    "text/c-lang":["c"],
+    "text/css":['css'],
+    "text/csv":['csv'],
+    "text/html":['htm','html'],
+    "text/javascript":['js'],
+    "text/markdown":['md'],
+    "text/plain":['txt'],
+    "text/rust-lang":["rs"],
+
+    "font/ttf":['ttf'],
+
+}
+const MIMETYPES:Map<string,string> = new Map<string, string>()
+Object.keys(MIMETYPES_JSON).forEach(type => {
+    let exts:string[] = MIMETYPES_JSON[type]
+    exts.forEach(ext => {
+        MIMETYPES.set(ext,type)
+    })
+})
 
 export interface DBDocument {
     id:string,
@@ -68,7 +104,6 @@ export class CloudDBService {
     handle(msg: any, server:CentralServer) {
         if(msg.type === INGEST_FILE) {
             this.ingest(msg.file).then(doc => {
-                this.log("succeded ingesting",doc)
                 let msg2 = {
                     type: msg.type + "-response",
                     id: "msg_" + Math.floor((Math.random() * 10000)),
@@ -77,7 +112,7 @@ export class CloudDBService {
                     docid:doc.id,
                     mimetype:doc.mimetype,
                 }
-                this.log("sending back",msg2)
+                // this.log("sending back",msg2)
                 let ws = server.connection_map.get(msg2.connection_id);
                 ws.send(JSON.stringify(msg2))
             })
@@ -116,7 +151,7 @@ export class CloudDBService {
     }
 
     async ingest(file: string):Promise<DBDocument> {
-        this.log("ingesting file",file)
+        // this.log("ingesting file",file)
         let ext = path.extname(file).toLowerCase()
         if(ext.startsWith('.')) ext = ext.substring(1)
         let obj = {
@@ -128,12 +163,14 @@ export class CloudDBService {
                 mimetype: "application/octet-stream"
             }
         }
-        if(obj.props.ext === 'mp3') {
-            obj.props.mimetype = "audio/mpeg"
+        if(MIMETYPES.has(obj.props.ext)) {
+            obj.props.mimetype = MIMETYPES.get(obj.props.ext)
+        } else {
+            this.log("unrecognized extension",obj.props.ext)
         }
-        this.log("obj is",obj)
+        // this.log("obj is",obj)
         const resp = await this.db.insert(obj)
-        this.log("response is",resp)
+        // this.log("response is",resp)
         if(resp.ok) return new DummyDoc(resp.id, obj.props.mimetype)
         return new DummyDoc("error","error")
     }
