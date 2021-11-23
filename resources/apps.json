@@ -4,7 +4,7 @@
       "name": "menubar",
       "entrypoint": "src/clients/menubar.js",
       "type": "MENUBAR",
-      "disabled": true,
+      "disabled": false,
       "groups": [
         "secure",
         "menubar"
@@ -14,7 +14,7 @@
       "name": "sidebar",
       "entrypoint": "src/clients/sidebar/sidebar.js",
       "type": "SIDEBAR",
-      "disabled": true,
+      "disabled": false,
       "groups": [
         "sidebar",
         "secure"
@@ -24,7 +24,7 @@
       "name": "dock",
       "entrypoint": "src/clients/dock.js",
       "type": "DOCK",
-      "disabled": true,
+      "disabled": false,
       "groups": [
         "dock,",
         "secure"
@@ -100,6 +100,13 @@
       "entrypoint": "src/clients/musicplayer.js",
       "autostart": false,
       "hide": false
+    },
+    {
+      "name": "scry",
+      "title": "Scry",
+      "icon": "chat",
+      "entrypoint": "src/clients/scry.js",
+      "autostart": false
     },
     {
       "name": "chat",

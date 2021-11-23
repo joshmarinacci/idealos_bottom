@@ -44,11 +44,11 @@ async function doit() {
             create:true
         },
         services: [
-            // {
-            //     name:'audio',
-            //     root:'../idealos_audioservice',
-            //     command:'cargo run'
-            // }
+            {
+                name:'audio',
+                root:'../idealos_audioservice',
+                command:'cargo run'
+            }
         ]
     })
 
