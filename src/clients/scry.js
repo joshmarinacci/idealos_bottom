@@ -10,27 +10,29 @@ async function init() {
     let results = new ListView({
         flex:1.0,
         data:[],
-        template_function:(item)=>new Label({text:"item"}),
+        template_function:(item)=>new Label({text:item.props.name + " " + item.props.mimetype}),
     })
 
-    let query = new TextBox({text:"mimetype=mp3",width:50})
+    let query = new TextBox({text:"mimetype = audio/mpeg",width:100})
 
     let win = await app.open_window(30,50,150,200, 'plain')
     win.root = new VBox({
         id:'vbox',
-        align:'center',
+        align:'stretch',
+        justify:'center',
         children: [
             query,
             results,
         ]
     })
-    query.on('action',()=>{
-            console.log("doing an action")
-            // let resp = await win.send_and_wait_for_response({type:"database-query", query:conv_query})
-            // console.log("got the response",resp)
-            // chatlog.set_data(resp.docs)
-
+    query.on('action',async () => {
+        let resp = await win.send_and_wait_for_response({
+            type: "find-document",
+            query: query.text,
         })
+        console.log(resp.results.docs)
+        results.set_data(resp.results.docs)
+    })
     win.redraw()
 }
 

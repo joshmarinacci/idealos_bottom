@@ -74,6 +74,7 @@ async function run() {
     }
 
     await conn.disconnect()
+    log("disconnected")
 
 }
 

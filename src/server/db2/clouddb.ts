@@ -3,7 +3,8 @@ import {CentralServer} from "../server";
 import path from "path";
 
 export const INGEST_FILE = 'ingest-file';
-export const  GET_DOCUMENT_INFO = 'get-document-info'
+export const GET_DOCUMENT_INFO = 'get-document-info'
+export const FIND_DOCUMENT= "find-document";
 
 export interface DBDocument {
     id:string,
@@ -60,6 +61,7 @@ export class CloudDBService {
     is_database(msg: any) {
         if(msg.type === INGEST_FILE) return true
         if(msg.type === GET_DOCUMENT_INFO) return true
+        if(msg.type === FIND_DOCUMENT) return true
         return false;
     }
 
@@ -96,6 +98,20 @@ export class CloudDBService {
                 ws.send(JSON.stringify(msg2))
             })
         }
+        if(msg.type === FIND_DOCUMENT) {
+            this.find(msg.query).then(docs => {
+                this.log("docs returned",docs)
+                let msg2 = {
+                    type: msg.type + "-response",
+                    id: "msg_" + Math.floor((Math.random() * 10000)),
+                    response_to: msg.id,
+                    connection_id:msg.connection_id,
+                    results:docs,
+                }
+                let ws = server.connection_map.get(msg2.connection_id);
+                ws.send(JSON.stringify(msg2))
+            })
+        }
         return undefined;
     }
 
@@ -122,8 +138,19 @@ export class CloudDBService {
         return new DummyDoc("error","error")
     }
 
-    async find(typeMusic: string):Promise<any> {
-
+    async find(raw_query: string):Promise<any> {
+        this.log("looking for",raw_query)
+        let parts = raw_query.split('=').map(t => t.trim())
+        let q = {}
+        q[parts[0]] = { "$eq":parts[1] }
+        let query = {
+            selector:{
+                type: { "$eq":"document"},
+                props:q
+            }
+        }
+        this.log("qq",query)
+        return await this.db.find(query)
     }
 
     async stop() {
