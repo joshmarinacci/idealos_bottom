@@ -65,6 +65,14 @@ async function run() {
     })
     log("response is",resp)
 
+    {
+        let resp2 = await conn.send_and_wait_for_response({
+            type:'get-document-info',
+            docid:resp.docid
+        })
+        log("response to get info is",resp2)
+    }
+
     await conn.disconnect()
 
 }

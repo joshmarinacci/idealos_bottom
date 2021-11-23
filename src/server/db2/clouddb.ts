@@ -3,6 +3,7 @@ import {CentralServer} from "../server";
 import path from "path";
 
 export const INGEST_FILE = 'ingest-file';
+export const  GET_DOCUMENT_INFO = 'get-document-info'
 
 export interface DBDocument {
     id:string,
@@ -58,11 +59,12 @@ export class CloudDBService {
 
     is_database(msg: any) {
         if(msg.type === INGEST_FILE) return true
+        if(msg.type === GET_DOCUMENT_INFO) return true
         return false;
     }
 
     handle(msg: any, server:CentralServer) {
-        if(msg.type === 'ingest-file') {
+        if(msg.type === INGEST_FILE) {
             this.ingest(msg.file).then(doc => {
                 this.log("succeded ingesting",doc)
                 let msg2 = {
@@ -72,6 +74,22 @@ export class CloudDBService {
                     connection_id:msg.connection_id,
                     docid:doc.id,
                     mimetype:doc.mimetype,
+                }
+                this.log("sending back",msg2)
+                let ws = server.connection_map.get(msg2.connection_id);
+                ws.send(JSON.stringify(msg2))
+            })
+        }
+        if(msg.type === GET_DOCUMENT_INFO) {
+            this.get_doc(msg.docid).then(doc => {
+                this.log("succeded finding doc info",doc)
+                let msg2 = {
+                    type: msg.type + "-response",
+                    id: "msg_" + Math.floor((Math.random() * 10000)),
+                    response_to: msg.id,
+                    connection_id:msg.connection_id,
+                    docid:doc.id,
+                    info:doc,
                 }
                 this.log("sending back",msg2)
                 let ws = server.connection_map.get(msg2.connection_id);
@@ -122,6 +140,12 @@ export class CloudDBService {
 
     async delete(testdb: string) {
 
+    }
+
+    private async get_doc(docid: string): Promise<any> {
+        let doc = await this.db.get(docid)
+        this.log("got the doc", doc)
+        return doc
     }
 }
 
