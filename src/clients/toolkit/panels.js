@@ -721,10 +721,12 @@ export class ListView extends Container {
         })
     }
     redraw(gfx) {
+        let bd = this.lookup_theme_part("border-color",null)
         let bg = this.lookup_theme_part("background-color",null)
         if(this.fill_color) bg = this.fill_color
-        gfx.rect(this.x,this.y,this.width,this.height,bg)
-        gfx.translate(this.x,this.y)
+        gfx.rect(this.x, this.y, this.width, this.height,bd)
+        gfx.rect(this.x+1, this.y+1, this.width-2, this.height-2,bg)
+        gfx.translate(this.x+1,this.y+1)
         this.children.forEach((ch,i) => {
             if(this.selected_index === i) {
                 ch.selected = true
@@ -733,7 +735,7 @@ export class ListView extends Container {
             }
             ch.redraw(gfx)
         })
-        gfx.translate(-this.x,-this.y)
+        gfx.translate(-this.x-1,-this.y-1)
     }
     set_selected(index,e) {
         this.selected_index = index
