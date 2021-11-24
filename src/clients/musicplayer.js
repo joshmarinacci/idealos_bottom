@@ -35,80 +35,43 @@ async function init() {
     let songlist = new ListView({
         id:'songlist',
         flex:1.0,
+        width:200,
         data:[],
-        template_function:(item)=>{
-            return new Label({text:song_to_string(item)})
-        },
+        template_function:(item)=> song_to_string(item)
     })
 
     let mode = "songs"
 
-    async function load_songs() {
+    async function get_docs(query) {
         let resp = await win.send_and_wait_for_response({
             type: "find-document",
-            query: {
-                mimetype:{"$eq":"audio/mpeg"}
-            },
+            query: query,
         })
-        songlist.template_function = (item) => song_to_string(item)
-        songlist.set_data(resp.results.docs)
+        return resp.results.docs
     }
-
+    const get_all_songs = async () => await get_docs({ mimetype:{"$eq":"audio/mpeg"} })
+    async function get_filtered_songs(props) {
+        let q= {
+            mimetype:{"$eq":"audio/mpeg"},
+        }
+        Object.keys(props).forEach(key => q[key] = {"$eq":props[key]})
+        return await get_docs(q)
+    }
     async function load_artists() {
-        let resp = await win.send_and_wait_for_response({
-            type: "find-document",
-            query: {
-                mimetype:{"$eq":"audio/mpeg"}
-            },
-        })
-        let artists = new Set()
-        resp.results.docs.forEach(doc => {
-            if(doc.props.artist) artists.add(doc.props.artist)
-        })
+        let artists = (await get_all_songs()).map(s => s.props.artist).filter(a => a)
         mode = "artists"
         sublist.template_function = (item) => artist_to_string(item)
-        sublist.set_data(Array.from(artists))
+        sublist.set_data([... new Set(artists)])
     }
-
-    async function load_songs_for_artist(artist) {
-        let resp = await win.send_and_wait_for_response({
-            type: "find-document",
-            query: {
-                mimetype:{"$eq":"audio/mpeg"},
-                artist:{"$eq":artist}
-            },
-        })
-        songlist.set_data(resp.results.docs)
-    }
-
     async function load_albums() {
-        let resp = await win.send_and_wait_for_response({
-            type: "find-document",
-            query: {
-                mimetype:{"$eq":"audio/mpeg"}
-            },
-        })
-        let albums = new Set()
-        resp.results.docs.forEach(doc => {
-            if (doc.props.album) albums.add(doc.props.album)
-        })
+        let albums = (await get_all_songs()).map(s => s.props.album).filter(a => a)
         mode = "albums"
         sublist.template_function = (item) => album_to_string(item)
-        sublist.set_data(Array.from(albums))
+        sublist.set_data([... new Set(albums)])
     }
-
-    async function load_songs_for_album(album) {
-        let resp = await win.send_and_wait_for_response({
-            type: "find-document",
-            query: {
-                mimetype:{"$eq":"audio/mpeg"},
-                album:{"$eq":album}
-            },
-        })
-        songlist.set_data(resp.results.docs)
-    }
-
-
+    const load_songs = async () => songlist.set_data(await get_all_songs())
+    const load_songs_for_artist = async (artist) => songlist.set_data(await get_filtered_songs({artist:artist}))
+    const load_songs_for_album = async (album) => songlist.set_data(await get_filtered_songs({album}))
 
     async function open_editor() {
         app.log("selected index is", songlist.get_selected_index())
