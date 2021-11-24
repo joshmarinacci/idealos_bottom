@@ -9,7 +9,7 @@ let app = new App(process.argv)
 
 async function init() {
     await app.a_init()
-    let win = await app.open_window(30,50,200,200,'plain')
+    let win = await app.open_window(30,50,300,200,'plain')
 
 
     const song_to_string = (item) => {
@@ -28,17 +28,14 @@ async function init() {
 
     let sublist  = new ListView({
         id:'sublist',
-        flex:1.0,
         data:[],
-        preferred_width:100,
-        fill_color:'green',
+        width:100,
         template_function:(item) => item?item.toString():"missing"
     })
     let songlist = new ListView({
         id:'songlist',
         flex:1.0,
         data:[],
-        fill_color:'blue',
         template_function:(item)=>{
             return new Label({text:song_to_string(item)})
         },
@@ -158,10 +155,8 @@ async function init() {
 
     let sidebar = new VBox({
         id:'sidebar',
-        width: 80,
-        preferred_width:80,
+        flex:0,
         align:'left',
-        fill_color:'yellow',
         children:[
             new Button({text:"songs", action:()=>load_songs()}),
             new Button({text:"artists", action:()=>load_artists()}),
@@ -180,7 +175,7 @@ async function init() {
             new Button({text:'edit',action:()=>{
                     open_editor()
                 }}),
-            new TextBox({text:"search", width: 30})
+            new TextBox({text:"search", width: 60})
         ]
     })
 
@@ -190,7 +185,6 @@ async function init() {
         children:[
             toolbar,
             new HBox({
-                fill_color:'#ff0000',
                 flex:1.0,
                 id:'inner',
                 align:'stretch',
@@ -221,7 +215,8 @@ async function init() {
             load_songs_for_album(album)
         }
     })
-    load_songs().then(()=>console.log("done loading songs"))
+    await load_artists()
+    await load_songs()
 }
 
 
