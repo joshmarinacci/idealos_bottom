@@ -1,5 +1,6 @@
 import {Component, Container} from './guitoolkit.js'
 import {Button, ToggleButton} from './buttons.js'
+import {Label} from './text.js'
 
 export class Panel extends Container {
     constructor(opts) {
@@ -680,6 +681,7 @@ export class ListView extends Container {
             this.children = this.data.map((item,i) => {
                 let ch = this.template_function(item)
                 if(!ch) throw new Error("template function returned undefined")
+                if(typeof ch === 'string') ch = new Label({text:ch})
                 let li = new ListItem({children:[ch], padding:2})
                 li.fill_color = 'transparent'
                 li.parent = this

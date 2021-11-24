@@ -12,6 +12,9 @@ export class Label extends Component {
     }
 
     measure(gfx) {
+        if(typeof this.text !== 'string') {
+            console.warn("Label has a non-string text value",this.text)
+        }
         let met = gfx.text_size(this.text,this.font)
         this.preferred_width = this.padding + met.width + this.padding
         this.preferred_height = this.padding + met.height + this.padding

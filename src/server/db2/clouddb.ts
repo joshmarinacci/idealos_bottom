@@ -169,15 +169,12 @@ export class CloudDBService {
         return new DummyDoc("error","error")
     }
 
-    async find(raw_query: string):Promise<any> {
-        this.log("looking for",raw_query)
-        let parts = raw_query.split('=').map(t => t.trim())
-        let q = {}
-        q[parts[0]] = { "$eq":parts[1] }
+    async find(props_query: any):Promise<any> {
+        this.log("looking for",props_query)
         let query = {
             selector:{
                 type: { "$eq":"document"},
-                props:q
+                props:props_query
             }
         }
         this.log("qq",query)

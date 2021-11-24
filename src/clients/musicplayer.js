@@ -11,41 +11,107 @@ async function init() {
     await app.a_init()
     let win = await app.open_window(30,50,200,200,'plain')
 
-    //sidebar of users we are chatting with
-    //sidebar
-    let sidebar = new VBox({
-        id:'sidebar',
-        width: 80,
-        align:'left',
-        children:[
-            new Button({text:"songs"}),
-            new Button({text:"artists"}),
-            new Button({text:"albums"}),
-        ]
-    })
 
+    const song_to_string = (item) => {
+        let str = item.props.name
+        if(item.props.title)  str = item.props.title
+        if(item.props.artist) str += " - " + item.props.artist
+        if(item.props.album) str += " - " + item.props.album
+        return str
+    }
+    const album_to_string = (item) => {
+        return item
+    }
+    const artist_to_string = (item) => {
+        return item
+    }
+
+    let sublist  = new ListView({
+        id:'sublist',
+        flex:1.0,
+        data:[],
+        preferred_width:100,
+        fill_color:'green',
+        template_function:(item) => item?item.toString():"missing"
+    })
     let songlist = new ListView({
         id:'songlist',
         flex:1.0,
         data:[],
+        fill_color:'blue',
         template_function:(item)=>{
-            let str = item.props.name
-            if(item.props.title)  str = item.props.title
-            if(item.props.artist) str += " " + item.props.artist
-            if(item.props.album) str += " " + item.props.album
-            return new Label({text:str})
+            return new Label({text:song_to_string(item)})
         },
     })
 
+    let mode = "songs"
+
     async function load_songs() {
-        let query = "mimetype = audio/mpeg"
         let resp = await win.send_and_wait_for_response({
             type: "find-document",
-            query: query,
+            query: {
+                mimetype:{"$eq":"audio/mpeg"}
+            },
         })
-        console.log('loaded songs',resp.results.docs)
+        songlist.template_function = (item) => song_to_string(item)
         songlist.set_data(resp.results.docs)
     }
+
+    async function load_artists() {
+        let resp = await win.send_and_wait_for_response({
+            type: "find-document",
+            query: {
+                mimetype:{"$eq":"audio/mpeg"}
+            },
+        })
+        let artists = new Set()
+        resp.results.docs.forEach(doc => {
+            if(doc.props.artist) artists.add(doc.props.artist)
+        })
+        mode = "artists"
+        sublist.template_function = (item) => artist_to_string(item)
+        sublist.set_data(Array.from(artists))
+    }
+
+    async function load_songs_for_artist(artist) {
+        let resp = await win.send_and_wait_for_response({
+            type: "find-document",
+            query: {
+                mimetype:{"$eq":"audio/mpeg"},
+                artist:{"$eq":artist}
+            },
+        })
+        songlist.set_data(resp.results.docs)
+    }
+
+    async function load_albums() {
+        let resp = await win.send_and_wait_for_response({
+            type: "find-document",
+            query: {
+                mimetype:{"$eq":"audio/mpeg"}
+            },
+        })
+        let albums = new Set()
+        resp.results.docs.forEach(doc => {
+            if (doc.props.album) albums.add(doc.props.album)
+        })
+        mode = "albums"
+        sublist.template_function = (item) => album_to_string(item)
+        sublist.set_data(Array.from(albums))
+    }
+
+    async function load_songs_for_album(album) {
+        let resp = await win.send_and_wait_for_response({
+            type: "find-document",
+            query: {
+                mimetype:{"$eq":"audio/mpeg"},
+                album:{"$eq":album}
+            },
+        })
+        songlist.set_data(resp.results.docs)
+    }
+
+
 
     async function open_editor() {
         app.log("selected index is", songlist.get_selected_index())
@@ -90,6 +156,19 @@ async function init() {
         dialog.redraw()
     }
 
+    let sidebar = new VBox({
+        id:'sidebar',
+        width: 80,
+        preferred_width:80,
+        align:'left',
+        fill_color:'yellow',
+        children:[
+            new Button({text:"songs", action:()=>load_songs()}),
+            new Button({text:"artists", action:()=>load_artists()}),
+            new Button({text:"albums", action:()=>load_albums()}),
+        ]
+    })
+
     let toolbar = new HBox({
         id:'toolbar',
         fill_color:'gray',
@@ -111,11 +190,13 @@ async function init() {
         children:[
             toolbar,
             new HBox({
+                fill_color:'#ff0000',
                 flex:1.0,
                 id:'inner',
                 align:'stretch',
                 children:[
                     sidebar,
+                    sublist,
                     songlist,
                 ]
             })
@@ -124,6 +205,22 @@ async function init() {
     win.redraw()
 
 
+    sublist.on("changed",(l)=>{
+        if(mode === "artists") {
+            let n = l.get_selected_index()
+            if(n<0) return
+            let artist = l.get_data()[n]
+            console.log("selected on sublist", n,artist)
+            load_songs_for_artist(artist)
+        }
+        if(mode === "albums") {
+            let n = l.get_selected_index()
+            if(n<0) return
+            let album = l.get_data()[n]
+            console.log("selected on sublist", n,album)
+            load_songs_for_album(album)
+        }
+    })
     load_songs().then(()=>console.log("done loading songs"))
 }
 
