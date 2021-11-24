@@ -6,6 +6,8 @@ export const INGEST_FILE = 'ingest-file';
 export const DB_INFO = "db-info";
 export const GET_DOCUMENT_INFO = 'get-document-info'
 export const FIND_DOCUMENT= "find-document";
+export const UPDATE_DOCUMENT = "update-document"
+
 const MIMETYPES_JSON = {
     "image/png":["png"],
     "image/svg+xml":['svg'],
@@ -111,6 +113,7 @@ export class CloudDBService {
         if(msg.type === GET_DOCUMENT_INFO) return true
         if(msg.type === FIND_DOCUMENT) return true
         if(msg.type === DB_INFO) return true
+        if(msg.type === UPDATE_DOCUMENT) return true
         return false;
     }
 
@@ -123,7 +126,7 @@ export class CloudDBService {
                 connection_id:original.connection_id,
             }
             Object.keys(fields).forEach(key => msg2[key] = fields[key])
-            console.log("sending",msg2)
+            // console.log("sending",msg2)
             let ws = server.connection_map.get(msg2.connection_id);
             ws.send(JSON.stringify(msg2))
         }
@@ -136,6 +139,8 @@ export class CloudDBService {
             .then(doc => send_response(msg, {docid:doc.id,info:doc}))
         if(msg.type === FIND_DOCUMENT) return this.find(msg.query)
             .then(docs => send_response(msg,{results:docs}))
+        if(msg.type === UPDATE_DOCUMENT) return this.update_doc(msg.docid,msg.props)
+            .then(resp => send_response(msg,{response:resp}))
         return undefined;
     }
 
@@ -203,6 +208,18 @@ export class CloudDBService {
 
     private async get_info() {
         return await this.db.info()
+    }
+
+    private async update_doc(docid: string, props: any) {
+        this.log("updating the doc", docid)
+        let doc = await this.db.get(docid)
+        this.log("got original doc",doc)
+        this.log("changing props",props)
+        Object.keys(props).forEach(key => {
+            doc.props[key] = props[key]
+        })
+        this.log("new doc is",doc)
+        return await this.db.insert(doc)
     }
 }
 

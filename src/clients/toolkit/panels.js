@@ -679,6 +679,7 @@ export class ListView extends Container {
         if(!this.generated) {
             this.children = this.data.map((item,i) => {
                 let ch = this.template_function(item)
+                if(!ch) throw new Error("template function returned undefined")
                 let li = new ListItem({children:[ch], padding:2})
                 li.fill_color = 'transparent'
                 li.parent = this
@@ -737,6 +738,9 @@ export class ListView extends Container {
         this.repaint(e)
         this.fire('changed',this)
     }
+    get_selected_index() {
+        return this.selected_index
+    }
 
     set_data(docs) {
         this.data = docs
@@ -745,6 +749,10 @@ export class ListView extends Container {
         this.children = []
         this.fire('changed',this)
         this.repaint()
+    }
+
+    get_data() {
+        return this.data
     }
 }
 
