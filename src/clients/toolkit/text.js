@@ -25,6 +25,9 @@ export class Label extends Component {
     redraw(gfx) {
         if(!this.visible) return
         let co = this.lookup_theme_part('color',null)
+        if(this.parent && this.parent.override_child_color) {
+            co = this.parent.override_child_color
+        }
         gfx.text(this.x+this.padding, this.y+this.padding, this.text,co,this.font)
     }
 }

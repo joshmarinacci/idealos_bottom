@@ -771,6 +771,7 @@ class ListItem extends HBox {
     redraw(gfx) {
         let bg = this.lookup_theme_part("background-color",this.selected?"selected":null)
         gfx.rect(this.x,this.y,this.width,this.height,bg)
+        this.override_child_color = this.lookup_theme_part("color",this.selected?"selected":null)
         super.redraw(gfx)
     }
 }
